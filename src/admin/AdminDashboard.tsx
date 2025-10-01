@@ -1,7 +1,5 @@
-
-
-import React, { useState } from 'react';
-import { User, HeroSlide, Review } from '../types';
+import React, { useState, useEffect } from 'react';
+import { User, HeroSlide, Review, SaleCampaign, AdminAnnouncement, Notification } from '../types';
 import { AdminLayout } from './components/layout/AdminLayout';
 import DashboardPage from './pages/DashboardPage';
 import ProductsPage from './pages/ProductsPage';
@@ -12,8 +10,6 @@ import DiscountsPage from './pages/DiscountsPage';
 import MarketingPage from './pages/MarketingPage';
 import BlogPostsPage from './pages/BlogPostsPage';
 import CategoriesPage from './pages/CategoriesPage';
-import SubscribersPage from './pages/SubscribersPage';
-import AnnouncementsPage from './pages/AnnouncementsPage';
 import SettingsPage from './pages/SettingsPage';
 import AddProductPage from './pages/AddProductPage';
 import OrderDetailPage from './pages/OrderDetailPage';
@@ -25,6 +21,8 @@ import ContactMessagesPage from './pages/ContactMessagesPage';
 import InventoryPage from './pages/InventoryPage';
 import ReviewsPage from './pages/ReviewsPage';
 import ThemeSettingsPage from './pages/ThemeSettingsPage';
+import SaleCampaignsPage from './pages/SaleCampaignsPage';
+import AddSaleCampaignPage from './pages/AddSaleCampaignPage';
 
 import { 
     allAdminProducts, 
@@ -34,16 +32,14 @@ import {
     allAdminMarketingCampaigns,
     allAdminBlogPosts,
     allAdminCategories,
-    allAdminSubscribers,
-    allAdminAnnouncements,
-    allAdminMessages,
     AdminProduct,
     AdminOrder,
     AdminCustomer,
     AdminDiscount,
     AdminBlogPost,
     AdminCategory,
-    AdminAnnouncement
+    // FIX: Import AdminVariant to resolve type error.
+    AdminVariant
 } from './data/adminData';
 
 
@@ -51,11 +47,13 @@ interface AdminDashboardProps {
     currentUser: User | null;
     heroSlides: HeroSlide[];
     setHeroSlides: React.Dispatch<React.SetStateAction<HeroSlide[]>>;
-    announcements: string[];
-    setAnnouncements: React.Dispatch<React.SetStateAction<string[]>>;
+    announcements: AdminAnnouncement[];
+    setAnnouncements: React.Dispatch<React.SetStateAction<AdminAnnouncement[]>>;
+    saleCampaigns: SaleCampaign[];
+    setSaleCampaigns: React.Dispatch<React.SetStateAction<SaleCampaign[]>>;
 }
 
-const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements, setAnnouncements }: AdminDashboardProps) => {
+const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements: appAnnouncements, setAnnouncements: setAppAnnouncements, saleCampaigns, setSaleCampaigns }: AdminDashboardProps) => {
     const [activePage, setActivePage] = useState('dashboard');
     const [pageData, setPageData] = useState<any>(null);
     
@@ -65,7 +63,85 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements,
     const [discounts, setDiscounts] = useState(allAdminDiscounts);
     const [blogPosts, setBlogPosts] = useState(allAdminBlogPosts);
     const [categories, setCategories] = useState(allAdminCategories);
-    const [adminAnnouncements, setAdminAnnouncements] = useState(allAdminAnnouncements);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+
+    // Simulate real-time events for notifications
+    useEffect(() => {
+        const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => {
+            const newNotification: Notification = {
+                id: Date.now() + Math.random(),
+                timestamp: new Date(),
+                isRead: false,
+                ...notification,
+            };
+            setNotifications(prev => [newNotification, ...prev]);
+        };
+
+        const orderTimer = setTimeout(() => {
+            const newOrder: AdminOrder = {
+                id: `#${Math.floor(10000 + Math.random() * 90000)}`,
+                date: new Date().toISOString().split('T')[0],
+                status: 'On the way',
+                total: (Math.random() * 500 + 50).toFixed(2),
+                itemCount: 2,
+                customer: { name: 'عميل جديد', email: 'new@example.com' },
+                customerId: 99,
+                items: [
+                    { productId: 1, variantId: 101, productName: 'بنطلون مزيج الكتان', productImage: products[0].image, sku: 'AD1-M-BE', quantity: 1, price: '60.00'},
+                    { productId: 2, variantId: 102, productName: 'بلوزة بأكمام طويلة', productImage: products[1].image, sku: 'VIN-BL-S', quantity: 1, price: '180.00'}
+                ],
+                shippingAddress: '123 Main St, Cairo, Egypt', billingAddress: '123 Main St, Cairo, Egypt', 
+                trackingHistory: [ { status: 'تم الطلب', date: new Date().toLocaleDateString('en-CA') }], notes: ''
+            };
+            setOrders(prev => [newOrder, ...prev]);
+            addNotification({
+                type: 'order',
+                title: 'طلب جديد!',
+                message: `تم استلام طلب جديد ${newOrder.id} بقيمة ${newOrder.total} ج.م.`,
+                link: 'orderDetail',
+                data: newOrder,
+            });
+        }, 8000);
+
+        const stockTimer = setTimeout(() => {
+            const productToUpdateIndex = products.findIndex(p => p.variants.some(v => v.stock > 10));
+            if (productToUpdateIndex === -1) return;
+
+            const updatedProducts = JSON.parse(JSON.stringify(products));
+            const product = updatedProducts[productToUpdateIndex];
+            const variantIndex = product.variants.findIndex((v: AdminVariant) => v.stock > 10);
+            if(variantIndex === -1) return;
+
+            product.variants[variantIndex].stock = 3;
+            updatedProducts[productToUpdateIndex] = product;
+
+            setProducts(updatedProducts);
+            addNotification({
+                type: 'stock',
+                title: 'انخفاض المخزون',
+                message: `المنتج "${product.name}" (${Object.values(product.variants[variantIndex].options).join(' / ')}) على وشك النفاذ.`,
+                link: 'editProduct',
+                data: product,
+            });
+        }, 15000);
+
+        return () => {
+            clearTimeout(orderTimer);
+            clearTimeout(stockTimer);
+        };
+    }, [products]);
+
+    const handleMarkAsRead = (id: number) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    };
+
+    const handleMarkAllAsRead = () => {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    };
+    
+    const handleClearAll = () => {
+        setNotifications([]);
+    };
 
     const navigate = (page: string, data?: any) => {
         setActivePage(page);
@@ -84,6 +160,12 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements,
 
     const handleDeleteProducts = (productIds: number[]) => {
         setProducts(prev => prev.filter(p => !productIds.includes(p.id)));
+    };
+    
+    const handlePublishProducts = (productIds: number[], publish: boolean) => {
+        setProducts(prev => prev.map(p => 
+            productIds.includes(p.id) ? { ...p, status: publish ? 'Published' : 'Draft' } : p
+        ));
     };
     
     const handleStatusChange = (orderId: string, newStatus: AdminOrder['status']) => {
@@ -161,31 +243,37 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements,
         });
     };
 
-    const handleAnnouncementsUpdate = (newAdminAnnouncements: AdminAnnouncement[]) => {
-        setAdminAnnouncements(newAdminAnnouncements);
-        const activeAnnouncements = newAdminAnnouncements
-            .filter(a => a.status === 'Active')
-            .map(a => a.content);
-        setAnnouncements(activeAnnouncements);
+    const handleSaveSaleCampaign = (campaign: SaleCampaign) => {
+        if (campaign.id === 0) {
+            setSaleCampaigns(prev => [{...campaign, id: Date.now()}, ...prev]);
+        } else {
+            setSaleCampaigns(prev => prev.map(c => c.id === campaign.id ? campaign : c));
+        }
+        navigate('saleCampaigns');
     };
+
+    const handleDeleteSaleCampaign = (campaignId: number) => {
+        setSaleCampaigns(prev => prev.filter(c => c.id !== campaignId));
+    };
+
 
     const renderPage = () => {
         switch (activePage) {
             // Dashboard
-            case 'dashboard': return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} />;
+            case 'dashboard': return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} />;
             
             // Catalog
-            case 'products': return <ProductsPage navigate={navigate} products={products} onDeleteProducts={handleDeleteProducts} />;
+            case 'products': return <ProductsPage navigate={navigate} products={products} onDeleteProducts={handleDeleteProducts} onPublishProducts={handlePublishProducts} />;
             case 'addProduct': return <AddProductPage navigate={navigate} onSave={handleSaveProduct} />;
             case 'editProduct': return <AddProductPage navigate={navigate} onSave={handleSaveProduct} productToEdit={pageData} />;
-            case 'categories': return <CategoriesPage navigate={navigate} categories={categories} products={products} onDeleteCategory={handleDeleteCategory} />;
+            case 'categories': return <CategoriesPage navigate={navigate} categories={categories} products={products} onDeleteCategory={handleDeleteCategory} onSaveCategory={handleSaveCategory} />;
             case 'addCategory': return <AddCategoryPage navigate={navigate} onSave={handleSaveCategory} categories={categories} />;
             case 'editCategory': return <AddCategoryPage navigate={navigate} onSave={handleSaveCategory} categories={categories} categoryToEdit={pageData} />;
             case 'inventory': return <InventoryPage products={products} setProducts={setProducts} />;
             case 'reviews': return <ReviewsPage products={products} onStatusChange={handleReviewStatusChange} onDelete={handleDeleteReview} />;
 
             // Sales
-            case 'orders': return <OrdersPage navigate={navigate} orders={orders} />;
+            case 'orders': return <OrdersPage navigate={navigate} orders={orders} onStatusChange={handleStatusChange} />;
             case 'orderDetail': return <OrderDetailPage navigate={navigate} order={pageData} customers={customers} onStatusChange={handleStatusChange} products={products} />;
             case 'discounts': return <DiscountsPage discounts={discounts} navigate={navigate} onDeleteDiscounts={handleDeleteDiscounts} />;
             case 'addDiscount': return <AddDiscountPage navigate={navigate} onSave={handleSaveDiscount} />;
@@ -193,28 +281,52 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements,
 
             // Customers
             case 'customers': return <CustomersPage navigate={navigate} customers={customers} onDeleteCustomers={handleDeleteCustomers} />;
-            case 'customerDetail': return <CustomerDetailPage navigate={navigate} customer={pageData} orders={orders.filter(o => o.customerId === pageData.id)} onSave={handleSaveCustomer} />;
+            case 'customerDetail':
+                if (!pageData) {
+                    return (
+                        <div className="text-center p-8">
+                            <h2 className="text-xl font-bold">لم يتم العثور على العميل</h2>
+                            <p className="text-gray-500 mt-2">يرجى العودة إلى قائمة العملاء واختيار عميل لعرض تفاصيله.</p>
+                            <button onClick={() => navigate('customers')} className="mt-4 bg-primary-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-primary-500">
+                                العودة إلى العملاء
+                            </button>
+                        </div>
+                    );
+                }
+                return <CustomerDetailPage navigate={navigate} customer={pageData} orders={orders.filter(o => o.customerId === pageData.id)} onSave={handleSaveCustomer} />;
             
             // Marketing
             case 'marketing': return <MarketingPage navigate={navigate} campaigns={allAdminMarketingCampaigns} />;
+            case 'saleCampaigns': return <SaleCampaignsPage navigate={navigate} campaigns={saleCampaigns} onDelete={handleDeleteSaleCampaign} />;
+            case 'addSaleCampaign': return <AddSaleCampaignPage navigate={navigate} onSave={handleSaveSaleCampaign} />;
+            case 'editSaleCampaign': return <AddSaleCampaignPage navigate={navigate} onSave={handleSaveSaleCampaign} campaignToEdit={pageData} />;
+
             
             // Online Store
-            case 'theme': return <ThemeSettingsPage heroSlides={heroSlides} setHeroSlides={setHeroSlides} announcements={adminAnnouncements} onAnnouncementsUpdate={handleAnnouncementsUpdate} />;
+            case 'theme': return <ThemeSettingsPage heroSlides={heroSlides} setHeroSlides={setHeroSlides} announcements={appAnnouncements} onAnnouncementsUpdate={setAppAnnouncements} />;
 
             // Other
             case 'analytics': return <AnalyticsPage orders={orders} products={products} customers={customers} />;
             case 'content': return <BlogPostsPage navigate={navigate} blogPosts={blogPosts} onDeletePost={handleDeletePost}/>;
             case 'addBlogPost': return <AddBlogPostPage navigate={navigate} onSave={handleSavePost} />;
             case 'editBlogPost': return <AddBlogPostPage navigate={navigate} onSave={handleSavePost} postToEdit={pageData} />;
-            case 'messages': return <ContactMessagesPage messages={allAdminMessages} />;
+            case 'messages': return <ContactMessagesPage />;
             case 'settings': return <SettingsPage />;
 
-            default: return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers}/>;
+            default: return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser}/>;
         }
     };
 
     return (
-        <AdminLayout currentUser={currentUser} activePage={activePage} setActivePage={navigate}>
+        <AdminLayout 
+            currentUser={currentUser} 
+            activePage={activePage} 
+            setActivePage={navigate}
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onClearAll={handleClearAll}
+        >
             {renderPage()}
         </AdminLayout>
     );

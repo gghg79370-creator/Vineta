@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product, CartItem } from '../../types';
+import { Product } from '../../types';
 import { CloseIcon, ChevronRightIcon, PlusIcon, MinusIcon } from '../icons';
 
 interface QuickViewModalProps {
@@ -19,8 +19,14 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     useEffect(() => {
         if (product) {
             setCurrentImageIndex(0);
-            setSelectedColor(product.colors[0]);
-            setSelectedSize(product.sizes[0]);
+            const defaultVariant = product.variants?.find(v => v.stock > 0) || product.variants?.[0];
+            if (defaultVariant) {
+                setSelectedColor(defaultVariant.color);
+                setSelectedSize(defaultVariant.size);
+            } else {
+                setSelectedColor(product.colors[0]);
+                setSelectedSize(product.sizes[0]);
+            }
             setQuantity(1);
         }
     }, [product]);
@@ -33,6 +39,17 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     const handleNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const handlePrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     
+    const handleSelectColor = (color: string) => {
+        setSelectedColor(color);
+        const isCurrentSizeAvailable = product.variants?.some(v => v.color === color && v.size === selectedSize && v.stock > 0);
+        if (!isCurrentSizeAvailable) {
+            const firstAvailableSizeForColor = product.variants?.find(v => v.color === color && v.stock > 0)?.size;
+            if (firstAvailableSizeForColor) {
+                setSelectedSize(firstAvailableSizeForColor);
+            }
+        }
+    };
+
     const handleAddToCart = () => {
         addToCart(product, { 
             quantity, 
@@ -41,6 +58,16 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
         });
         onClose();
     };
+
+    const handleBuyNow = () => {
+        addToCart(product, { 
+            quantity, 
+            selectedSize: selectedSize || product.sizes[0], 
+            selectedColor: selectedColor || product.colors[0] 
+        });
+        onClose();
+        navigateTo('checkout');
+    };
     
     const handleViewDetails = () => {
         navigateTo('product', product);
@@ -48,8 +75,8 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     }
 
     return (
-        <div className={`fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className={`bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-all duration-300 ease-in-out ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        <div className={`fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
+            <div className={`bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-all duration-300 ease-in-out ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`} onClick={e => e.stopPropagation()}>
                 <div className="md:w-1/2 relative flex-shrink-0">
                      <img src={activeImage} alt={product.name} className="w-full h-64 md:h-full object-cover rounded-t-2xl md:rounded-r-2xl md:rounded-tl-none" />
                      <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
@@ -71,7 +98,7 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                         <p className="font-bold text-brand-dark mb-2">اللون: <span className="font-normal text-brand-text-light">{product.colors.find(c => c === selectedColor)}</span></p>
                          <div className="flex gap-3">
                             {product.colors.map(color => (
-                                <button key={color} onClick={() => setSelectedColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent'}`} aria-label={`Select color ${color}`}>
+                                <button key={color} onClick={() => handleSelectColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent'}`} aria-label={`Select color ${color}`}>
                                   <span className="w-6 h-6 rounded-full border border-black/10" style={{backgroundColor: color}}></span>
                                 </button>
                             ))}
@@ -81,27 +108,26 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                     <div className="mb-4">
                         <p className="font-bold text-brand-dark mb-2">المقاس:</p>
                          <div className="flex gap-2 flex-wrap">
-                            {product.sizes.map(size => (
-                                <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border hover:border-brand-dark'}`}>{size}</button>
-                            ))}
+                            {product.sizes.map(size => {
+                                const isAvailable = product.variants?.some(v => v.color === selectedColor && v.size === size && v.stock > 0) ?? true;
+                                return (
+                                    <button key={size} onClick={() => setSelectedSize(size)} disabled={!isAvailable} className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border hover:border-brand-dark'} ${!isAvailable ? 'opacity-25 cursor-not-allowed line-through' : ''}`}>{size}</button>
+                                )
+                            })}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                        <div className="flex items-center border rounded-full justify-between">
-                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 text-brand-text-light hover:text-brand-dark"><MinusIcon/></button>
-                            <span className="w-8 text-center font-bold text-lg">{quantity}</span>
-                            <button onClick={() => setQuantity(q => q + 1)} className="p-3 text-brand-text-light hover:text-brand-dark"><PlusIcon/></button>
-                        </div>
-                        <button onClick={handleAddToCart} className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition h-14">أضف إلى السلة</button>
+                    <div className="flex items-center border rounded-full justify-between w-40 mb-3">
+                        <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 text-brand-text-light hover:text-brand-dark"><MinusIcon/></button>
+                        <span className="w-8 text-center font-bold text-lg">{quantity}</span>
+                        <button onClick={() => setQuantity(q => q + 1)} className="p-3 text-brand-text-light hover:text-brand-dark"><PlusIcon/></button>
                     </div>
-                    
-                    <button className="w-full bg-brand-primary text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition mb-4 h-14">اشترِ الآن</button>
-                     <div className="text-center">
-                        <a href="#" onClick={onClose} className="text-sm font-bold text-brand-dark underline-offset-4 hover:underline">
-                            المزيد من خيارات الدفع
-                        </a>
-                     </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                         <button onClick={handleAddToCart} className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition h-14">أضف إلى السلة</button>
+                         <button onClick={handleBuyNow} className="w-full bg-brand-primary text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition h-14">اشترِ الآن</button>
+                    </div>
+
                      <button onClick={handleViewDetails} className="w-full text-center text-brand-dark font-bold mt-4">
                         عرض التفاصيل الكاملة &rarr;
                     </button>

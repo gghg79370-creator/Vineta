@@ -1,7 +1,10 @@
+
 import React, { useState } from 'react';
 import { User } from '../types';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { EnvelopeIcon, LockClosedIcon } from '../components/icons';
+import Spinner from '../components/ui/Spinner';
+import { useToast } from '../hooks/useToast';
 
 interface LoginPageProps {
     navigateTo: (pageName: string) => void;
@@ -12,21 +15,41 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const addToast = useToast();
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setErrors({});
+        
+        const currentErrors: { [key: string]: string } = {};
+        if (!email) currentErrors.email = "البريد الإلكتروني مطلوب.";
+        if (!password) currentErrors.password = "كلمة المرور مطلوبة.";
+
+        if (Object.keys(currentErrors).length > 0) {
+            setErrors(currentErrors);
+            return;
+        }
+
         setLoading(true);
 
         // Mock login logic
         setTimeout(() => {
             if (email === 'user@example.com' && password === 'password123') {
-                const mockUser: User = { id: '1', name: 'فينيتا فام', email: 'user@example.com', phone: '01234567890' };
+                const mockUser: User = { 
+                    id: '1', 
+                    name: 'فينيتا فام', 
+                    email: 'user@example.com', 
+                    phone: '01234567890', 
+                    addresses: [
+                         { id: 1, type: 'الشحن', name: 'المنزل', recipientName: 'فينيتا فام', street: '123 شارع ياران', city: 'القاهرة', postalCode: '11511', country: 'مصر', isDefault: true }
+                    ] 
+                };
                 onLogin(mockUser);
+                addToast(`👋 مرحباً بعودتك، ${mockUser.name}!`, 'success');
             } else {
-                setError('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+                setErrors({ general: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
             }
             setLoading(false);
         }, 1000);
@@ -37,9 +60,9 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
             <h2 className="text-3xl font-bold text-center text-brand-dark mb-2">مرحباً بعودتك!</h2>
             <p className="text-center text-brand-text-light mb-8">سجل الدخول للمتابعة.</p>
             
-            {error && (
+            {errors.general && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
-                    <span className="block sm:inline">{error}</span>
+                    <span className="block sm:inline">{errors.general}</span>
                 </div>
             )}
 
@@ -53,10 +76,11 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-brand-border rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
+                            className={`w-full border rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
                             required
                          />
                     </div>
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
                 <div>
                     <label htmlFor="password"  className="block text-sm font-bold text-brand-text mb-1">كلمة المرور</label>
@@ -67,10 +91,11 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border border-brand-border rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
+                            className={`w-full border rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 ${errors.password ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
                             required
                         />
                     </div>
+                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                 </div>
                 <div className="flex justify-between items-center text-sm">
                     <label className="flex items-center gap-2 font-semibold">
@@ -84,16 +109,9 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
                  <button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 flex items-center justify-center"
+                    className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-transform disabled:opacity-50 flex items-center justify-center min-h-[48px] active:scale-98"
                 >
-                    {loading ? (
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    ) : (
-                        'تسجيل الدخول'
-                    )}
+                    {loading ? <Spinner /> : 'تسجيل الدخول'}
                 </button>
             </form>
 

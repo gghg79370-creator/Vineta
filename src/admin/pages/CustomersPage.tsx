@@ -1,10 +1,10 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminCustomer } from '../data/adminData';
 import { Pagination } from '../components/ui/Pagination';
 import { CustomerListTable } from '../components/customers/CustomerListTable';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import { TrashIcon } from '../../components/icons';
+import { Card } from '../components/ui/Card';
 
 interface CustomersPageProps {
     navigate: (page: string, data?: any) => void;
@@ -18,6 +18,18 @@ const CustomersPage: React.FC<CustomersPageProps> = ({ navigate, customers, onDe
     const [tagFilter, setTagFilter] = useState('All');
     const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
     const [customersToDelete, setCustomersToDelete] = useState<number[] | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const customersPerPage = 10;
     
@@ -66,28 +78,25 @@ const CustomersPage: React.FC<CustomersPageProps> = ({ navigate, customers, onDe
     };
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">العملاء</h1>
-                <p className="text-gray-500 mt-1">عرض وإدارة جميع عملائك.</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+        <Card title="جميع العملاء">
+            <div className="space-y-4">
                  <div className="flex flex-col md:flex-row gap-4">
                     <input
+                        ref={searchInputRef}
                         type="search"
-                        placeholder="بحث بالاسم أو البريد الإلكتروني..."
+                        placeholder="بحث بالاسم أو البريد... (اضغط /)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-1/3 border-gray-300 rounded-lg"
+                        className="admin-form-input w-full md:w-1/3"
                     />
-                     <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="w-full md:w-auto border-gray-300 rounded-lg">
+                     <select value={tagFilter} onChange={e => setTagFilter(e.target.value)} className="admin-form-input w-full md:w-auto">
                         {allTags.map(tag => <option key={tag} value={tag}>{tag === 'All' ? 'كل الوسوم' : tag}</option>)}
                     </select>
                 </div>
 
                 {selectedCustomers.length > 0 && (
-                    <div className="bg-primary-50 p-3 rounded-lg flex items-center justify-between animate-fade-in">
-                        <p className="font-semibold text-sm text-primary-700">{selectedCustomers.length} عميل محدد</p>
+                    <div className="bg-admin-accent/10 p-3 rounded-lg flex items-center justify-between animate-fade-in">
+                        <p className="font-semibold text-sm text-admin-accent">{selectedCustomers.length} عميل محدد</p>
                         <button onClick={() => setCustomersToDelete(selectedCustomers)} className="font-semibold text-sm text-red-600 hover:underline flex items-center gap-1"><TrashIcon size="sm" /> حذف</button>
                     </div>
                 )}
@@ -112,7 +121,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({ navigate, customers, onDe
                 title="حذف العملاء"
                 itemName={customersToDelete?.length === 1 ? `العميل المحدد` : `${customersToDelete?.length} عملاء`}
             />
-        </div>
+        </Card>
     );
 };
 

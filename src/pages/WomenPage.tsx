@@ -1,30 +1,35 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
 import { CollectionProductCard } from '../components/product/CollectionProductCard';
 import { CollectionProductListCard } from '../components/product/CollectionProductListCard';
-import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon } from '../components/icons';
+import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon, PlusIcon, MinusIcon, StarIcon } from '../components/icons';
+import { useAppState } from '../state/AppState';
+import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
 
 interface ShopPageProps {
     navigateTo: (pageName: string, data?: Product) => void;
     addToCart: (product: Product) => void;
-    recentlyAddedId: number | null;
     openQuickView: (product: Product) => void;
     setIsFilterOpen: (isOpen: boolean) => void;
     filters: Filters;
     setFilters: React.Dispatch<React.SetStateAction<Filters>>;
-    compareList: Product[];
-    addToCompare: (product: Product) => void;
+    currentPage: number;
+    setCurrentPage: (page: number) => void;
 }
 
-const AccordionItem = ({ title, children, defaultOpen = false }: { title: string, children?: React.ReactNode, defaultOpen?: boolean }) => {
+const AccordionItem = ({ title, children, defaultOpen = false, hasActiveFilter = false }: { title: string, children?: React.ReactNode, defaultOpen?: boolean, hasActiveFilter?: boolean }) => {
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
     return (
         <div className="border-b">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold">
-                <span>{title}</span>
-                <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}><ChevronDownIcon /></span>
+            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold text-brand-dark">
+                 <span className="flex items-center gap-2">
+                    {title}
+                    {hasActiveFilter && <span className="w-2 h-2 bg-brand-primary rounded-full"></span>}
+                </span>
+                <span className={`transform transition-transform text-brand-text-light ${isOpen ? '' : 'rotate-180'}`}>{isOpen ? <MinusIcon size="sm"/> : <PlusIcon size="sm"/>}</span>
             </button>
             {isOpen && <div className="pb-4 text-brand-text-light animate-fade-in">{children}</div>}
         </div>
@@ -36,7 +41,9 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
         const brands = [...new Set(allProducts.map(p => p.brand).filter(Boolean) as string[])];
         const colors = [...new Set(allProducts.flatMap(p => p.colors))];
         const sizes = [...new Set(allProducts.flatMap(p => p.sizes))];
-        return { brands, colors, sizes };
+        const materialsList = ['كتان', 'قطن', 'دينيم', 'جلد', 'بوليستر'];
+        const materials = [...new Set(allProducts.flatMap(p => p.tags.filter(tag => materialsList.includes(tag))))];
+        return { brands, colors, sizes, materials };
     }, []);
 
     const handleBrandChange = (brand: string) => {
@@ -57,9 +64,22 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
     const handlePriceChange = (newMax: number) => {
       setFilters(prev => ({ ...prev, priceRange: { ...prev.priceRange, max: newMax } }));
     };
+    
+    const handleOnSaleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFilters(prev => ({ ...prev, onSale: e.target.checked }));
+    };
+
+    const handleRatingChange = (newRating: number) => {
+        setFilters(prev => ({...prev, rating: prev.rating === newRating ? 0 : newRating }));
+    };
+    
+    const handleMaterialChange = (material: string) => {
+        const newMaterials = filters.materials.includes(material) ? filters.materials.filter(m => m !== material) : [...filters.materials, material];
+        setFilters(prev => ({ ...prev, materials: newMaterials }));
+    };
 
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 } });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
     };
 
     return (
@@ -68,7 +88,27 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
                 <h3 className="font-bold text-xl">الفلاتر</h3>
                 <button onClick={clearFilters} className="text-sm font-semibold text-brand-primary hover:underline">مسح الكل</button>
             </div>
-            <AccordionItem title="العلامة التجارية" defaultOpen>
+            <AccordionItem title="الحالة" defaultOpen hasActiveFilter={filters.onSale}>
+                <div className="space-y-2 pr-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark border-brand-border" checked={filters.onSale} onChange={handleOnSaleChange} />
+                        <span>في التخفيضات</span>
+                    </label>
+                </div>
+            </AccordionItem>
+            <AccordionItem title="التقييم" defaultOpen hasActiveFilter={filters.rating > 0}>
+                <div className="space-y-1 pr-2">
+                    {[4, 3, 2, 1].map(star => (
+                        <button key={star} onClick={() => handleRatingChange(star)} className={`w-full text-right flex items-center gap-2 p-1 rounded-md ${filters.rating === star ? 'bg-amber-100/60' : 'hover:bg-gray-50'}`}>
+                            <div className="flex">
+                                {[...Array(5)].map((_, i) => <StarIcon key={i} className={`w-5 h-5 ${i < star ? 'text-yellow-400' : 'text-gray-300'}`} />)}
+                            </div>
+                            <span className="text-sm text-brand-text-light">& الأعلى</span>
+                        </button>
+                    ))}
+                </div>
+            </AccordionItem>
+            <AccordionItem title="العلامة التجارية" defaultOpen hasActiveFilter={filters.brands.length > 0}>
                 <div className="space-y-2 pr-2">
                     {filterOptions.brands.map(brand => (
                         <label key={brand} className="flex items-center gap-2 cursor-pointer">
@@ -78,7 +118,7 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
                     ))}
                 </div>
             </AccordionItem>
-            <AccordionItem title="السعر" defaultOpen>
+            <AccordionItem title="السعر" defaultOpen hasActiveFilter={filters.priceRange.max < 1000}>
                 <div className="px-2 pt-2">
                     <input type="range" min="0" max="1000" value={filters.priceRange.max} onChange={(e) => handlePriceChange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-dark" />
                     <div className="flex justify-between items-center mt-2">
@@ -86,17 +126,45 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
                     </div>
                 </div>
             </AccordionItem>
-            <AccordionItem title="اللون" defaultOpen>
-                <div className="flex flex-wrap gap-3 p-2">
-                    {filterOptions.colors.map(color => (
-                        <button key={color} className={`w-8 h-8 rounded-full border border-black/10 transition-transform transform hover:scale-110 ${filters.colors.includes(color) ? 'ring-2 ring-brand-dark ring-offset-2' : ''}`} style={{backgroundColor: color}} aria-label={`Color ${color}`} onClick={() => handleColorChange(color)}></button>
+             <AccordionItem title="الخامة" defaultOpen hasActiveFilter={filters.materials.length > 0}>
+                <div className="space-y-2 pr-2">
+                    {filterOptions.materials.map(material => (
+                        <label key={material} className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark border-brand-border" checked={filters.materials.includes(material)} onChange={() => handleMaterialChange(material)} />
+                            <span>{material}</span>
+                        </label>
                     ))}
                 </div>
             </AccordionItem>
-            <AccordionItem title="المقاس">
+            <AccordionItem title="اللون" defaultOpen hasActiveFilter={filters.colors.length > 0}>
+                <div className="flex flex-wrap gap-3 p-2">
+                    {filterOptions.colors.map(color => (
+                        <label key={color} className="relative cursor-pointer">
+                            <input type="checkbox"
+                                   checked={filters.colors.includes(color)}
+                                   onChange={() => handleColorChange(color)}
+                                   className="sr-only peer" />
+                            <span style={{backgroundColor: color}}
+                                  className="block w-8 h-8 rounded-full border border-black/10 transition-transform transform peer-hover:scale-110 peer-checked:ring-2 peer-checked:ring-brand-dark peer-checked:ring-offset-2">
+                            </span>
+                        </label>
+                    ))}
+                </div>
+            </AccordionItem>
+            <AccordionItem title="المقاس" hasActiveFilter={filters.sizes.length > 0}>
                 <div className="flex flex-wrap gap-2 p-2">
                     {filterOptions.sizes.map(size => (
-                        <button key={size} className={`border rounded-md px-3 py-1 text-sm font-semibold transition-colors ${filters.sizes.includes(size) ? 'bg-brand-dark text-white border-brand-dark' : 'border-brand-border hover:bg-brand-subtle'}`} onClick={() => handleSizeChange(size)}>{size}</button>
+                        <label key={size}>
+                            <input type="checkbox"
+                                   checked={filters.sizes.includes(size)}
+                                   onChange={() => handleSizeChange(size)}
+                                   className="sr-only peer" />
+                            <span className="border rounded-md px-3 py-1 text-sm font-semibold transition-colors cursor-pointer
+                                           peer-checked:bg-brand-dark peer-checked:text-white peer-checked:border-brand-dark
+                                           hover:bg-brand-subtle">
+                                {size}
+                            </span>
+                        </label>
                     ))}
                 </div>
             </AccordionItem>
@@ -104,12 +172,17 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
     );
 };
 
-const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIsFilterOpen, filters, setFilters, compareList, addToCompare }: ShopPageProps) => {
+const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filters, setFilters, currentPage, setCurrentPage }: ShopPageProps) => {
+    const { state, dispatch } = useAppState();
+    const { compareList, wishlist } = state;
+    // FIX: The 'wishlistItems' prop expects an array of numbers (product IDs), not an array of WishlistItem objects.
+    // We map the wishlist state to an array of IDs.
+    const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
     
+    const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [gridCols, setGridCols] = useState(3);
     const [sortBy, setSortBy] = useState('best-selling');
-    const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 12;
 
     const filteredAndSortedProducts = useMemo(() => {
@@ -118,7 +191,11 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
              const colorMatch = filters.colors.length === 0 || p.colors.some(c => filters.colors.includes(c));
              const sizeMatch = filters.sizes.length === 0 || p.sizes.some(s => filters.sizes.includes(s));
              const priceMatch = parseFloat(p.price) >= filters.priceRange.min && parseFloat(p.price) <= filters.priceRange.max;
-             return brandMatch && colorMatch && sizeMatch && priceMatch;
+             // FIX: Property 'onSale' does not exist on type 'Product'. A product is considered on sale if it has an 'oldPrice'.
+             const saleMatch = !filters.onSale || !!p.oldPrice;
+             const ratingMatch = !filters.rating || (p.rating && p.rating >= filters.rating);
+             const materialMatch = filters.materials.length === 0 || filters.materials.some(m => p.tags.includes(m));
+             return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch;
         });
 
         switch (sortBy) {
@@ -144,8 +221,10 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
     }, [filters, sortBy]);
     
     useEffect(() => {
-        setCurrentPage(1);
-    }, [filters, sortBy]);
+        setIsLoading(true);
+        const timer = setTimeout(() => setIsLoading(false), 500);
+        return () => clearTimeout(timer);
+    }, [filters, sortBy, currentPage]);
 
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -157,6 +236,13 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
         setCurrentPage(pageNumber);
         window.scrollTo({ top: 300, behavior: 'smooth' });
     };
+
+    const handleSortByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSortBy(e.target.value);
+    };
+
+    const addToCompare = (product: Product) => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
+    const toggleWishlist = (product: Product) => dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
 
     const gridClasses: {[key: number]: string} = {
         2: 'grid-cols-2',
@@ -176,7 +262,7 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
 
         <div className="container mx-auto px-4 py-12">
             <div className="flex flex-row-reverse gap-8 items-start">
-                <aside className="w-1/4 hidden lg:block">
+                <aside className="w-1/4 hidden lg:block sticky top-24">
                     <FilterSidebar filters={filters} setFilters={setFilters} />
                 </aside>
 
@@ -188,13 +274,13 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
                                 <span>فلتر</span>
                             </button>
                              <p className="hidden md:block text-sm text-brand-text-light whitespace-nowrap">
-                                عرض {currentProducts.length} من {filteredAndSortedProducts.length} منتجًا
+                                عرض {isLoading ? '...' : currentProducts.length} من {filteredAndSortedProducts.length} منتجًا
                             </p>
                         </div>
                         <div className="flex items-center gap-2 w-full md:w-auto">
                             <select 
                                 value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
+                                onChange={handleSortByChange}
                                 className="appearance-none bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
                             >
                                 <option value="best-selling">الأكثر مبيعًا</option>
@@ -204,28 +290,40 @@ const ShopPage = ({ navigateTo, addToCart, recentlyAddedId, openQuickView, setIs
                                 <option value="rating">الأعلى تقييمًا</option>
                             </select>
                             <div className="hidden md:flex items-center gap-1 border border-brand-border rounded-full p-1 bg-white">
-                                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="Grid View">
-                                    <GridViewIcon columns={3} className="w-5 h-5" />
-                                </button>
+                                {[2,3,4].map(cols => (
+                                    <button 
+                                        key={cols}
+                                        onClick={() => { setViewMode('grid'); setGridCols(cols); }} 
+                                        className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' && gridCols === cols ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} 
+                                        aria-label={`${cols} Column Grid View`}
+                                    >
+                                        <GridViewIcon columns={cols} className="w-5 h-5" />
+                                    </button>
+                                ))}
+                                <div className="w-px h-5 bg-gray-200 mx-1"></div>
                                 <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-full transition-colors ${viewMode === 'list' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="List View">
                                     <Bars3Icon size="sm" />
                                 </button>
                             </div>
                         </div>
                     </div>
-
-                    {currentProducts.length > 0 ? (
+                    
+                    {isLoading ? (
+                        <div className={`grid ${gridClasses[gridCols]} gap-6`}>
+                            {Array.from({ length: productsPerPage }).map((_, index) => <ProductCardSkeleton key={index} />)}
+                        </div>
+                    ) : currentProducts.length > 0 ? (
                         viewMode === 'grid' ? (
-                             <div className={`grid ${gridClasses[gridCols]} gap-x-4 gap-y-8`}>
-                                {currentProducts.map(product => <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} recentlyAddedId={recentlyAddedId} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} />)}
+                             <div className={`grid ${gridClasses[gridCols]} gap-6`}>
+                                {currentProducts.map(product => <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} compareList={compareList} addToCompare={addToCompare} />)}
+                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         )
                     ) : (
-                        <div className="text-center py-16">
+                        <div className="text-center py-16 bg-white rounded-lg border">
                             <h2 className="text-2xl font-bold text-brand-dark mb-2">لا توجد منتجات مطابقة</h2>
                             <p className="text-brand-text-light">حاول ضبط الفلاتر للعثور على ما تبحث عنه.</p>
                         </div>

@@ -7,14 +7,14 @@ interface ShopByLookSectionProps {
     addToCart: (product: Product) => void;
 }
 
-const Hotspot = ({ top, left, product, navigateTo, addToCart }: { 
+const Hotspot = ({ top, right, product, navigateTo, addToCart }: { 
     top: string, 
-    left: string, 
+    right: string, 
     product: Product, 
     navigateTo: (pageName: string, data?: Product) => void,
     addToCart: (product: Product) => void 
 }) => (
-    <div className="absolute" style={{ top, left }}>
+    <div className="absolute" style={{ top, right }}>
         <div className="relative group flex items-center justify-center">
             <div className="absolute w-6 h-6 bg-white rounded-full animate-sonar-pulse"></div>
             <div className="relative w-4 h-4 bg-white rounded-full cursor-pointer shadow-md"></div>
@@ -54,12 +54,12 @@ export const ShopByLookSection = ({ navigateTo, addToCart }: ShopByLookSectionPr
             <h2 className="text-4xl font-extrabold text-brand-dark mb-4">تسوقي الإطلالة</h2>
             <p className="text-brand-text-light max-w-2xl mx-auto mb-10">احصلي على الإطلالة الكاملة مع قطعنا المختارة بعناية والتي تكمل بعضها البعض بشكل مثالي.</p>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-video md:aspect-[2/1]">
-                <img src="https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=1974&auto=format&fit=crop" alt="Shop the look" className="w-full h-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=1974&auto=format&fit=crop" alt="تسوقي الإطلالة" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/10"></div>
-                {/* Hotspots - positions are percentages */}
-                <Hotspot top="30%" left="65%" product={hotspotProducts[0]} navigateTo={navigateTo} addToCart={addToCart} />
-                <Hotspot top="70%" left="50%" product={hotspotProducts[1]} navigateTo={navigateTo} addToCart={addToCart} />
-                <Hotspot top="65%" left="75%" product={hotspotProducts[2]} navigateTo={navigateTo} addToCart={addToCart} />
+                {/* Hotspots - positions are percentages from the right */}
+                <Hotspot top="30%" right="35%" product={hotspotProducts[0]} navigateTo={navigateTo} addToCart={addToCart} />
+                <Hotspot top="70%" right="50%" product={hotspotProducts[1]} navigateTo={navigateTo} addToCart={addToCart} />
+                <Hotspot top="65%" right="25%" product={hotspotProducts[2]} navigateTo={navigateTo} addToCart={addToCart} />
             </div>
         </section>
     );

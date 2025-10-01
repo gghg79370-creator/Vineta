@@ -87,7 +87,7 @@ const EmailVerificationPage = ({ navigateTo }: EmailVerificationPageProps) => {
                                     onChange={e => handleChange(e.target, index)}
                                     onKeyDown={e => handleKeyDown(e, index)}
                                     onFocus={e => e.target.select()}
-                                    ref={el => inputRefs.current[index] = el}
+                                    ref={el => { inputRefs.current[index] = el; }}
                                 />
                             );
                         })}

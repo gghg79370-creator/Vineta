@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script>
     tailwind.config = {
@@ -15,11 +15,12 @@
         extend: {
           fontFamily: {
             'sans': ['Tajawal', 'sans-serif'],
+            'serif': ['Amiri', 'serif'],
           },
           colors: {
             'brand-bg': '#FFFFFF',
             'brand-subtle': '#F9FAFB',
-            'brand-primary': '#FA563F', // Salmon/Red for "Buy Now"
+            'brand-primary': '#F76262', // A vibrant coral red for accents and active states
             'brand-dark': '#111827', // Darker navy/black
             'brand-text': '#374151',
             'brand-text-light': '#6B7280',
@@ -28,15 +29,40 @@
             'brand-instock': '#10B981',
             'brand-delivered': '#10B981',
             'brand-onway': '#F59E0B',
+            'brand-topbar': '#65a30d',
+            'brand-cta': '#0B4F3E',
             primary: {
-                50: '#eff6ff', // A very light blue for active backgrounds
-                500: '#3b82f6', // A standard blue for focus rings
-                600: '#2563eb'  // A slightly darker blue for text and icons
+                50: '#F0F9FF',
+                100: '#E0F2FE',
+                500: '#0EA5E9',
+                600: '#0284C7',
+                700: '#0369A1',
             },
+            admin: {
+                bg: '#F9FAFB',
+                sidebar: '#111827',
+                sidebarHover: '#1F2937',
+                accent: '#3B82F6',
+                accentHover: '#2563EB',
+                textMuted: '#6B7280',
+                border: '#E5E7EB',
+            }
+          },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
+            'hero-gradient': 'linear-gradient(to bottom right, #fde6d5, #f5e8f8)',
+            'announcement-gradient': 'linear-gradient(90deg, #1f2937, #374151, #4b5563, #1f2937)',
+          },
+          backgroundSize: {
+            '200%': '200% 200%',
           },
           keyframes: {
             'fade-in': {
               '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            'quick-fade-in': {
+              '0%': { opacity: '0.7' },
               '100%': { opacity: '1' },
             },
             'fade-in-up': {
@@ -57,7 +83,7 @@
             },
             'slide-out-left': {
                 '0%': { transform: 'translateX(0)' },
-                '100%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(0)' },
             },
             'slide-in-up': {
                 '0%': { transform: 'translateY(100%)' },
@@ -68,8 +94,8 @@
                 '100%': { transform: 'translateY(100%)' },
             },
             marquee: {
-              '0%': { transform: 'translateX(0%)' },
-              '100%': { transform: 'translateX(-100%)' },
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(-50%)' },
             },
             'ken-burns': {
               '0%': { transform: 'scale(1.05) translate(0, 0)' },
@@ -88,18 +114,57 @@
               '70%': { transform: 'scale(1.5)', opacity: '0.2' },
               '100%': { transform: 'scale(2)', opacity: '0' }
             },
+            'fab-pulse': {
+              '0%': { transform: 'scale(0.95)', boxShadow: '0 0 0 0 rgba(17, 24, 39, 0.5)' },
+              '70%': { transform: 'scale(1)', boxShadow: '0 0 0 10px rgba(17, 24, 39, 0)' },
+              '100%': { transform: 'scale(0.95)', boxShadow: '0 0 0 0 rgba(17, 24, 39, 0)' },
+            },
+            'fab-greet': {
+                '0%, 100%': { transform: 'scale(1) rotate(0deg)' },
+                '25%': { transform: 'scale(1.1) rotate(-5deg)' },
+                '75%': { transform: 'scale(1.1) rotate(5deg)' },
+            },
             'animated-gradient': {
               '0%': { backgroundPosition: '0% 50%' },
               '50%': { backgroundPosition: '100% 50%' },
               '100%': { backgroundPosition: '0% 50%' },
             },
             'text-reveal-up': {
-              '0%': { transform: 'translateY(100%)', opacity: '0' },
+              '0%': { transform: 'translateY(110%)', opacity: '0' },
               '100%': { transform: 'translateY(0)', opacity: '1' },
             },
+            'cart-add-animation': {
+              '0%': { transform: 'scale(1)' },
+              '20%': { transform: 'scale(1.3) rotate(-5deg)' },
+              '40%': { transform: 'scale(1.3) rotate(5deg)' },
+              '60%': { transform: 'scale(1.3) rotate(-5deg)' },
+              '80%': { transform: 'scale(1.1)' },
+              '100%': { transform: 'scale(1)' },
+            },
+            'skeleton-pulse': {
+              '50%': { opacity: '.5' },
+            },
+            'chat-bubble-in': {
+                '0%': { transform: 'translateY(20px) scale(0.9)', opacity: '0' },
+                '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+            },
+            'check-bounce': {
+              '0%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.25)' },
+              '100%': { transform: 'scale(1)' },
+            },
+            'typing-bounce': {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-4px)' },
+            },
+            'tooltip-fade-in-out': {
+                '0%, 100%': { opacity: '0', transform: 'translateY(4px)' },
+                '10%, 90%': { opacity: '1', transform: 'translateY(0)' },
+            }
           },
           animation: {
             'fade-in': 'fade-in 0.5s ease-out forwards',
+            'quick-fade-in': 'quick-fade-in 0.3s ease-out forwards',
             'fade-in-up': 'fade-in-up 0.8s ease-out forwards',
             'slide-in-right': 'slide-in-right 0.3s ease-in-out forwards',
             'slide-out-right': 'slide-out-right 0.3s ease-in-out forwards',
@@ -107,25 +172,40 @@
             'slide-out-left': 'slide-out-left 0.3s ease-in-out forwards',
             'slide-in-up': 'slide-in-up 0.4s ease-out forwards',
             'slide-out-down': 'slide-out-down 0.4s ease-out forwards',
-            'marquee': 'marquee 40s linear infinite',
+            'marquee': 'marquee 20s linear infinite',
             'ken-burns': 'ken-burns 30s ease-out forwards',
             'progress-fill': 'progress-fill 6s linear forwards',
             'announcement-progress': 'announcement-progress 5s linear forwards',
             'sonar-pulse': 'sonar-pulse 1.5s ease-out infinite',
             'animated-gradient': 'animated-gradient 10s ease infinite',
-            'text-reveal-up': 'text-reveal-up 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+            'text-reveal-up': 'text-reveal-up 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+            'cart-add': 'cart-add-animation 0.5s ease-in-out',
+            'skeleton-pulse': 'skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'chat-bubble-in': 'chat-bubble-in 0.4s ease-out forwards',
+            'fab-pulse': 'fab-pulse 2s infinite',
+            'fab-greet': 'fab-greet 0.8s ease-in-out 1s 1',
+            'typing-bounce': 'typing-bounce 1s infinite',
+            'tooltip-fade-in-out': 'tooltip-fade-in-out 4s ease-in-out 1s 1 forwards',
           }
         }
       }
     }
   </script>
   <style>
+    html {
+        scroll-behavior: smooth;
+    }
     body {
         font-family: 'Tajawal', sans-serif;
         background-color: #FFFFFF;
         color: #374151;
     }
-    .group:hover .product-card-hover-icons {
+    .product-actions-container {
+        opacity: 0;
+        transform: translateY(1rem);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .group:hover .product-actions-container {
         opacity: 1;
         transform: translateY(0);
     }
@@ -156,17 +236,91 @@
     .testimonial-card {
         background: linear-gradient(135deg, #FFF8F0 0%, #F6F6FF 100%);
     }
-    .group:hover .product-card-hover-icons-rtl {
-        opacity: 1;
-        transform: translateY(0);
+    .prose {
+        text-align: right;
     }
+    .nav-link {
+        position: relative;
+    }
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: currentColor;
+        transform: scaleX(0);
+        transition: transform 0.3s ease-out;
+        transform-origin: right;
+    }
+    .nav-link:hover::after,
+    .nav-link.active::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+    
+    /* Admin custom styles */
+    .admin-body {
+        background-color: #F9FAFB;
+    }
+    .admin-sidebar-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .admin-sidebar-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .admin-sidebar-scrollbar::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 10px;
+    }
+    .admin-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #4B5563;
+    }
+    
+    /* Custom form styles for admin */
+    .admin-form-input {
+      @apply w-full border-admin-border rounded-lg shadow-sm focus:border-admin-accent focus:ring-2 focus:ring-admin-accent/20 transition-colors duration-200;
+    }
+    .admin-form-label {
+      @apply block text-sm font-bold text-gray-700 mb-1.5;
+    }
+    
+    /* Task list animation styles */
+    .task-checkbox-svg {
+        stroke: #6B7280; /* brand-text-light */
+        stroke-width: 2.5;
+        transition: all 0.3s ease;
+    }
+
+    .task-checkbox-path {
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        transition: stroke-dashoffset 0.3s 0.1s ease-out;
+    }
+
+    .task-input:checked + .task-checkbox-label .task-checkbox-svg {
+        stroke: #F76262; /* brand-primary */
+        animation: check-bounce 0.4s ease;
+    }
+
+    .task-input:checked + .task-checkbox-label .task-checkbox-path {
+        stroke-dashoffset: 0;
+    }
+
+    .task-text-completed {
+        text-decoration: line-through;
+        color: #9CA3AF; /* gray-400 */
+        transition: all 0.3s ease;
+    }
+
   </style>
 <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react": "https://esm.sh/react@18.2.0",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0"
   }
 }
@@ -174,8 +328,6 @@
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

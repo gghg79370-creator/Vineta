@@ -1,26 +1,30 @@
 import React from 'react';
 
 interface PromoSectionProps {
-    image: string;
-    categoryName: string;
-    page: string;
     navigateTo: (pageName: string) => void;
 }
 
-export const PromoSection: React.FC<PromoSectionProps> = ({ image, categoryName, page, navigateTo }) => {
+const promoCardsData = [
+    { title: 'أناقة', image: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1974&auto=format&fit=crop' },
+    { title: 'إكسسوارات', image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=2070&auto=format&fit=crop' },
+    { title: 'ملابس رياضية', image: 'https://images.unsplash.com/photo-1587635293423-e7d32e92c103?q=80&w=1974&auto=format&fit=crop' },
+];
+
+export const PromoSection: React.FC<PromoSectionProps> = ({ navigateTo }) => {
     return (
-        <section className="container mx-auto px-4 py-10">
-            <div className="relative rounded-2xl overflow-hidden group shadow-lg aspect-video md:aspect-[2.5/1]">
-                <img src={image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" alt={categoryName} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-                <div className="absolute bottom-8 right-8">
-                     <button 
-                        onClick={() => navigateTo(page)}
-                        className="bg-white text-brand-dark font-bold py-3 px-8 rounded-full shadow-lg hover:bg-opacity-90 transition-all hover:scale-105"
-                    >
-                        {categoryName}
-                    </button>
-                </div>
+        <section className="container mx-auto px-4 py-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {promoCardsData.map((card, index) => (
+                    <div key={index} className="relative rounded-lg overflow-hidden group cursor-pointer aspect-square" onClick={() => navigateTo('shop')}>
+                        <img src={card.image} alt={card.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-black/20"></div>
+                        <div className="absolute inset-0 flex items-center justify-center p-6">
+                            <div className="bg-white/20 backdrop-blur-sm py-3 px-6 rounded-lg">
+                               <h3 className="text-white text-2xl font-bold">{card.title}</h3>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </section>
     );

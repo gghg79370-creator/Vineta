@@ -1,27 +1,27 @@
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, CartItem, Review, Variant } from '../types';
 import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, ArrowUpTrayIcon, ChevronRightIcon, CheckIcon, MagicIcon } from '../components/icons';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import { ReviewsSection } from '../components/product/ReviewsSection';
 import { allProducts } from '../data/products';
-import { FrequentlyBoughtTogether } from '../components/product/FrequentlyBoughtTogether';
 import { useCountdown } from '../hooks/useCountdown';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { SizeGuideModal } from '../components/modals/SizeGuideModal';
+import { useAppState } from '../state/AppState';
+import { useToast } from '../hooks/useToast';
+import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
+import { WriteReviewModal } from '../components/modals/WriteReviewModal';
+import { AiRecommendationsSection } from '../components/home/AiRecommendationsSection';
 
 interface ProductDetailPageProps {
     product: Product;
-    navigateTo: (pageName: string, data?: Product) => void;
+    navigateTo: (pageName: string, data?: any) => void;
     addToCart: (product: Product, options?: { quantity?: number; selectedSize?: string; selectedColor?: string }) => void;
     openQuickView: (product: Product) => void;
     setIsAskQuestionOpen: (isOpen: boolean) => void;
     setIsCompareOpen: (isOpen: boolean) => void;
-    compareList: Product[];
-    addToCompare: (product: Product) => void;
-    wishlistItems: Product[];
-    toggleWishlist: (product: Product) => void;
 }
 
 const AccordionItem = ({ title, children, defaultOpen = false }: { title: string, children?: React.ReactNode, defaultOpen?: boolean }) => {
@@ -37,29 +37,42 @@ const AccordionItem = ({ title, children, defaultOpen = false }: { title: string
     )
 }
 
-export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickView, setIsAskQuestionOpen, setIsCompareOpen, compareList, addToCompare, wishlistItems, toggleWishlist }: ProductDetailPageProps) => {
-    if (!product) { product = allProducts[0]; }
+export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCart, openQuickView, setIsAskQuestionOpen }: ProductDetailPageProps) => {
+    const product = initialProduct || allProducts[0];
+    const { state, dispatch } = useAppState();
+    const { compareList, wishlist } = state;
+    const addToast = useToast();
 
     const [mainImage, setMainImage] = useState(product.images ? product.images[1] : product.image);
     const [selectedColor, setSelectedColor] = useState(product.colors[0]);
     const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
     const [quantity, setQuantity] = useState(1);
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const saleEndDate = product.saleEndDate ? new Date(product.saleEndDate) : new Date();
     const timeLeft = useCountdown(saleEndDate);
     const [showStickyAdd, setShowStickyAdd] = useState(false);
     
-    const isInCompare = compareList.some(p => p.id === product.id);
-    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    // Image Zoom State
+    const [showZoom, setShowZoom] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+    const ZOOM_LEVEL = 2.5;
+
+
+    const isInCompare = compareList.includes(product.id);
+    const isInWishlist = wishlist.some(item => item.id === product.id);
     const approvedReviews = product.reviews?.filter(r => r.status === 'Approved') || [];
 
-    // Find the currently selected variant
     const selectedVariant = useMemo(() => {
         if (!product.variants || product.variants.length === 0) return null;
         return product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || null;
     }, [product.variants, selectedSize, selectedColor]);
 
     useEffect(() => {
+        dispatch({ type: 'ADD_TO_RECENTLY_VIEWED', payload: product.id });
+        
         setMainImage(product.images ? product.images[1] : product.image);
         const defaultVariant = product.variants?.find(v => v.stock > 0) || product.variants?.[0];
         if (defaultVariant) {
@@ -83,26 +96,26 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
 
-    }, [product]);
+    }, [product, dispatch]);
 
     const handleSelectColor = (color: string) => {
         setSelectedColor(color);
-        const currentSizeIsAvailable = product.variants?.some(v => v.color === color && v.size === selectedSize);
-        if (!currentSizeIsAvailable) {
-            const firstAvailableSize = product.variants?.find(v => v.color === color)?.size;
-            if (firstAvailableSize) {
-                setSelectedSize(firstAvailableSize);
+        const isCurrentSizeAvailable = product.variants?.some(v => v.color === color && v.size === selectedSize && v.stock > 0);
+        if (!isCurrentSizeAvailable) {
+            const firstAvailableSizeForColor = product.variants?.find(v => v.color === color && v.stock > 0)?.size;
+            if (firstAvailableSizeForColor) {
+                setSelectedSize(firstAvailableSizeForColor);
             }
         }
     };
 
     const handleSelectSize = (size: string) => {
         setSelectedSize(size);
-        const currentColorIsAvailable = product.variants?.some(v => v.size === size && v.color === selectedColor);
-        if (!currentColorIsAvailable) {
-            const firstAvailableColor = product.variants?.find(v => v.size === size)?.color;
-            if (firstAvailableColor) {
-                setSelectedColor(firstAvailableColor);
+        const isCurrentColorAvailable = product.variants?.some(v => v.size === size && v.color === selectedColor && v.stock > 0);
+        if (!isCurrentColorAvailable) {
+            const firstAvailableColorForSize = product.variants?.find(v => v.size === size && v.stock > 0)?.color;
+            if (firstAvailableColorForSize) {
+                setSelectedColor(firstAvailableColorForSize);
             }
         }
     };
@@ -115,16 +128,42 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
 
     const handleAddToCart = () => {
         if (isOutOfStock) return;
-        const productForCart = {
-            ...product,
-            price: displayPrice,
-            oldPrice: displayOldPrice,
-            sku: sku,
-        };
+        const productForCart = { ...product, price: displayPrice, oldPrice: displayOldPrice, sku: sku };
         addToCart(productForCart, { quantity, selectedSize, selectedColor });
     };
+
+    const handleBuyNow = () => {
+        if (isOutOfStock) return;
+        const productForCart = { ...product, price: displayPrice, oldPrice: displayOldPrice, sku: sku };
+        addToCart(productForCart, { quantity, selectedSize, selectedColor });
+        navigateTo('checkout');
+    };
+
+    const handleToggleWishlist = () => {
+        dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+        addToast(
+            isInWishlist ? 'تمت الإزالة من قائمة الرغبات' : 'تمت الإضافة إلى قائمة الرغبات',
+            'success'
+        );
+    };
+    const handleAddToCompare = () => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
     
-    const discountPercent = displayOldPrice ? Math.round(((parseFloat(displayOldPrice) - parseFloat(displayPrice)) / parseFloat(displayOldPrice)) * 100) : 0;
+    const toggleWishlistForRecommended = (recommendedProduct: Product) => {
+        dispatch({ type: 'TOGGLE_WISHLIST', payload: recommendedProduct.id });
+        addToast(
+            wishlist.some(i => i.id === recommendedProduct.id) ? 'تمت الإزالة من قائمة الرغبات' : 'تمت الإضافة إلى قائمة الرغبات',
+            'success'
+        );
+    };
+
+    const addToCompareForRecommended = (recommendedProduct: Product) => {
+        dispatch({ type: 'TOGGLE_COMPARE', payload: recommendedProduct.id });
+    };
+
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        addToast('تم نسخ الرابط!', 'success');
+    };
     
     const renderStars = (rating: number) => {
         const fullStars = Math.floor(rating);
@@ -156,26 +195,56 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
     const actionButtonClasses = "flex items-center gap-2 transform transition-all duration-300 ease-in-out hover:bg-brand-primary/10 hover:text-brand-primary hover:scale-105 rounded-full px-4 py-2";
     
     const getAvailabilityClasses = () => {
-        if (isOutOfStock) {
-            return 'bg-red-100 text-red-800';
-        }
+        if (isOutOfStock) return 'bg-red-100 text-red-800';
         return 'bg-green-100 text-green-800';
     };
 
     const categoryMap: { [key: string]: { name: string, page: string } } = {
-        women: { name: 'النساء', page: 'shop' },
-        men: { name: 'الرجال', page: 'shop' },
+        women: { name: 'ملابس نسائية', page: 'shop' },
+        men: { name: 'ملابس رجالية', page: 'shop' },
     };
     const categoryInfo = product.category ? categoryMap[product.category] : null;
+    const categoryName = product.category === 'women' ? 'ملابس نسائية' : (product.category === 'men' ? 'ملابس رجالية' : product.category);
 
-    const breadcrumbItems: { label: string; page?: string; }[] = [
-        { label: 'الرئيسية', page: 'home' }
-    ];
-    if (categoryInfo) {
-        breadcrumbItems.push({ label: categoryInfo.name, page: categoryInfo.page });
-    }
+
+    const breadcrumbItems: { label: string; page?: string; }[] = [ { label: 'الرئيسية', page: 'home' } ];
+    if (categoryInfo) breadcrumbItems.push({ label: categoryInfo.name, page: categoryInfo.page });
     breadcrumbItems.push({ label: product.name });
 
+     // Image zoom handlers
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (imageContainerRef.current) {
+            const rect = imageContainerRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            setMousePosition({ x, y });
+        }
+    };
+    
+    const getZoomBackgroundPosition = () => {
+        if (!imageContainerRef.current) return '0% 0%';
+        const { width, height } = imageContainerRef.current.getBoundingClientRect();
+        const x = (mousePosition.x / width) * 100;
+        const y = (mousePosition.y / height) * 100;
+        return `${x}% ${y}%`;
+    };
+
+    const badgeStyles: { [key: string]: string } = {
+        sale: 'bg-brand-sale text-white',
+        new: 'bg-brand-dark text-white',
+        trending: 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white',
+        custom: 'bg-blue-100 text-blue-800',
+    };
+
+    const DynamicBadges = () => (
+        <div className="absolute top-4 end-4 flex flex-col items-end gap-y-2 z-10">
+            {product.badges?.map((badge, index) => (
+                <div key={index} className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-sm ${badgeStyles[badge.type] || badgeStyles.custom}`}>
+                    {badge.text}
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="bg-white">
@@ -183,15 +252,12 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
             <div className="container mx-auto px-4 pt-6 pb-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
                     {/* Image Gallery */}
-                    <div>
-                        {/* Mobile Gallery */}
+                    <div className="relative">
+                         {/* Mobile Gallery */}
                         <div className="lg:hidden">
                             <div className="relative mb-3 rounded-lg overflow-hidden group aspect-[4/5]">
                                 <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
-                                <div className="absolute top-4 left-4 space-y-2 z-10">
-                                    {product.isNew && <div className="bg-white text-brand-dark text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">جديد</div>}
-                                    {product.onSale && discountPercent > 0 && <div className="bg-brand-sale text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">خصم {discountPercent}%</div>}
-                                </div>
+                                <DynamicBadges />
                                 <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
                                     <button onClick={() => scrollImage('prev')} className="bg-white/60 rounded-full p-2 shadow-md hover:bg-white transition-colors" aria-label="الصورة السابقة">
                                         <ChevronRightIcon className="transform rotate-180 w-5 h-5"/>
@@ -219,18 +285,30 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                                     </button>
                                 ))}
                             </div>
-                            <div className="relative flex-1 rounded-lg overflow-hidden group aspect-[4/5]">
+                            <div 
+                                ref={imageContainerRef}
+                                onMouseEnter={() => setShowZoom(true)}
+                                onMouseLeave={() => setShowZoom(false)}
+                                onMouseMove={handleMouseMove}
+                                className="relative flex-1 rounded-lg overflow-hidden group aspect-[4/5] cursor-crosshair">
                                 <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
-                                <div className="absolute top-4 left-4 space-y-2 z-10">
-                                    {product.isNew && <div className="bg-white text-brand-dark text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">جديد</div>}
-                                    {product.onSale && discountPercent > 0 && <div className="bg-brand-sale text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">خصم {discountPercent}%</div>}
-                                </div>
+                                <DynamicBadges />
                                 <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-4">
-                                    <button onClick={() => scrollImage('prev')} className="bg-white rounded-full p-3 shadow-md opacity-0 group-hover:opacity-100 transition-opacity" aria-label="الصورة السابقة"><ChevronRightIcon className="transform rotate-180"/></button>
-                                    <button onClick={() => scrollImage('next')} className="bg-white rounded-full p-3 shadow-md opacity-0 group-hover:opacity-100 transition-opacity" aria-label="الصورة التالية"><ChevronRightIcon/></button>
+                                    <button onClick={() => scrollImage('prev')} className="bg-white/70 rounded-full p-3 shadow-md opacity-50 group-hover:opacity-100 transition-all" aria-label="الصورة السابقة"><ChevronRightIcon className="transform rotate-180"/></button>
+                                    <button onClick={() => scrollImage('next')} className="bg-white/70 rounded-full p-3 shadow-md opacity-50 group-hover:opacity-100 transition-all" aria-label="الصورة التالية"><ChevronRightIcon/></button>
                                 </div>
                             </div>
                         </div>
+
+                         {/* Zoom Preview Pane */}
+                        <div className={`hidden lg:block absolute top-0 -left-4 w-[calc(100%+1rem)] h-full bg-no-repeat pointer-events-none rounded-lg shadow-2xl border transition-opacity duration-200
+                            ${showZoom ? 'opacity-100 z-20' : 'opacity-0 -z-10'}`}
+                            style={{
+                                backgroundImage: `url(${mainImage})`,
+                                backgroundPosition: getZoomBackgroundPosition(),
+                                backgroundSize: `${ZOOM_LEVEL * 100}%`
+                            }}
+                        ></div>
                     </div>
                     
                     {/* Product Details */}
@@ -272,20 +350,46 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
 
 
                         <div className="mb-5">
-                            <p className="font-bold text-brand-dark mb-2">الألوان: <span className="font-normal text-brand-text-light">{colorName(selectedColor)}</span></p>
-                            <div className="flex gap-3">
-                                {product.colors.map(color => {
-                                    const isAvailable = product.variants?.some(v => v.color === color) ?? true;
-                                    return (
-                                    <button
-                                        key={color}
-                                        onClick={() => handleSelectColor(color)}
-                                        className={`w-9 h-9 rounded-full border border-black/10 transition-all transform hover:scale-110 ${selectedColor === color ? 'ring-2 ring-brand-dark ring-offset-2' : ''} ${!isAvailable ? 'opacity-25 cursor-not-allowed' : ''}`}
-                                        style={{ backgroundColor: color }}
-                                        aria-label={`Select color ${colorName(color)}`}
-                                        disabled={!isAvailable}
-                                    />
-                                )})}
+                            <label className="font-bold text-brand-dark mb-2 block">الألوان:</label>
+                            <div className="relative">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} 
+                                    className="w-full flex items-center justify-between text-right p-3 border border-brand-border rounded-lg bg-white"
+                                    aria-haspopup="listbox"
+                                    aria-expanded={isColorPickerOpen}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-6 h-6 rounded-full border" style={{ backgroundColor: selectedColor }}></span>
+                                        <span className="font-semibold">{colorName(selectedColor)}</span>
+                                    </div>
+                                    <ChevronDownIcon size="sm" className={`transform transition-transform text-gray-400 ${isColorPickerOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                {isColorPickerOpen && (
+                                    <ul 
+                                        className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
+                                        role="listbox"
+                                    >
+                                        {product.colors.map(color => {
+                                            const isAvailable = product.variants?.some(v => v.color === color) ?? true;
+                                            return (
+                                                <li key={color}>
+                                                    <button 
+                                                        onClick={() => { handleSelectColor(color); setIsColorPickerOpen(false); }}
+                                                        disabled={!isAvailable}
+                                                        className="w-full text-right p-3 hover:bg-brand-subtle flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        role="option"
+                                                        aria-selected={selectedColor === color}
+                                                    >
+                                                        <span className="w-6 h-6 rounded-full border" style={{ backgroundColor: color }}></span>
+                                                        <span>{colorName(color)}</span>
+                                                        {selectedColor === color && <CheckIcon size="sm" className="mr-auto text-brand-primary" />}
+                                                    </button>
+                                                </li>
+                                            )
+                                        })}
+                                    </ul>
+                                )}
                             </div>
                         </div>
 
@@ -302,7 +406,7 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                             </div>
                             <div className="flex gap-3 flex-wrap">
                                 {product.sizes.map(size => {
-                                    const isAvailable = product.variants?.some(v => v.size === size && v.color === selectedColor) ?? true;
+                                    const isAvailable = product.variants?.some(v => v.size === size && v.color === selectedColor && v.stock > 0) ?? true;
                                     return (
                                         <button key={size} onClick={() => handleSelectSize(size)} disabled={!isAvailable} className={`w-14 h-14 flex items-center justify-center rounded-full border text-lg font-bold transition-all transform hover:scale-105 ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border text-brand-dark hover:border-brand-dark'} ${!isAvailable ? 'opacity-25 cursor-not-allowed line-through' : ''}`}>{size}</button>
                                 )})}
@@ -315,25 +419,27 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                                 <span className="text-center font-bold text-base">{quantity}</span>
                                 <button onClick={() => setQuantity(q => q + 1)} className="p-3 text-brand-text-light hover:text-brand-dark"><PlusIcon size="sm"/></button>
                             </div>
-                            <button onClick={handleAddToCart} disabled={isOutOfStock} className="flex-1 bg-brand-dark text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
                         </div>
-                         <button disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition mb-4 disabled:opacity-50 disabled:cursor-not-allowed">اشترِ الآن</button>
+                         <div className="grid grid-cols-2 gap-3 mb-4">
+                            <button onClick={handleAddToCart} disabled={isOutOfStock} className="w-full bg-brand-dark text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
+                            <button onClick={handleBuyNow} disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">اشترِ الآن</button>
+                        </div>
                          <div className="text-center mb-6"><a href="#" className="text-sm font-semibold underline hover:text-brand-primary">المزيد من خيارات الدفع</a></div>
 
                          <div className="flex items-center justify-around text-sm text-brand-dark font-semibold border-t border-b border-brand-border py-2">
-                             <button onClick={() => toggleWishlist(product)} className={`${actionButtonClasses} ${isInWishlist ? 'text-brand-primary' : ''}`}>
+                             <button onClick={handleToggleWishlist} className={`${actionButtonClasses} ${isInWishlist ? 'text-brand-primary' : ''}`}>
                                 <HeartIcon size="sm" filled={isInWishlist} /> {isInWishlist ? 'إزالة من قائمة الرغبات' : 'أضف إلى قائمة الرغبات'}
                             </button>
-                            <button onClick={() => addToCompare(product)} className={`${actionButtonClasses} ${isInCompare ? 'text-brand-primary' : ''}`}>
+                            <button onClick={handleAddToCompare} className={`${actionButtonClasses} ${isInCompare ? 'text-brand-primary' : ''}`}>
                                 {isInCompare ? <CheckIcon size="sm"/> : <CompareIcon size="sm"/>}
                                 {isInCompare ? 'مضاف للمقارنة' : 'مقارنة'}
                             </button>
                             <button onClick={() => setIsAskQuestionOpen(true)} className={actionButtonClasses}><QuestionIcon size="sm"/> اسأل سؤالاً</button>
-                            <button className={actionButtonClasses}><ShareIcon size="sm"/> مشاركة</button>
+                            <button onClick={handleShare} className={actionButtonClasses}><ShareIcon size="sm"/> مشاركة</button>
                          </div>
 
                          <div className="mt-6">
-                            <p className="font-bold text-brand-dark mb-3">شارك هذا المنتج:</p>
+                            <h3 className="font-bold text-brand-dark mb-3">شارك هذا المنتج:</h3>
                             <div className="flex items-center gap-3">
                                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity" aria-label="Share on Facebook">
                                     <i className="fa-brands fa-facebook-f"></i>
@@ -349,8 +455,23 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                          
                          <div className="text-sm text-brand-text-light space-y-2 mt-6">
                             <p><span className="font-semibold text-brand-dark w-20 inline-block">SKU:</span> {sku}</p>
-                            <p><span className="font-semibold text-brand-dark w-20 inline-block">الفئة:</span> {product.tags.join(', ')}</p>
+                            <p><span className="font-semibold text-brand-dark w-20 inline-block">الفئة:</span> <button onClick={() => navigateTo('shop')} className="hover:text-brand-primary">{categoryName}</button></p>
                          </div>
+                         <div className="mt-4">
+                            <span className="font-semibold text-brand-dark text-sm">الوسوم:</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {product.tags.map(tag => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => navigateTo('search', { q: tag })}
+                                        className="bg-brand-subtle text-brand-text-light text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-brand-border hover:text-brand-dark transition-colors"
+                                    >
+                                        #{tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
 
                          <div className="mt-6">
                             <h3 className="font-bold text-brand-dark mb-3">الدفع الآمن المضمون:</h3>
@@ -378,12 +499,15 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                          <button><ChevronDownIcon className="transform -rotate-180" /></button>
                     </div>
                     <div className="flex items-center gap-3">
-                         <div className="flex items-center border rounded-full bg-white justify-between w-32">
+                        <div className="flex items-center border rounded-full bg-white justify-between w-32">
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3"><MinusIcon size="sm" /></button>
                             <span className="w-6 text-center font-bold">{quantity}</span>
                             <button onClick={() => setQuantity(q => q + 1)} className="p-3"><PlusIcon size="sm" /></button>
                         </div>
-                        <button onClick={handleAddToCart} disabled={isOutOfStock} className="flex-1 bg-brand-dark text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 transition disabled:opacity-50">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                             <button onClick={handleAddToCart} disabled={isOutOfStock} className="w-full bg-brand-dark text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 transition disabled:opacity-50">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
+                             <button onClick={handleBuyNow} disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 transition disabled:opacity-50">اشترِ الآن</button>
+                        </div>
                     </div>
                 </div>
                  <button className={`lg:hidden fixed bottom-[200px] right-4 bg-white p-3 rounded-full shadow-lg z-40 transition-opacity ${showStickyAdd ? 'opacity-100' : 'opacity-0'}`} onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
@@ -392,15 +516,38 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
             </div>
             
             <div className="container mx-auto px-4 py-12">
-                 <AccordionItem title="الوصف" defaultOpen>
+                <AccordionItem title="الوصف" defaultOpen>
                    <p>{product.description}</p>
                 </AccordionItem>
-                <AccordionItem title="الخامات">
-                    <ul className="list-disc pr-5">
-                        <li>تركيب: فسكوز 55%، كتان 45%</li>
-                        <li>معلومات إضافية عن المواد: يحتوي الوزن الإجمالي لهذا المنتج على: 55% فسكوز LivaEco™</li>
-                    </ul>
-                </AccordionItem>
+                {product.specifications && product.specifications.length > 0 && (
+                    <AccordionItem title="المواصفات">
+                        <ul className="list-disc pr-5 space-y-2">
+                            {product.specifications.map((spec, index) => (
+                                <li key={index}>{spec}</li>
+                            ))}
+                        </ul>
+                    </AccordionItem>
+                )}
+                {(product.materialComposition || (product.careInstructions && product.careInstructions.length > 0)) && (
+                    <AccordionItem title="الخامات والعناية">
+                        {product.materialComposition && (
+                            <div className="mb-4">
+                                <h4 className="font-bold mb-2">التركيب:</h4>
+                                <p>{product.materialComposition}</p>
+                            </div>
+                        )}
+                        {product.careInstructions && product.careInstructions.length > 0 && (
+                            <div>
+                                <h4 className="font-bold mb-2">تعليمات العناية:</h4>
+                                <ul className="list-disc pr-5 space-y-2">
+                                    {product.careInstructions.map((instruction, index) => (
+                                        <li key={index}>{instruction}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </AccordionItem>
+                )}
                 <AccordionItem title="معلومات إضافية">
                   <p>تفاصيل إضافية حول المنتج...</p>
                 </AccordionItem>
@@ -409,15 +556,28 @@ export const ProductDetailPage = ({ product, navigateTo, addToCart, openQuickVie
                 </AccordionItem>
             </div>
 
-            <FrequentlyBoughtTogether mainProduct={product} otherProducts={allProducts} addToCart={addToCart} />
-            <ReviewsSection reviews={approvedReviews} />
-            <TrendingProductsSection title="الناس اشتروا أيضا" products={allProducts.slice(4, 8)} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} isCarousel wishlistItems={wishlistItems} toggleWishlist={toggleWishlist} />
-            <TrendingProductsSection title="التي شوهدت مؤخرا" products={allProducts.slice(2, 6)} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} isCarousel wishlistItems={wishlistItems} toggleWishlist={toggleWishlist} />
+            <ReviewsSection reviews={approvedReviews} onWriteReviewClick={() => setIsReviewModalOpen(true)} />
+            <TrendingProductsSection title="الناس اشتروا أيضا" products={allProducts.slice(4, 8)} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} isCarousel addToCompare={handleAddToCompare} toggleWishlist={handleToggleWishlist} />
+            
+            <RecentlyViewedSection
+                title="المنتجات التي تمت مشاهدتها مؤخرًا"
+                navigateTo={navigateTo}
+                addToCart={addToCart}
+                openQuickView={openQuickView}
+                addToCompare={handleAddToCompare}
+                toggleWishlist={handleToggleWishlist}
+            />
             
             <SizeGuideModal 
                 isOpen={isSizeGuideOpen}
                 onClose={() => setIsSizeGuideOpen(false)}
                 product={product}
+            />
+
+            <WriteReviewModal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                productName={product.name}
             />
 
         </div>

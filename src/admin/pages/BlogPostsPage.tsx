@@ -4,6 +4,7 @@ import { Pagination } from '../components/ui/Pagination';
 import BlogPostListTable from '../components/content/BlogPostListTable';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import { PlusIcon } from '../../components/icons';
+import { Card } from '../components/ui/Card';
 
 interface BlogPostsPageProps {
     navigate: (page: string, data?: any) => void;
@@ -42,42 +43,41 @@ const BlogPostsPage: React.FC<BlogPostsPageProps> = ({ navigate, blogPosts, onDe
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">منشورات المدونة</h1>
-                    <p className="text-gray-500 mt-1">إنشاء وإدارة محتوى مدونتك.</p>
-                </div>
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4">
                  <button 
                     onClick={() => navigate('addBlogPost')}
-                    className="bg-primary-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-500 transition-colors w-full md:w-auto justify-center">
+                    className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
                     <PlusIcon />
                     <span>منشور جديد</span>
                 </button>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
-                <input
-                    type="search"
-                    placeholder="بحث بالعنوان..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full md:w-1/3 border-gray-300 rounded-lg"
-                />
-                <BlogPostListTable
-                    posts={currentPosts}
-                    onEdit={(post) => navigate('editBlogPost', post)}
-                    onDelete={handleDeleteClick}
-                />
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                />
-            </div>
+            <Card title="جميع منشورات المدونة">
+                <div className="space-y-4">
+                    <input
+                        type="search"
+                        placeholder="بحث بالعنوان..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="admin-form-input w-full md:w-1/3"
+                    />
+                    <BlogPostListTable
+                        posts={currentPosts}
+                        onEdit={(post) => navigate('editBlogPost', post)}
+                        onDelete={handleDeleteClick}
+                    />
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            </Card>
              <ConfirmDeleteModal
                 isOpen={!!postToDelete}
                 onClose={() => setPostToDelete(null)}
                 onConfirm={confirmDelete}
-                productName={postToDelete?.title || ''}
+                title="حذف المنشور"
+                itemName={postToDelete?.title || ''}
             />
         </div>
     );

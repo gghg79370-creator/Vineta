@@ -16,14 +16,17 @@ const TeamSettings: React.FC<TeamSettingsProps> = ({ teamMembers }) => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <p className="text-gray-500">إدارة أعضاء الفريق والأذونات الخاصة بهم.</p>
-                <button className="bg-primary-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-500">
+            <div>
+                 <h3 className="text-xl font-bold text-gray-900">الفريق والأذونات</h3>
+                 <p className="text-gray-500 mt-1 text-sm">إدارة أعضاء الفريق والأذونات الخاصة بهم.</p>
+            </div>
+            <div className="flex justify-end">
+                <button className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover">
                     <PlusIcon />
                     <span>دعوة عضو</span>
                 </button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto border rounded-lg">
                 <table className="w-full text-sm text-right">
                     <thead className="bg-gray-50 text-gray-500">
                         <tr>

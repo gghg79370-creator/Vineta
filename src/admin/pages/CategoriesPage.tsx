@@ -4,17 +4,21 @@ import { PlusIcon } from '../../components/icons';
 import CategoryListTable from '../components/categories/CategoryListTable';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import { Pagination } from '../components/ui/Pagination';
+import { Card } from '../components/ui/Card';
 
 interface CategoriesPageProps {
     navigate: (page: string, data?: any) => void;
     categories: AdminCategory[];
     products: AdminProduct[];
     onDeleteCategory: (categoryId: number) => void;
+    onSaveCategory: (category: AdminCategory) => void;
 }
 
-const CategoriesPage: React.FC<CategoriesPageProps> = ({ navigate, categories, products, onDeleteCategory }) => {
+const CategoriesPage: React.FC<CategoriesPageProps> = ({ navigate, categories, products, onDeleteCategory, onSaveCategory }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [categoryToDelete, setCategoryToDelete] = useState<AdminCategory | null>(null);
+    const [editingCategory, setEditingCategory] = useState<{ id: number; name: string } | null>(null);
+
     const categoriesPerPage = 10;
     
     const categoriesWithProductCount = useMemo(() => {
@@ -24,7 +28,6 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ navigate, categories, p
         }));
     }, [categories, products]);
 
-    // FIX: Add explicit types to help TypeScript's inference and avoid 'unknown' type errors.
     type CategoryWithChildren = AdminCategory & { productCount: number; children: CategoryWithChildren[] };
     
     const sortedCategories = useMemo(() => {
@@ -75,37 +78,47 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ navigate, categories, p
         }
     };
 
+    const handleSaveCategoryName = (id: number) => {
+        if (!editingCategory || editingCategory.id !== id) return;
+        const categoryToUpdate = categories.find(c => c.id === id);
+        if (categoryToUpdate && editingCategory.name.trim()) {
+            onSaveCategory({ ...categoryToUpdate, name: editingCategory.name });
+        }
+        setEditingCategory(null);
+    };
+
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">الفئات</h1>
-                    <p className="text-gray-500 mt-1">إدارة فئات المنتجات الخاصة بك.</p>
-                </div>
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4">
                 <button
                     onClick={() => navigate('addCategory')}
-                    className="bg-primary-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-500 transition-colors w-full md:w-auto justify-center">
+                    className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
                     <PlusIcon />
                     <span>إضافة فئة</span>
                 </button>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
+            <Card title="جميع الفئات">
                  <CategoryListTable 
                     categories={currentCategories}
                     onEdit={(category) => navigate('editCategory', category)}
                     onDelete={handleDeleteClick}
+                    editingCategory={editingCategory}
+                    setEditingCategory={setEditingCategory}
+                    onSave={handleSaveCategoryName}
                 />
                  <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={(page) => setCurrentPage(page)}
                 />
-            </div>
+            </Card>
              <ConfirmDeleteModal
                 isOpen={!!categoryToDelete}
                 onClose={() => setCategoryToDelete(null)}
                 onConfirm={confirmDelete}
-                productName={categoryToDelete?.name || ''}
+                title="حذف الفئة"
+                itemName={categoryToDelete?.name || ''}
+                confirmationText="حذف"
             />
         </div>
     );

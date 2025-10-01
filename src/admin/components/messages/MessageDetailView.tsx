@@ -9,7 +9,7 @@ interface MessageDetailViewProps {
 const MessageDetailView: React.FC<MessageDetailViewProps> = ({ message }) => {
     if (!message) {
         return (
-            <div className="h-full flex items-center justify-center text-gray-500">
+            <div className="h-full flex items-center justify-center text-gray-500 p-6">
                 <p>اختر رسالة لعرضها.</p>
             </div>
         );
@@ -21,7 +21,7 @@ const MessageDetailView: React.FC<MessageDetailViewProps> = ({ message }) => {
                 <div>
                     <h2 className="text-xl font-bold text-gray-900">{message.subject}</h2>
                     <div className="mt-2 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600">
                             {message.name.charAt(0)}
                         </div>
                         <div>

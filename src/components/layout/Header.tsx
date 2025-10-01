@@ -1,71 +1,132 @@
-import React from 'react';
-import { SearchIcon, UserIcon, HeartIcon, ChevronDownIcon, ShoppingBagIcon, CompareIcon } from '../icons';
-import { allProducts } from '../../data/products';
-import { User } from '../../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { SearchIcon, UserIcon, HeartIcon, ChevronDownIcon, ShoppingBagIcon, Bars3Icon, CompareIcon, SparklesIcon } from '../icons';
+import { useAppState } from '../../state/AppState';
 
 interface HeaderProps {
     navigateTo: (pageName: string, data?: any) => void;
-    cartCount: number;
-    wishlistCount: number;
-    compareCount: number;
     setIsCartOpen: (isOpen: boolean) => void;
     setIsMenuOpen: (isOpen: boolean) => void;
     setIsSearchOpen: (isOpen: boolean) => void;
     setIsCompareOpen: (isOpen: boolean) => void;
-    currentUser: User | null;
 }
 
-export const Header = ({ navigateTo, cartCount, wishlistCount, compareCount, setIsCartOpen, setIsMenuOpen, setIsSearchOpen, setIsCompareOpen, currentUser }: HeaderProps) => {
+export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOpen, setIsCompareOpen }: HeaderProps) => {
+    const { state, cartCount } = useAppState();
+    const { currentUser, wishlist, compareList } = state;
+    const [isCartAnimating, setIsCartAnimating] = useState(false);
+    const prevCartCountRef = useRef(cartCount);
+
+    const wishlistCount = wishlist.length;
+    const compareCount = compareList.length;
+
+    useEffect(() => {
+        if (cartCount > prevCartCountRef.current) {
+            setIsCartAnimating(true);
+            const timer = setTimeout(() => setIsCartAnimating(false), 500); // Match animation duration
+            return () => clearTimeout(timer);
+        }
+        prevCartCountRef.current = cartCount;
+    }, [cartCount]);
+
+    // Static classes for a white, sticky header that matches the screenshot
+    const headerClasses = `sticky top-0 z-50 bg-white border-b border-gray-200`;
+    const innerContainerHeight = 'h-20';
+    const textColorClass = 'text-brand-dark';
+    const iconButtonClasses = `relative p-2 rounded-full transition-all hover:bg-gray-100 active:scale-90 ${textColorClass}`;
+    const badgeClasses = "absolute -top-1 -right-1 bg-brand-sale text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold";
+    
+    const navLinks = [
+        { label: 'الرئيسية', page: 'home', hasDropdown: true },
+        { label: 'المتجر', page: 'shop', hasDropdown: true },
+        { label: 'المنتجات', page: 'shop', hasDropdown: true },
+        { label: 'المدونة', page: 'blog', hasDropdown: true },
+        { label: 'المصمم الذكي', page: 'style-me', isNew: true },
+        { label: 'الصفحات', page: 'faq', hasDropdown: true },
+    ];
+    
+    const buyThemeButtonClasses = 'bg-transparent border border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-white transition-all active:scale-95';
+
 
     return (
-        <header className="sticky top-0 z-50 bg-white border-b border-brand-border">
+        <header className={headerClasses}>
             <div className="container mx-auto px-4">
-                <div className="flex justify-between items-center h-20">
-                    {/* Hamburger Menu (Mobile) */}
-                    <div className="lg:hidden">
-                        <button onClick={() => setIsMenuOpen(true)} className="p-2 -ml-2 rounded-full text-brand-dark" aria-label="Open menu">
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                        </button>
-                    </div>
-
-                    {/* Logo */}
-                     <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
-                         <button onClick={() => navigateTo('home')} className="text-3xl font-bold text-brand-dark">Vineta</button>
-                    </div>
-
-                    <div className="hidden lg:flex items-center gap-10">
-                        <button onClick={() => navigateTo('home')} className="text-3xl font-bold text-brand-dark">Vineta</button>
-                        <nav className="hidden lg:flex gap-8 font-semibold text-brand-dark text-base">
-                            <button onClick={() => navigateTo('home')} className="hover:text-brand-primary transition-colors">الرئيسية</button>
-                            <button onClick={() => navigateTo('shop')} className="hover:text-brand-primary transition-colors">المتجر</button>
-                            <button onClick={() => navigateTo('product', allProducts[0])} className="hover:text-brand-primary transition-colors">المنتجات</button>
-                            <button onClick={() => navigateTo('faq')} className="hover:text-brand-primary transition-colors">صفحات</button>
-                            <button onClick={() => navigateTo('home')} className="hover:text-brand-primary transition-colors">المدونة</button>
-                            <button onClick={() => navigateTo('home')} className="font-extrabold text-brand-primary hover:text-opacity-80 transition-colors">اشترِ السمة!</button>
-                        </nav>
-                    </div>
+                <div className={`flex justify-between items-center ${innerContainerHeight}`}>
                    
+                    {/* --- Mobile Header --- */}
+                    <div className="lg:hidden grid grid-cols-3 items-center w-full">
+                        {/* Right Side: Hamburger Menu */}
+                        <div className="flex items-center justify-start">
+                             <button onClick={() => setIsMenuOpen(true)} className={iconButtonClasses} aria-label="Menu">
+                                <Bars3Icon size="md" />
+                            </button>
+                        </div>
+                        
+                        {/* Center: Logo */}
+                        <div className="text-center">
+                            <button onClick={() => navigateTo('home')} className={`font-sans font-bold ${textColorClass} text-4xl tracking-wider`}>
+                                Vineta
+                            </button>
+                        </div>
 
-                    {/* Action Icons */}
-                    <div className="flex items-center gap-3 sm:gap-6">
-                        <div className="flex items-center gap-3 sm:gap-4 text-brand-dark">
-                            {currentUser?.isAdmin && <button onClick={() => navigateTo('admin')} className="hidden sm:block font-bold text-sm bg-brand-subtle px-3 py-1.5 rounded-md hover:bg-brand-border">Admin</button>}
-                            <button onClick={() => setIsSearchOpen(true)} aria-label="Search"><SearchIcon/></button>
-                            <button onClick={() => navigateTo(currentUser ? 'account' : 'login')} className="hidden sm:block" aria-label="Account"><UserIcon/></button>
-                            <button onClick={() => setIsCompareOpen(true)} className="relative hidden sm:block" aria-label="Compare Products">
-                                <CompareIcon />
-                                {compareCount > 0 && <span className="absolute -top-2 -right-2 bg-brand-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">{compareCount}</span>}
+                        {/* Left Side: Cart & Search */}
+                        <div className="flex items-center justify-end gap-1">
+                             <button onClick={() => setIsCartOpen(true)} className={`${iconButtonClasses} ${isCartAnimating ? 'animate-cart-add' : ''}`} aria-label="Cart">
+                                <ShoppingBagIcon size="md" />
+                                {cartCount > 0 && <span className={badgeClasses}>{cartCount}</span>}
                             </button>
-                            <button onClick={() => navigateTo('wishlist')} className="relative" aria-label="Wishlist">
-                                <HeartIcon/>
-                                {wishlistCount > 0 && <span className="absolute -top-2 -right-2 bg-brand-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">{wishlistCount}</span>}
-                            </button>
-                            <button onClick={() => setIsCartOpen(true)} className="relative" aria-label="Cart">
-                                <ShoppingBagIcon/>
-                                {cartCount > 0 && <span className="absolute -top-2 -right-2 bg-brand-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">{cartCount}</span>}
+                            <button onClick={() => setIsSearchOpen(true)} className={iconButtonClasses} aria-label="Search">
+                               <SearchIcon size="md" />
                             </button>
                         </div>
                     </div>
+
+                    {/* --- Desktop Header --- */}
+                     <div className="hidden lg:flex justify-between items-center w-full">
+                        <div>
+                             <button onClick={() => navigateTo('home')} className={`font-sans font-bold ${textColorClass} text-4xl tracking-wider`}>
+                                Vineta
+                            </button>
+                        </div>
+
+                        <nav className="flex justify-center items-center gap-6">
+                           {navLinks.map(link => (
+                               <button 
+                                   key={link.label} 
+                                   onClick={() => navigateTo(link.page)} 
+                                   className={`font-semibold pb-1 flex items-center gap-1.5 nav-link transition-colors ${textColorClass}`}
+                                >
+                                   <span>{link.label}</span>
+                                   {link.isNew && <SparklesIcon className="w-4 h-4 text-yellow-400 animate-pulse"/>}
+                                   {link.hasDropdown && <ChevronDownIcon size="sm" />}
+                               </button>
+                           ))}
+                           <button onClick={() => navigateTo('home')} className={`font-bold py-2 px-5 rounded-full text-sm duration-300 ${buyThemeButtonClasses}`}>
+                               !شراء الثيم
+                           </button>
+                        </nav>
+                        
+                        <div className="flex items-center justify-end gap-2">
+                             <button onClick={() => navigateTo('wishlist')} className={iconButtonClasses} aria-label="Wishlist">
+                                <HeartIcon />
+                                {wishlistCount > 0 && <span className={badgeClasses}>{wishlistCount}</span>}
+                            </button>
+                            <button onClick={() => setIsCompareOpen(true)} className={iconButtonClasses} aria-label="Compare">
+                                <CompareIcon />
+                                {compareCount > 0 && <span className={badgeClasses}>{compareCount}</span>}
+                            </button>
+                            <button onClick={() => setIsCartOpen(true)} className={`${iconButtonClasses} ${isCartAnimating ? 'animate-cart-add' : ''}`} aria-label="Cart">
+                                <ShoppingBagIcon />
+                                {cartCount > 0 && <span className={badgeClasses}>{cartCount}</span>}
+                            </button>
+                             <button onClick={() => navigateTo(currentUser ? 'account' : 'login')} className={iconButtonClasses} aria-label="Account">
+                                <UserIcon />
+                            </button>
+                             <button onClick={() => setIsSearchOpen(true)} className={iconButtonClasses} aria-label="Search">
+                               <SearchIcon />
+                            </button>
+                        </div>
+                     </div>
+
                 </div>
             </div>
         </header>

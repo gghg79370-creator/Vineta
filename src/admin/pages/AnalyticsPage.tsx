@@ -4,7 +4,7 @@ import { Card } from '../components/ui/Card';
 import { KpiCard } from '../components/ui/KpiCard';
 import SalesChart from '../components/analytics/SalesChart';
 import CategoryPieChart from '../components/analytics/CategoryPieChart';
-import { DocumentDuplicateIcon } from '../../components/icons';
+import { CurrencyDollarIcon, ShoppingBagIcon, UsersIcon } from '../../components/icons';
 
 type DateRange = '7d' | '30d' | '90d' | 'ytd';
 
@@ -75,11 +75,7 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ orders, products, custome
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">التحليلات</h1>
-                    <p className="text-gray-500 mt-1">احصل على رؤى حول أداء متجرك.</p>
-                </div>
-                <div>
-                    <select value={dateRange} onChange={(e) => setDateRange(e.target.value as DateRange)} className="border-gray-300 rounded-lg text-sm font-semibold">
+                    <select value={dateRange} onChange={(e) => setDateRange(e.target.value as DateRange)} className="admin-form-input text-sm font-semibold w-auto">
                         <option value="7d">آخر 7 أيام</option>
                         <option value="30d">آخر 30 يومًا</option>
                         <option value="90d">آخر 90 يومًا</option>
@@ -89,10 +85,10 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ orders, products, custome
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <KpiCard title="إجمالي المبيعات" value={`${kpiData.totalSales.toFixed(2)} ج.م`} change="+12.5%" changeType="increase" />
-                <KpiCard title="الطلبات" value={kpiData.orderCount.toString()} change="-2.1%" changeType="decrease" />
-                <KpiCard title="متوسط قيمة الطلب" value={`${kpiData.avgOrderValue.toFixed(2)} ج.م`} change="+5.0%" changeType="increase" />
-                <KpiCard title="عملاء جدد" value={kpiData.newCustomers.toString()} change="+0.5%" changeType="increase" />
+                <KpiCard title="إجمالي المبيعات" value={`${kpiData.totalSales.toFixed(2)} ج.م`} change="+12.5%" changeType="increase" icon={<CurrencyDollarIcon size="md" />} />
+                <KpiCard title="الطلبات" value={kpiData.orderCount.toString()} change="-2.1%" changeType="decrease" icon={<ShoppingBagIcon size="md" />} />
+                <KpiCard title="متوسط قيمة الطلب" value={`${kpiData.avgOrderValue.toFixed(2)} ج.م`} change="+5.0%" changeType="increase" icon={<CurrencyDollarIcon size="md" />} />
+                <KpiCard title="عملاء جدد" value={kpiData.newCustomers.toString()} change="+0.5%" changeType="increase" icon={<UsersIcon size="md" />} />
             </div>
 
             <Card title="نظرة عامة على المبيعات">

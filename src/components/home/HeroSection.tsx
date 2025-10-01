@@ -1,124 +1,137 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLongRightIcon } from '../icons';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { HeroSlide } from '../../types';
+import { ChevronRightIcon, ChevronLeftIcon } from '../icons';
 
 interface HeroSectionProps {
     navigateTo: (pageName: string) => void;
-    slides: HeroSlide[];
+    heroSlides: HeroSlide[];
 }
 
-export const HeroSection = ({ navigateTo, slides }: HeroSectionProps) => {
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const [isPaused, setIsPaused] = useState(false);
+export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const AUTOPLAY_DELAY = 6000;
 
-    const nextSlide = useCallback(() => {
-        setCurrentSlide(prev => (prev === slides.length - 1 ? 0 : prev + 1));
-    }, [slides.length]);
+    const goToNext = useCallback(() => {
+        setCurrentIndex((prevIndex) =>
+            prevIndex === heroSlides.length - 1 ? 0 : prevIndex + 1
+        );
+    }, [heroSlides.length]);
 
-    const prevSlide = () => {
-        setCurrentSlide(prev => (prev === 0 ? slides.length - 1 : prev - 1));
-    };
+    const resetTimeout = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+    }, []);
 
     useEffect(() => {
-        if (isPaused || slides.length <= 1) return;
-        const slideInterval = setInterval(nextSlide, 6000);
-        return () => clearInterval(slideInterval);
-    }, [nextSlide, isPaused, slides.length]);
+        resetTimeout();
+        if (heroSlides.length > 1) {
+            timeoutRef.current = setTimeout(goToNext, AUTOPLAY_DELAY);
+        }
+        return () => resetTimeout();
+    }, [currentIndex, goToNext, resetTimeout, heroSlides.length]);
 
-    if (!slides || slides.length === 0) {
-        return <section className="relative h-screen w-full -mt-20 bg-brand-dark flex items-center justify-center"><p className="text-white">No slides available.</p></section>;
+    const goToPrevious = () => {
+        const newIndex = currentIndex === 0 ? heroSlides.length - 1 : currentIndex - 1;
+        setCurrentIndex(newIndex);
+    };
+
+    const goToSlide = (slideIndex: number) => {
+        setCurrentIndex(slideIndex);
+    };
+
+    if (!heroSlides || heroSlides.length === 0) {
+        return <section className="w-full h-screen bg-gray-200 flex items-center justify-center"><p>لا توجد شرائح للعرض.</p></section>;
     }
     
-    const activeSlide = slides[currentSlide];
-
     return (
-        <section
-            className="relative h-[90vh] min-h-[600px] md:h-screen w-full -mt-20 overflow-hidden bg-brand-dark"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+        <section 
+            className="relative w-full h-screen bg-black text-white overflow-hidden"
+            onMouseEnter={resetTimeout}
+            onMouseLeave={() => {
+                resetTimeout();
+                if (heroSlides.length > 1) {
+                    timeoutRef.current = setTimeout(goToNext, AUTOPLAY_DELAY);
+                }
+            }}
         >
-            {/* Background Images */}
-            <div className="absolute inset-0 w-full h-full">
-                {slides.map((slide, index) => (
-                    <div
-                        key={slide.id}
-                        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-                    >
-                         <div
-                            className="w-full h-full bg-cover bg-center animate-ken-burns"
-                            style={{ backgroundImage: `url(${slide.bgImage})` }}
-                            aria-label={slide.title}
+            {/* Slides container */}
+            {heroSlides.map((slide, slideIndex) => (
+                <div key={slide.id || slideIndex} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${slideIndex === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    {slide.bgVideo ? (
+                        <video
+                            key={slide.id} // Force re-render for video
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover opacity-50"
+                        >
+                            <source src={slide.bgVideo} type={slide.bgVideoType || 'video/mp4'} />
+                        </video>
+                    ) : (
+                        <img
+                            src={slide.bgImage}
+                            alt={slide.title}
+                            className={`w-full h-full object-cover opacity-50 ${slideIndex === currentIndex ? 'animate-ken-burns' : ''}`}
                         />
-                    </div>
-                ))}
-            </div>
-            
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/10" />
-            
-            <div className="relative h-full w-full flex items-center justify-center md:justify-end px-4">
-                <div className="container mx-auto">
-                    <div className="text-center md:text-right text-white max-w-3xl ml-auto">
-                       <div className="overflow-hidden">
-                            <h1
-                                key={`${currentSlide}-title`}
-                                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-4 tracking-tighter animate-text-reveal-up [text-shadow:_1px_2px_4px_rgb(0_0_0_/_40%)]"
-                                style={{ animationDelay: '0.3s' }}
-                            >
-                                {activeSlide.title}
-                            </h1>
-                       </div>
-                       <div className="overflow-hidden">
-                            <p
-                                key={`${currentSlide}-subtitle`}
-                                className="text-lg md:text-xl mb-8 animate-text-reveal-up [text-shadow:_1px_1px_2px_rgb(0_0_0_/_40%)] max-w-lg mx-auto md:mx-0"
-                                style={{ animationDelay: '0.6s' }}
-                            >
-                                {activeSlide.subtitle}
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+                </div>
+            ))}
+           
+            {/* Slide Content */}
+            <div className="relative h-full flex items-center justify-start">
+                <div className="container mx-auto px-4">
+                    {/* Keyed div to re-trigger animations */}
+                    <div key={currentIndex} className="max-w-2xl text-right">
+                        <div className="overflow-hidden">
+                            <p className="text-lg md:text-xl text-gray-300 font-semibold mb-4 animate-text-reveal-up [animation-delay:0.2s]">
+                                {heroSlides[currentIndex].subtitle}
                             </p>
-                       </div>
-                       <div className="overflow-hidden mt-8">
-                            <button
-                                key={`${currentSlide}-button`}
-                                onClick={() => navigateTo(activeSlide.page)}
-                                className="bg-brand-primary text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-opacity-90 transition-all hover:scale-105 hover:shadow-xl animate-text-reveal-up"
-                                style={{ animationDelay: '0.9s' }}
+                        </div>
+                        <div className="overflow-hidden">
+                            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight mb-6 animate-text-reveal-up [animation-delay:0.4s]">
+                                {heroSlides[currentIndex].title}
+                            </h1>
+                        </div>
+                        {heroSlides[currentIndex].description && (
+                             <div className="overflow-hidden">
+                                <p className="text-base md:text-lg text-gray-300 mb-10 max-w-lg ml-auto animate-text-reveal-up [animation-delay:0.8s]">
+                                    {heroSlides[currentIndex].description}
+                                </p>
+                            </div>
+                        )}
+                        <div className="overflow-hidden">
+                             <button
+                                onClick={() => navigateTo(heroSlides[currentIndex].page)}
+                                className="bg-white text-black font-bold py-3 px-10 rounded-full text-lg hover:bg-white/90 transition-all duration-300 transform hover:scale-105 active:scale-100 animate-text-reveal-up [animation-delay:1.2s]"
                             >
-                                {activeSlide.buttonText}
+                                {heroSlides[currentIndex].buttonText}
                             </button>
-                       </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            {/* Controls */}
-            <button onClick={prevSlide} className="absolute top-1/2 right-4 md:right-10 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-3 shadow-lg hover:bg-black/40 transition-all duration-300 backdrop-blur-sm focus:outline-none" aria-label="السابق">
-                <ArrowLongRightIcon size="lg" className="w-6 h-6 md:w-8 md:h-8"/>
+
+            {/* Navigation Arrows */}
+            <button onClick={goToPrevious} aria-label="Previous slide" className="absolute top-1/2 -translate-y-1/2 left-4 z-10 p-3 bg-white/20 rounded-full hover:bg-white/40 transition-colors">
+                <ChevronLeftIcon className="w-6 h-6 text-white"/>
             </button>
-            <button onClick={nextSlide} className="absolute top-1/2 left-4 md:left-10 transform -translate-y-1/2 bg-black/20 text-white rounded-full p-3 shadow-lg hover:bg-black/40 transition-all duration-300 backdrop-blur-sm rotate-180 focus:outline-none" aria-label="التالي">
-                <ArrowLongRightIcon size="lg" className="w-6 h-6 md:w-8 md:h-8"/>
+             <button onClick={goToNext} aria-label="Next slide" className="absolute top-1/2 -translate-y-1/2 right-4 z-10 p-3 bg-white/20 rounded-full hover:bg-white/40 transition-colors">
+                <ChevronRightIcon className="w-6 h-6 text-white"/>
             </button>
-            
-            {/* Progress Bar Pagination */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex w-1/3 max-w-xs gap-2.5">
-                {slides.map((_, index) => (
-                    <div
-                        key={index}
-                        onClick={() => setCurrentSlide(index)}
-                        className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden cursor-pointer"
-                        aria-label={`Go to slide ${index + 1}`}
-                    >
-                        {index === currentSlide && (
-                            <div
-                                key={currentSlide} // Re-trigger animation on slide change
-                                className="h-full bg-white origin-right animate-progress-fill rounded-full"
-                                style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
-                            />
-                        )}
-                        {index < currentSlide && (
-                             <div className="h-full w-full bg-white rounded-full" />
-                        )}
-                    </div>
+
+            {/* Dot Indicators */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+                {heroSlides.map((_, slideIndex) => (
+                    <button 
+                        key={slideIndex}
+                        onClick={() => goToSlide(slideIndex)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === slideIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`}
+                        aria-label={`Go to slide ${slideIndex + 1}`}
+                    />
                 ))}
             </div>
         </section>

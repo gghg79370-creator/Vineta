@@ -28,14 +28,14 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose,
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `You are a fashion size and fit expert for an e-commerce store. Based on the user's measurements and the product details, recommend a size.
-Product: ${product.name} (Category: ${product.category}, Brand: ${product.brand})
-User Height: ${height} cm
-User Weight: ${weight} kg
-Fit Preference: ${fitPreference}
-Available Sizes: ${product.sizes.join(', ')}
+            const prompt = `أنت خبير في مقاسات الأزياء والملاءمة لمتجر إلكتروني. بناءً على قياسات المستخدم وتفاصيل المنتج، قم بالتوصية بمقاس.
+المنتج: ${product.name} (الفئة: ${product.category}, العلامة التجارية: ${product.brand})
+طول المستخدم: ${height} سم
+وزن المستخدم: ${weight} كجم
+تفضيل الملاءمة: ${fitPreference}
+المقاسات المتاحة: ${product.sizes.join(', ')}
 
-Respond with only the recommended size from the available sizes list (e.g., "M", "L", "XL"). If no size seems appropriate, respond with "لا يمكننا إيجاد مقاس مناسب."`;
+قم بالرد فقط بالمقاس الموصى به من قائمة المقاسات المتاحة (على سبيل المثال، "M"، "L"، "XL"). إذا لم يبدو أي مقاس مناسبًا، فقم بالرد بـ "لا يمكننا إيجاد مقاس مناسب."`;
 
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',

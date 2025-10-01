@@ -8,6 +8,17 @@ interface AnnouncementsPageProps {
 }
 
 const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ announcements }) => {
+    
+    const handleEdit = (announcement: AdminAnnouncement) => {
+        console.log("Editing:", announcement);
+        // In a real app, this would likely open a modal or navigate to an edit page.
+    };
+
+    const handleDelete = (announcement: AdminAnnouncement) => {
+        console.log("Deleting:", announcement);
+        // In a real app, this would show a confirmation modal and then remove the item.
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -22,7 +33,11 @@ const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ announcements }) 
                 </button>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
-                <AnnouncementListTable announcements={announcements} />
+                <AnnouncementListTable 
+                    announcements={announcements} 
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
             </div>
         </div>
     );

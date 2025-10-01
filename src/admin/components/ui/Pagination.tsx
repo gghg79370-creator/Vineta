@@ -7,7 +7,7 @@ interface PaginationProps {
     onPageChange: (page: number) => void;
 }
 
-export const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
+export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
     const pageNumbers = [];
@@ -16,7 +16,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
     }
 
     return (
-        <div className="flex justify-center items-center mt-6 space-x-2 space-x-reverse">
+        <div className="flex justify-center items-center pt-4 mt-4 border-t space-x-2 space-x-reverse">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -32,7 +32,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
                     onClick={() => onPageChange(number)}
                     className={`w-10 h-10 flex items-center justify-center rounded-lg font-bold transition-colors ${
                         currentPage === number 
-                            ? 'bg-primary-600 text-white' 
+                            ? 'bg-admin-accent text-white' 
                             : 'bg-white border border-gray-300 hover:bg-gray-100'
                     }`}
                 >

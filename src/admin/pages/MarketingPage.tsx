@@ -6,32 +6,23 @@ import { Card } from '../components/ui/Card';
 
 interface MarketingPageProps {
     campaigns: AdminMarketingCampaign[];
-    navigate: (page: string) => void;
+    navigate: (page: string, data?: any) => void;
 }
 
 const MarketingPage: React.FC<MarketingPageProps> = ({ campaigns, navigate }) => {
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">التسويق</h1>
-                    <p className="text-gray-500 mt-1">إنشاء وإدارة حملاتك التسويقية.</p>
-                </div>
-                <div className="relative group">
-                    <button 
-                        disabled
-                        className="bg-primary-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary-500 transition-colors w-full md:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                        <PlusIcon />
-                        <span>إنشاء حملة</span>
-                    </button>
-                    <div className="absolute bottom-full mb-2 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        This feature is for demonstration purposes.
-                    </div>
-                </div>
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4">
+                <button 
+                    onClick={() => navigate('addSaleCampaign')}
+                    className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
+                    <PlusIcon />
+                    <span>إنشاء حملة</span>
+                </button>
             </div>
             
-            <Card title="الحملات">
-                <CampaignListTable campaigns={campaigns} />
+            <Card title="الحملات" actions={<a href="#" onClick={(e) => { e.preventDefault(); navigate('saleCampaigns'); }} className="text-sm font-bold text-admin-accent hover:underline">عرض الكل</a>}>
+                <CampaignListTable campaigns={campaigns.slice(0, 5)} />
             </Card>
 
             <Card title="الأتمتة">
@@ -39,7 +30,7 @@ const MarketingPage: React.FC<MarketingPageProps> = ({ campaigns, navigate }) =>
                     {allAdminAutomations.map(automation => (
                         <div key={automation.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50">
                             <div className="flex items-center gap-4">
-                                <div className="bg-primary-100 text-primary-600 p-2 rounded-lg">
+                                <div className="bg-admin-accent/10 text-admin-accent p-2 rounded-lg">
                                     <SparklesIcon />
                                 </div>
                                 <div>

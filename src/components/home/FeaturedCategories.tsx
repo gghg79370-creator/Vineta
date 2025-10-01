@@ -65,7 +65,7 @@ export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ navigate
                 </div>
                 <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth py-4 -mx-4 px-4">
                     {categoriesData.map((category, index) => (
-                        <div key={index} className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-1/3 lg:w-1/4 h-[60vh] max-h-[450px] snap-center">
+                        <div key={index} className="flex-shrink-0 w-[85%] sm:w-[45%] md:w-1/3 lg:w-1/4 h-[60vh] max-h-[450px] snap-start">
                             <CategoryCard category={category} navigateTo={navigateTo} />
                         </div>
                     ))}

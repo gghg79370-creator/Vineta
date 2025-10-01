@@ -120,7 +120,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ initialImages = [], on
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDraggingOver ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDraggingOver ? 'border-admin-accent bg-admin-accent/10' : 'border-gray-300'}`}
             >
                 <input
                     type="file"
@@ -132,37 +132,41 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ initialImages = [], on
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
                     <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-gray-400" />
-                    <p className="mt-2 font-semibold text-primary-600">انقر للتحميل أو قم بالسحب والإفلات</p>
+                    <p className="mt-2 font-semibold text-admin-accent">انقر للتحميل أو قم بالسحب والإفلات</p>
                     <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
                 </label>
             </div>
 
             {images.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                    {images.map((file, index) => (
-                        <div
-                            key={typeof file === 'string' ? file : `${file.name}-${index}`}
-                            className={`relative group aspect-square cursor-grab transition-opacity ${draggedIndex === index ? 'opacity-30' : 'opacity-100'}`}
-                            draggable
-                            onDragStart={() => handleDragStart(index)}
-                            onDragOver={handleDragOverItem}
-                            onDrop={() => handleDropItem(index)}
-                            onDragEnd={handleDragEnd}
-                        >
-                            <ImagePreview file={file} />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    removeImage(index);
-                                }}
-                                className="absolute -top-2 -right-2 bg-white rounded-full text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                aria-label={`Remove image ${index + 1}`}
+                <div className="mt-4">
+                    <p className="text-xs text-gray-500 mb-2">اسحب الصور لإعادة ترتيبها. الصورة الأولى هي الصورة الرئيسية.</p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                        {images.map((file, index) => (
+                            <div
+                                key={typeof file === 'string' ? file : `${file.name}-${index}`}
+                                className={`relative group aspect-square cursor-grab transition-opacity ${draggedIndex === index ? 'opacity-30' : 'opacity-100'}`}
+                                draggable
+                                onDragStart={() => handleDragStart(index)}
+                                onDragOver={handleDragOverItem}
+                                onDrop={() => handleDropItem(index)}
+                                onDragEnd={handleDragEnd}
                             >
-                                <XCircleIcon />
-                            </button>
-                        </div>
-                    ))}
+                                <ImagePreview file={file} />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                {index === 0 && <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">الرئيسية</div>}
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        removeImage(index);
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-white rounded-full text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                    aria-label={`Remove image ${index + 1}`}
+                                >
+                                    <XCircleIcon />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>

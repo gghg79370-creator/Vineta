@@ -1,16 +1,15 @@
 
-import React, { useState } from 'react';
+
+import React from 'react';
 import { StarIcon } from '../icons';
 import { Review } from '../../types';
 
 interface ReviewsSectionProps {
     reviews: Review[];
+    onWriteReviewClick: () => void;
 }
 
-export const ReviewsSection = ({ reviews }: ReviewsSectionProps) => {
-    const [showWriteReview, setShowWriteReview] = useState(false);
-    const [rating, setRating] = useState(0);
-    const [hoverRating, setHoverRating] = useState(0);
+export const ReviewsSection = ({ reviews, onWriteReviewClick }: ReviewsSectionProps) => {
 
     const ratingSummary: {[key: string]: number} = { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
     reviews.forEach(review => {
@@ -19,19 +18,16 @@ export const ReviewsSection = ({ reviews }: ReviewsSectionProps) => {
     const totalReviews = reviews.length;
     const averageRating = totalReviews > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews : 0;
 
-    const renderStars = (currentRating: number, interactive = false, setRatingFn = (r: number) => {}, setHoverRatingFn = (r: number) => {}) => {
-        const ratingToShow = hoverRating > 0 && interactive ? hoverRating : currentRating;
+    const renderStars = (currentRating: number) => {
         return (
-            <div className={`flex ${interactive ? 'cursor-pointer' : ''}`} onMouseLeave={() => interactive && setHoverRatingFn(0)}>
+            <div className="flex">
                 {[...Array(5)].map((_, i) => (
                     <button 
                         key={i} 
-                        onMouseEnter={() => interactive && setHoverRatingFn(i + 1)} 
-                        onClick={() => interactive && setRatingFn(i + 1)} 
-                        aria-label={`Rate ${i + 1} stars`}
-                        className="transform hover:scale-110 transition-transform"
+                        disabled
+                        aria-label={`Rated ${i + 1} stars`}
                     >
-                        <StarIcon className={`w-5 h-5 ${i < ratingToShow ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        <StarIcon className={`w-5 h-5 ${i < Math.round(currentRating) ? 'text-yellow-400' : 'text-gray-300'}`} />
                     </button>
                 ))}
             </div>
@@ -67,9 +63,10 @@ export const ReviewsSection = ({ reviews }: ReviewsSectionProps) => {
                             ) : (
                                 <p className="text-brand-text-light mb-4 text-sm">لا توجد تقييمات بعد.</p>
                             )}
-                             <button onClick={() => setShowWriteReview(true)} className="mt-6 bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 w-full md:w-auto">اكتب تقييمًا</button>
+                             <button onClick={onWriteReviewClick} className="mt-6 bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 w-full md:w-auto">اكتب تقييمًا</button>
                         </div>
                         <div className="w-full md:w-2/3">
+                            <h3 className="text-xl font-bold mb-4">أحدث التقييمات ({reviews.length})</h3>
                             <div className="space-y-8">
                                 {reviews.length > 0 ? reviews.map(review => (
                                     <div key={review.id} className="border-b pb-8 last:border-b-0 last:pb-0">
@@ -92,33 +89,6 @@ export const ReviewsSection = ({ reviews }: ReviewsSectionProps) => {
                         </div>
                     </div>
                 </div>
-
-                {showWriteReview && (
-                     <div className="border-t pt-10 mt-10">
-                        <h3 className="text-2xl font-bold mb-2">اكتب تقييمًا</h3>
-                        <p className="text-sm text-brand-text-light mb-6">لن يتم نشر عنوان بريدك الإلكتروني. الحقول المطلوبة معلمة بـ *</p>
-                        <form className="space-y-4 max-w-2xl">
-                            <div className="flex items-center gap-3">
-                                <label className="font-semibold text-brand-dark">تقييمك *</label>
-                                {renderStars(rating, true, setRating, setHoverRating)}
-                            </div>
-                            <div>
-                                <input type="text" placeholder="الاسم *" className="w-full border border-brand-border p-3 rounded-lg focus:ring-1 focus:ring-brand-dark/50 focus:border-brand-dark outline-none" />
-                            </div>
-                             <div>
-                                <input type="email" placeholder="البريد الإلكتروني *" className="w-full border border-brand-border p-3 rounded-lg focus:ring-1 focus:ring-brand-dark/50 focus:border-brand-dark outline-none" />
-                            </div>
-                             <div>
-                                <textarea placeholder="تقييمك *" rows={5} className="w-full border border-brand-border p-3 rounded-lg focus:ring-1 focus:ring-brand-dark/50 focus:border-brand-dark outline-none"></textarea>
-                            </div>
-                             <div className="flex items-center gap-3">
-                                <input type="checkbox" id="save_info" className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark" />
-                                <label htmlFor="save_info" className="text-sm text-brand-text-light">احفظ اسمي والبريد الإلكتروني والموقع الإلكتروني في هذا المتصفح للمرة التالية التي أعلق فيها.</label>
-                            </div>
-                            <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90">إرسال</button>
-                        </form>
-                     </div>
-                )}
             </div>
         </div>
     );

@@ -1,99 +1,220 @@
-import React, { useState, useEffect } from 'react';
-import { CartItem, Product, Filters, User, Review, HeroSlide } from './types';
+
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Product, Filters, User, Review, HeroSlide, SaleCampaign, AdminAnnouncement } from './types';
 import { allProducts } from './data/products';
-import { cartItemsData } from './data/cart';
+import { saleCampaignsData } from './data/sales';
 import { heroSlidesData } from './data/homepage';
+import { useAppState } from './state/AppState';
+import { allAdminAnnouncements } from './admin/data/adminData';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { QuickViewModal } from './components/modals/QuickViewModal';
-import { OrderDetailModal } from './components/modals/OrderDetailModal';
 import { SearchOverlay } from './components/search/SearchOverlay';
 import { MobileMenu } from './components/layout/MobileMenu';
 import { FilterDrawer } from './components/collection/FilterDrawer';
-import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import { AskQuestionModal } from './components/modals/AskQuestionModal';
 import { CompareModal } from './components/modals/CompareModal';
-
-import HomePage from './pages/HomePage';
-import ShopPage from './pages/ShopPage';
-import CartPage from './pages/CartPage';
-import WishlistPage from './pages/WishlistPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import AccountPage from './pages/AccountPage';
-import FaqPage from './pages/FaqPage';
-import CheckoutPage from './pages/CheckoutPage';
-import ComparePage from './pages/ComparePage';
-import ContactPage from './pages/ContactPage';
-import OrderConfirmationPage from './pages/OrderConfirmationPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import EmailVerificationPage from './pages/EmailVerificationPage';
+import ToastContainer from './components/ui/ToastContainer';
 import AdminDashboard from './admin/AdminDashboard';
+import { Router } from './Router';
+import { GoToTopButton } from './components/ui/GoToTopButton';
+import { FloatingCartBubble } from './components/cart/FloatingCartBubble';
+import { AnnouncementBar } from './components/layout/AnnouncementBar';
+import Chatbot from './components/chatbot/Chatbot';
+import { SearchDrawer } from './components/search/SearchDrawer';
 
+const serializeUrlParams = (filters: Filters, page: number) => {
+    const params = new URLSearchParams();
+    if (filters.brands.length > 0) params.set('brands', filters.brands.join(','));
+    if (filters.colors.length > 0) params.set('colors', filters.colors.join(','));
+    if (filters.sizes.length > 0) params.set('sizes', filters.sizes.join(','));
+    if (filters.priceRange.max < 1000) params.set('maxPrice', filters.priceRange.max.toString());
+    if (filters.rating > 0) params.set('rating', filters.rating.toString());
+    if (filters.onSale) params.set('onSale', 'true');
+    if (filters.materials.length > 0) params.set('materials', filters.materials.join(','));
+    if (page > 1) params.set('page', page.toString());
+    return params.toString();
+};
 
-const App = () => {
-    const [activePage, setActivePage] = useState('home');
-    const [pageData, setPageData] = useState<any>(allProducts[0]);
-    const [currentUser, setCurrentUser] = useState<User | null>({ id: '1', name: 'فينيتا فام', email: 'admin@example.com', phone: '01234567890', isAdmin: true });
+const parseFilters = (queryString: string): Filters => {
+    const params = new URLSearchParams(queryString);
+    return {
+        brands: params.get('brands')?.split(',').filter(Boolean) || [],
+        colors: params.get('colors')?.split(',').filter(Boolean) || [],
+        sizes: params.get('sizes')?.split(',').filter(Boolean) || [],
+        priceRange: { 
+            min: 0,
+            max: params.has('maxPrice') ? parseInt(params.get('maxPrice')!, 10) : 1000 
+        },
+        rating: params.has('rating') ? parseInt(params.get('rating')!, 10) : 0,
+        onSale: params.get('onSale') === 'true',
+        materials: params.get('materials')?.split(',').filter(Boolean) || [],
+    };
+};
+
+const getInitialStateFromUrl = () => {
+    const hash = window.location.hash.slice(1);
+    const [path, queryString] = hash.split('?');
+    const page = path.startsWith('/') ? path.substring(1) : (path || 'home');
+    const filters = page === 'shop' ? parseFilters(queryString || '') : { brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] };
+    const params = new URLSearchParams(queryString || '');
+    const pageData: any = {};
+    for (const [key, value] of params.entries()) {
+        pageData[key] = value;
+    }
+    const shopPage = params.get('page') ? parseInt(params.get('page')!, 10) : 1;
+    return { page, filters, pageData, shopPage };
+};
+
+const AppContent = () => {
+    const { state, dispatch } = useAppState();
+    const { currentUser, cart, wishlist, compareList } = state;
+
+    const [activePage, setActivePage] = useState(getInitialStateFromUrl().page);
+    const [pageData, setPageData] = useState<any>(getInitialStateFromUrl().pageData);
     
     // Dynamic Homepage Content State
     const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(heroSlidesData);
-    const [announcements, setAnnouncements] = useState<string[]>(["شحن مجاني للطلبات فوق 500 جنيه", "ضمان مدى الحياة", "عرض لفترة محدودة", "تمديد فترة الإرجاع إلى 60 يومًا"]);
-
-    const [cartItems, setCartItems] = useState<CartItem[]>(cartItemsData);
-    const [wishlistItems, setWishlistItems] = useState<Product[]>([allProducts[2], allProducts[5]]);
+    const [announcements, setAnnouncements] = useState<AdminAnnouncement[]>(allAdminAnnouncements);
+    const [saleCampaigns, setSaleCampaigns] = useState<SaleCampaign[]>(saleCampaignsData);
     
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCartMinimized, setIsCartMinimized] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
     
     const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
     const [isAskQuestionOpen, setIsAskQuestionOpen] = useState(false);
     
     const [isCompareOpen, setIsCompareOpen] = useState(false);
-    const [compareList, setCompareList] = useState<Product[]>([]);
 
-    const [filters, setFilters] = useState<Filters>({
-        brands: [],
-        colors: [],
-        sizes: [],
-        priceRange: { min: 0, max: 1000 },
-    });
+    const [filters, setFilters] = useState<Filters>(getInitialStateFromUrl().filters);
+    const [shopPage, setShopPage] = useState<number>(getInitialStateFromUrl().shopPage);
+    const isInitialMount = useRef(true);
 
-
-    const navigateTo = (pageName: string, data?: any) => {
+    const navigateTo = useCallback((pageName: string, data?: any) => {
+        let newHash = `/${pageName}`;
+        if (data) {
+            if (pageName === 'product') {
+                setPageData(data); // Pass complex object via state
+            } else {
+                 const params = new URLSearchParams(data);
+                 newHash += `?${params.toString()}`;
+            }
+        }
+        
+        try {
+            history.pushState(null, '', `#${newHash.substring(1)}`);
+        } catch (e) {
+            if (!(e instanceof DOMException && e.name === 'SecurityError')) {
+                console.error("Failed to push state:", e);
+            }
+        }
         setActivePage(pageName);
-        setPageData(data);
+        if(pageName !== 'product') {
+            setPageData(data || {});
+        }
         window.scrollTo(0, 0);
-    };
+    }, []);
+
+    // Apply body class for admin dashboard
+    useEffect(() => {
+        if (activePage.startsWith('admin')) {
+            document.body.classList.add('admin-body');
+        } else {
+            document.body.classList.remove('admin-body');
+        }
+    }, [activePage]);
+    
+    useEffect(() => {
+        const handleScroll = () => {
+            if (isCartOpen) {
+                if (window.scrollY > 150) {
+                    setIsCartMinimized(true);
+                } else {
+                    setIsCartMinimized(false);
+                }
+            } else if (isCartMinimized) {
+                setIsCartMinimized(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isCartOpen, isCartMinimized]);
+
+    // Sync state to URL when filters or shop page change
+    useEffect(() => {
+        if (activePage === 'shop') {
+            const queryString = serializeUrlParams(filters, shopPage);
+            const path = `/${activePage}`;
+            const newHash = `${path}${queryString ? `?${queryString}` : ''}`;
+            try {
+                history.replaceState(null, '', `#${newHash.substring(1)}`);
+            } catch (e) {
+                 if (!(e instanceof DOMException && e.name === 'SecurityError')) {
+                    console.error("Failed to replace state:", e);
+                 }
+            }
+        }
+    }, [filters, shopPage, activePage]);
+
+    // Reset page to 1 when filters change (but not on initial load)
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        } else {
+            if (activePage === 'shop') {
+                setShopPage(1);
+            }
+        }
+    }, [filters]);
+
+
+    // Sync URL to state on browser navigation (back/forward)
+    useEffect(() => {
+        const handlePopState = () => {
+            const { page, filters: urlFilters, pageData: urlPageData, shopPage: urlShopPage } = getInitialStateFromUrl();
+            setActivePage(page);
+            setFilters(urlFilters);
+            setPageData(urlPageData);
+            setShopPage(urlShopPage);
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+
+    useEffect(() => {
+        // Sanitize cart and wishlist on initial load
+        const sanitizedCart = cart.filter(cartItem => allProducts.some(p => p.id === cartItem.id));
+        if (sanitizedCart.length !== cart.length) {
+            dispatch({ type: 'SET_CART', payload: sanitizedCart });
+        }
+    
+        const sanitizedWishlist = wishlist.filter(wishlistItem => allProducts.some(p => p.id === wishlistItem.id));
+        if (sanitizedWishlist.length !== wishlist.length) {
+            dispatch({ type: 'SET_WISHLIST', payload: sanitizedWishlist });
+        }
+    }, []); // Run only on mount
+
     
      const handleLogin = (user: User) => {
-        setCurrentUser(user);
+        dispatch({ type: 'LOGIN', payload: user });
         navigateTo('account');
     };
 
     const handleLogout = () => {
-        setCurrentUser(null);
+        dispatch({ type: 'LOGOUT' });
         navigateTo('home');
     };
-
-    const toggleWishlist = (product: Product) => {
-        setWishlistItems(prev => {
-            const isInWishlist = prev.some(item => item.id === product.id);
-            if (isInWishlist) {
-                return prev.filter(item => item.id !== product.id);
-            } else {
-                return [...prev, product];
-            }
-        });
-    };
-
 
     const addToCart = (product: Product, options: { quantity?: number; selectedSize?: string; selectedColor?: string } = {}) => {
         const { 
@@ -102,29 +223,7 @@ const App = () => {
             selectedColor = product.colors[0] 
         } = options;
 
-        setCartItems(prevItems => {
-            const itemInCart = prevItems.find(item => 
-                item.id === product.id && 
-                item.selectedSize === selectedSize && 
-                item.selectedColor === selectedColor
-            );
-
-            if (itemInCart) {
-                return prevItems.map(item =>
-                    item.id === product.id && item.selectedSize === selectedSize && item.selectedColor === selectedColor
-                        ? { ...item, quantity: item.quantity + quantity }
-                        : item
-                );
-            }
-            
-            return [...prevItems, { 
-                ...product, 
-                quantity: quantity, 
-                selectedSize: selectedSize, 
-                selectedColor: selectedColor,
-            }];
-        });
-        
+        dispatch({ type: 'ADD_TO_CART', payload: { product, quantity, selectedSize, selectedColor } });
         setIsCartOpen(true);
     };
     
@@ -136,94 +235,6 @@ const App = () => {
         setQuickViewProduct(null);
     }
 
-    const addToCompare = (product: Product) => {
-        setCompareList(prev => {
-            if (prev.some(p => p.id === product.id)) {
-                return prev.filter(p => p.id !== product.id);
-            }
-            if (prev.length >= 4) {
-                return prev;
-            }
-            return [...prev, product];
-        });
-    };
-
-    const removeFromCompare = (productId: number) => {
-        setCompareList(prev => prev.filter(p => p.id !== productId));
-    };
-
-
-    const renderPage = () => {
-        const commonProps = {
-            navigateTo,
-            addToCart,
-            openQuickView,
-            compareList,
-            addToCompare,
-            wishlistItems,
-            toggleWishlist,
-        };
-
-        switch (activePage) {
-            case 'home':
-                return <HomePage {...commonProps} heroSlides={heroSlides} />;
-            case 'shop':
-                return <ShopPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />;
-            case 'product':
-                return <ProductDetailPage {...commonProps} product={pageData} setIsAskQuestionOpen={setIsAskQuestionOpen} setIsCompareOpen={setIsCompareOpen} />;
-            case 'cart':
-                return <CartPage 
-                    cartItems={cartItems} 
-                    setCartItems={setCartItems} 
-                    navigateTo={navigateTo} 
-                    compareList={compareList} 
-                    addToCompare={addToCompare} 
-                    addToCart={addToCart}
-                    openQuickView={openQuickView}
-                    wishlistItems={wishlistItems}
-                    toggleWishlist={toggleWishlist}
-                />;
-            case 'wishlist':
-                return <WishlistPage navigateTo={navigateTo} addToCart={addToCart} wishlistItems={wishlistItems} toggleWishlist={toggleWishlist} />;
-            case 'account':
-                 if (!currentUser) {
-                    navigateTo('login');
-                    return <LoginPage navigateTo={navigateTo} onLogin={handleLogin} />;
-                }
-                return <AccountPage navigateTo={navigateTo} currentUser={currentUser} onLogout={handleLogout} />;
-            case 'faq':
-                return <FaqPage navigateTo={navigateTo} />;
-            case 'checkout':
-                return <CheckoutPage navigateTo={navigateTo} cartItems={cartItems}/>;
-            case 'compare':
-                 return <ComparePage navigateTo={navigateTo} />;
-            case 'contact':
-                return <ContactPage navigateTo={navigateTo} />;
-            case 'orderConfirmation':
-                return <OrderConfirmationPage navigateTo={navigateTo} />;
-            case 'login':
-                return <LoginPage navigateTo={navigateTo} onLogin={handleLogin} />;
-            case 'register':
-                return <RegisterPage navigateTo={navigateTo} />;
-            case 'forgotPassword':
-                return <ForgotPasswordPage navigateTo={navigateTo} />;
-            case 'resetPassword':
-                return <ResetPasswordPage navigateTo={navigateTo} />;
-            case 'emailVerification':
-                return <EmailVerificationPage navigateTo={navigateTo} />;
-            case 'admin':
-                return <AdminDashboard 
-                    currentUser={currentUser}
-                    heroSlides={heroSlides}
-                    setHeroSlides={setHeroSlides}
-                    announcements={announcements}
-                    setAnnouncements={setAnnouncements}
-                />;
-            default:
-                return <HomePage {...commonProps} heroSlides={heroSlides} />;
-        }
-    };
-
     if (activePage.startsWith('admin')) {
         return <AdminDashboard 
             currentUser={currentUser}
@@ -231,43 +242,59 @@ const App = () => {
             setHeroSlides={setHeroSlides}
             announcements={announcements}
             setAnnouncements={setAnnouncements}
+            saleCampaigns={saleCampaigns}
+            setSaleCampaigns={setSaleCampaigns}
         />;
     }
 
     return (
         <div dir="rtl" className="font-sans">
+            <ToastContainer />
             <AnnouncementBar announcements={announcements} />
             <Header 
                 navigateTo={navigateTo} 
-                cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-                wishlistCount={wishlistItems.length}
-                compareCount={compareList.length}
                 setIsCartOpen={setIsCartOpen}
                 setIsMenuOpen={setIsMenuOpen}
                 setIsSearchOpen={setIsSearchOpen}
                 setIsCompareOpen={setIsCompareOpen}
-                currentUser={currentUser}
+            />
+            <FloatingCartBubble 
+                isVisible={isCartOpen && isCartMinimized}
+                onBubbleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             />
             <main>
-                {renderPage()}
+                <Router
+                    activePage={activePage}
+                    pageData={pageData}
+                    currentUser={currentUser}
+                    navigateTo={navigateTo}
+                    addToCart={addToCart}
+                    openQuickView={openQuickView}
+                    heroSlides={heroSlides}
+                    saleCampaigns={saleCampaigns}
+                    setIsFilterOpen={setIsFilterOpen}
+                    filters={filters}
+                    setFilters={setFilters}
+                    shopPage={shopPage}
+                    setShopPage={setShopPage}
+                    setIsAskQuestionOpen={setIsAskQuestionOpen}
+                    setIsCompareOpen={setIsCompareOpen}
+                    onLogout={handleLogout}
+                    onLogin={handleLogin}
+                />
             </main>
             <Footer navigateTo={navigateTo} />
             <MobileBottomNav 
                 navigateTo={navigateTo} 
                 activePage={activePage} 
-                cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-                wishlistCount={wishlistItems.length}
                 setIsCartOpen={setIsCartOpen}
                 isCartOpen={isCartOpen}
-                currentUser={currentUser}
             />
             <CartDrawer 
                 isOpen={isCartOpen}
                 setIsOpen={setIsCartOpen}
                 navigateTo={navigateTo}
-                cartItems={cartItems}
-                setCartItems={setCartItems}
-                addToCart={addToCart}
+                isMinimized={isCartMinimized}
             />
             <QuickViewModal 
                 isOpen={!!quickViewProduct}
@@ -280,12 +307,13 @@ const App = () => {
                 isOpen={isSearchOpen}
                 setIsOpen={setIsSearchOpen}
                 navigateTo={navigateTo}
-                addToCart={addToCart}
-                openQuickView={openQuickView}
-                compareList={compareList}
-                addToCompare={addToCompare}
-                wishlistItems={wishlistItems}
-                toggleWishlist={toggleWishlist}
+                setIsChatbotOpen={setIsChatbotOpen}
+            />
+            <SearchDrawer
+                isOpen={isSearchOpen}
+                setIsOpen={setIsSearchOpen}
+                navigateTo={navigateTo}
+                setIsChatbotOpen={setIsChatbotOpen}
             />
             <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} navigateTo={navigateTo} currentUser={currentUser} />
             <FilterDrawer isOpen={isFilterOpen} setIsOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />
@@ -293,13 +321,22 @@ const App = () => {
             <CompareModal 
                 isOpen={isCompareOpen} 
                 onClose={() => setIsCompareOpen(false)} 
-                compareList={compareList}
-                removeFromCompare={removeFromCompare}
-                addToCart={addToCart}
                 navigateTo={navigateTo}
+            />
+            <GoToTopButton />
+            <Chatbot 
+                navigateTo={navigateTo} 
+                isOpen={isChatbotOpen} 
+                setIsOpen={setIsChatbotOpen}
+                activePage={activePage}
+                productContext={activePage === 'product' ? pageData : null}
             />
         </div>
     );
 };
+
+const App = () => {
+    return <AppContent />;
+}
 
 export default App;

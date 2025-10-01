@@ -24,7 +24,7 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, customers, pro
     const statusTranslations: { [key: string]: string } = { 'Delivered': 'تم التوصيل', 'On the way': 'قيد التوصيل', 'Cancelled': 'تم الإلغاء' };
 
     const getStatusIcon = (status: string, isCompleted: boolean) => {
-        const activeClass = isCompleted ? 'text-primary-600' : 'text-gray-400';
+        const activeClass = isCompleted ? 'text-admin-accent' : 'text-gray-400';
         const iconSize = 'w-6 h-6';
         switch (status) {
             case 'تم الطلب': return <PackageIcon className={`${iconSize} ${activeClass}`} />;
@@ -39,18 +39,14 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, customers, pro
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <button onClick={() => navigate('orders')} className="text-sm font-bold text-primary-600 hover:underline mb-2">&larr; العودة إلى الطلبات</button>
-                    <h1 className="text-3xl font-bold text-gray-900">طلب {order.id}</h1>
-                    <p className="text-gray-500 mt-1">{order.date} &bull; {order.itemCount} منتجات</p>
+                     <h1 className="text-2xl font-bold text-gray-900">طلب {order.id}</h1>
+                    <p className="text-gray-500 mt-1 text-sm">{order.date} &bull; {order.itemCount} منتجات</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1.5 rounded-full text-sm font-bold ${statusClasses[order.status]}`}>
-                        {statusTranslations[order.status]}
-                    </span>
                      <select 
                         value={order.status} 
                         onChange={(e) => onStatusChange(order.id, e.target.value as AdminOrder['status'])}
-                        className="border-gray-300 rounded-lg text-sm font-semibold"
+                        className="admin-form-input text-sm font-semibold"
                     >
                         <option value="On the way">قيد التوصيل</option>
                         <option value="Delivered">تم التوصيل</option>
@@ -63,28 +59,35 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, customers, pro
                 <div className="lg:col-span-2 space-y-6">
                     <Card title="المنتجات المطلوبة">
                         <table className="w-full text-sm text-right">
-                            <tbody>
+                            <tbody className="divide-y divide-gray-100">
                                 {order.items.map(item => {
                                     const product = products.find(p => p.id === item.productId);
+                                    const variant = product?.variants.find(v => v.id === item.variantId);
+                                    const variantInfo = variant ? Object.values(variant.options).join(' / ') : 'مقاس موحد';
+                                    
                                     return (
-                                        <tr key={item.productId} className="border-b last:border-none">
-                                            <td className="p-3">
-                                                <img src={product?.image} alt={item.productName} className="w-12 h-14 object-cover rounded-md"/>
+                                        <tr key={`${item.productId}-${item.variantId || ''}`}>
+                                            <td className="p-3 w-4/6">
+                                                <div className="flex items-center gap-3">
+                                                    <img src={item.productImage} alt={item.productName} className="w-12 h-14 object-cover rounded-md"/>
+                                                    <div>
+                                                        <p className="font-semibold">{item.productName}</p>
+                                                        <p className="text-xs text-gray-500">{variantInfo}</p>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="p-3 font-semibold">{item.productName}</td>
-                                            <td className="p-3 text-gray-500">{item.sku}</td>
-                                            <td className="p-3 text-gray-500">{item.price} ج.م &times; {item.quantity}</td>
-                                            <td className="p-3 font-bold text-right">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</td>
+                                            <td className="p-3 text-gray-500 w-1/6">{item.price} ج.م &times; {item.quantity}</td>
+                                            <td className="p-3 font-bold text-right w-1/6">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
-                         <div className="flex justify-end mt-4">
-                            <div className="w-full max-w-xs space-y-2">
+                         <div className="flex justify-end mt-4 pt-4 border-t">
+                            <div className="w-full max-w-xs space-y-2 text-sm">
                                 <div className="flex justify-between"><span>المجموع الفرعي:</span><span className="font-semibold">{order.total} ج.م</span></div>
                                 <div className="flex justify-between"><span>الشحن:</span><span className="font-semibold">0.00 ج.م</span></div>
-                                <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>الإجمالي:</span><span>{order.total} ج.م</span></div>
+                                <div className="flex justify-between font-bold text-base border-t pt-2 mt-2"><span>الإجمالي:</span><span>{order.total} ج.م</span></div>
                             </div>
                         </div>
                     </Card>
@@ -94,9 +97,9 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, customers, pro
                                  const isLast = index === order.trackingHistory.length - 1;
                                  return (
                                     <div key={index} className="relative pb-8 last:pb-0">
-                                        { !isLast && <div className="absolute top-5 -right-3 w-0.5 h-full bg-primary-600"></div> }
+                                        { !isLast && <div className="absolute top-5 -right-3 w-0.5 h-full bg-admin-accent"></div> }
                                         <div className="flex items-start gap-4">
-                                            <div className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center z-10 bg-primary-100">
+                                            <div className="relative flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center z-10 bg-admin-accent/10">
                                                 {getStatusIcon(event.status, true)}
                                             </div>
                                             <div className="pt-2">
@@ -116,14 +119,14 @@ const OrderDetailPage: React.FC<OrderDetailPageProps> = ({ order, customers, pro
                         <div className="flex items-center gap-3">
                            {customer && <img src={customer.avatar} alt={customer.name} className="w-12 h-12 rounded-full" />}
                            <div>
-                                <button onClick={() => navigate('customerDetail', customer)} className="font-bold text-primary-600 hover:underline">{order.customer.name}</button>
+                                <button onClick={() => navigate('customerDetail', customer)} className="font-bold text-admin-accent hover:underline">{order.customer.name}</button>
                                <p className="text-sm text-gray-500">{order.customer.email}</p>
                            </div>
                         </div>
                     </Card>
                      <Card title="ملاحظات الطلب">
-                        <textarea rows={4} placeholder="أضف ملاحظة..." value={note} onChange={(e) => setNote(e.target.value)} className="w-full border-gray-300 rounded-lg text-sm"></textarea>
-                        <button className="w-full mt-2 bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 text-sm">حفظ الملاحظة</button>
+                        <textarea rows={4} placeholder="أضف ملاحظة..." value={note} onChange={(e) => setNote(e.target.value)} className="admin-form-input text-sm"></textarea>
+                        <button className="w-full mt-2 bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-200 text-sm">حفظ الملاحظة</button>
                      </Card>
                     <Card title="معلومات الشحن">
                         <div className="space-y-2 text-sm">

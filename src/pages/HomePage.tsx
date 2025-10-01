@@ -1,62 +1,61 @@
 import React from 'react';
-import { Product, HeroSlide } from '../types';
+import { Product, HeroSlide, SaleCampaign } from '../types';
 import { HeroSection } from '../components/home/HeroSection';
-import { FeaturedCategories } from '../components/home/FeaturedCategories';
-import { TabbedProductSection } from '../components/home/TabbedProductSection';
-import { PromoSection } from '../components/home/PromoSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { BrandLogos } from '../components/home/BrandLogos';
 import { InstagramSection } from '../components/home/InstagramSection';
 import { allProducts } from '../data/products';
+import { CountdownSaleSection } from '../components/home/CountdownSaleSection';
+import { useAppState } from '../state/AppState';
+import { FeaturesBar } from '../components/home/FeaturesBar';
+import { TabbedProductSection } from '../components/home/TabbedProductSection';
+import { CategoriesSection } from '../components/home/CategoriesSection';
+import { FeaturedProductSection } from '../components/home/FeaturedProductSection';
+import { InspiredByYouSection } from '../components/home/InspiredByYouSection';
+import { AiRecommendationsSection } from '../components/home/AiRecommendationsSection';
+
 
 interface HomePageProps {
     navigateTo: (pageName: string, data?: Product) => void;
     addToCart: (product: Product) => void;
     openQuickView: (product: Product) => void;
-    compareList: Product[];
-    addToCompare: (product: Product) => void;
     heroSlides: HeroSlide[];
-    wishlistItems: Product[];
-    toggleWishlist: (product: Product) => void;
+    saleCampaigns: SaleCampaign[];
 }
 
-const HomePage = ({ navigateTo, addToCart, openQuickView, compareList, addToCompare, heroSlides, wishlistItems, toggleWishlist }: HomePageProps) => (
-    <>
-        <HeroSection navigateTo={navigateTo} slides={heroSlides} />
+const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampaigns }: HomePageProps) => {
+    const { dispatch } = useAppState();
 
-        <FeaturedCategories navigateTo={navigateTo} />
-        
-        <TabbedProductSection 
-            products={allProducts}
-            navigateTo={navigateTo}
-            addToCart={addToCart}
-            openQuickView={openQuickView}
-            compareList={compareList}
-            addToCompare={addToCompare}
-            wishlistItems={wishlistItems}
-            toggleWishlist={toggleWishlist}
-        />
+    const commonProductProps = {
+        navigateTo,
+        addToCart,
+        openQuickView,
+        products: allProducts,
+        toggleWishlist: (product: Product) => dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id }),
+        addToCompare: (product: Product) => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id }),
+    };
 
-        <PromoSection 
-            image="https://images.unsplash.com/photo-1519235889733-6b74de6cb9e9?q=80&w=1964&auto=format&fit=crop"
-            categoryName="مجموعة الأطفال"
-            page="shop"
-            navigateTo={navigateTo}
-        />
-        
-        <TestimonialsSection 
-            addToCart={addToCart} 
-            openQuickView={openQuickView} 
-            compareList={compareList} 
-            addToCompare={addToCompare} 
-            wishlistItems={wishlistItems} 
-            toggleWishlist={toggleWishlist} 
-        />
-        
-        <InstagramSection />
-        
-        <BrandLogos />
-    </>
-);
+    return (
+        <>
+            <HeroSection navigateTo={navigateTo} heroSlides={heroSlides} />
+            
+            <CategoriesSection navigateTo={navigateTo} />
+            <TabbedProductSection {...commonProductProps} />
+            
+            <AiRecommendationsSection {...commonProductProps} />
+
+            {saleCampaigns.filter(c => c.status === 'Active').map(campaign => (
+                <CountdownSaleSection key={campaign.id} campaign={campaign} navigateTo={navigateTo} />
+            ))}
+            
+            <FeaturedProductSection navigateTo={navigateTo} />
+            <InspiredByYouSection navigateTo={navigateTo} />
+            <TestimonialsSection navigateTo={navigateTo} />
+            <BrandLogos />
+            <InstagramSection />
+            <FeaturesBar />
+        </>
+    );
+};
 
 export default HomePage;

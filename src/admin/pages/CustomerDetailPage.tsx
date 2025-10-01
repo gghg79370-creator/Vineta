@@ -1,10 +1,8 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { AdminCustomer, AdminOrder, AdminCustomerNote } from '../data/adminData';
 import { Card } from '../components/ui/Card';
 import { OrderListTable } from '../components/orders/OrderListTable';
-import { MapPinIcon, EnvelopeIcon, PhoneIcon, XCircleIcon, PlusIcon } from '../../components/icons';
+import { EnvelopeIcon, PhoneIcon, XCircleIcon, PlusIcon } from '../../components/icons';
 
 interface CustomerDetailPageProps {
     customer: AdminCustomer;
@@ -45,7 +43,7 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
             const noteToAdd: AdminCustomerNote = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString('ar-EG'),
-                author: 'Admin', // In a real app, this would be the current user's name
+                author: 'Admin',
                 text: newNote.trim(),
             };
             handleDetailChange('notes', [noteToAdd, ...customerDetails.notes]);
@@ -55,24 +53,21 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
 
     const handleSaveChanges = () => {
         onSave(customerDetails);
-        alert('Changes saved!');
+        alert('تم حفظ التغييرات!');
     };
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <div>
-                    <button onClick={() => navigate('customers')} className="text-sm font-bold text-primary-600 hover:underline mb-2">&larr; العودة إلى العملاء</button>
-                    <div className="flex items-center gap-4">
-                        <img src={customerDetails.avatar} alt={customerDetails.name} className="w-16 h-16 rounded-full"/>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{customerDetails.name}</h1>
-                            <p className="text-gray-500 mt-1">عميل منذ: {customerDetails.registeredDate}</p>
-                        </div>
+                 <div className="flex items-center gap-4">
+                    <img src={customerDetails.avatar} alt={customerDetails.name} className="w-16 h-16 rounded-full"/>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">{customerDetails.name}</h1>
+                        <p className="text-gray-500 mt-1 text-sm">عميل منذ: {customerDetails.registeredDate}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-3">
-                    <button onClick={handleSaveChanges} className="bg-primary-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-primary-500">
+                    <button onClick={handleSaveChanges} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover">
                         حفظ التغييرات
                     </button>
                  </div>
@@ -81,37 +76,38 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1 space-y-6">
                     <Card title="معلومات العميل">
-                         <div className="space-y-3 text-sm">
-                            <div className="flex items-start gap-3">
-                                <label className="flex items-center cursor-pointer">
-                                  <span className="mr-3 font-semibold text-sm">الحالة</span>
-                                  <div className="relative">
-                                    <input type="checkbox" checked={customerDetails.status === 'Active'} onChange={(e) => handleDetailChange('status', e.target.checked ? 'Active' : 'Blocked')} className="sr-only peer" />
-                                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                                  </div>
-                                   <span className="ml-3 font-semibold text-sm">{customerDetails.status === 'Active' ? 'نشط' : 'محظور'}</span>
-                                </label>
-                             </div>
+                         <div className="space-y-4 text-sm">
                              <div className="flex items-start gap-3">
                                 <EnvelopeIcon size="sm" className="text-gray-400 mt-1"/>
                                 <div>
-                                    <p className="font-semibold">البريد الإلكتروني</p>
-                                    <p className="text-gray-500">{customerDetails.email}</p>
+                                    <p className="font-semibold text-gray-500">البريد الإلكتروني</p>
+                                    <p className="text-gray-800">{customerDetails.email}</p>
                                 </div>
                              </div>
                              <div className="flex items-start gap-3">
                                 <PhoneIcon size="sm" className="text-gray-400 mt-1"/>
                                 <div>
-                                    <p className="font-semibold">الهاتف</p>
-                                    <p className="text-gray-500">{customerDetails.phone}</p>
+                                    <p className="font-semibold text-gray-500">الهاتف</p>
+                                    <p className="text-gray-800">{customerDetails.phone}</p>
                                 </div>
+                             </div>
+                              <div className="flex items-center gap-3 pt-3 border-t">
+                                <label className="font-semibold text-gray-500">الحالة</label>
+                                <select 
+                                    value={customerDetails.status} 
+                                    onChange={(e) => handleDetailChange('status', e.target.value)}
+                                    className="admin-form-input text-sm"
+                                >
+                                    <option value="Active">نشط</option>
+                                    <option value="Blocked">محظور</option>
+                                </select>
                              </div>
                          </div>
                     </Card>
                      <Card title="الوسوم">
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex flex-wrap gap-2 mb-3">
                             {customerDetails.tags.map(tag => (
-                                <span key={tag} className="bg-primary-100 text-primary-700 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                                <span key={tag} className="bg-admin-accent/10 text-admin-accent text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5">
                                     {tag}
                                     <button onClick={() => removeTag(tag)}><XCircleIcon className="w-3 h-3"/></button>
                                 </span>
@@ -123,20 +119,20 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={handleAddTag}
                             placeholder="إضافة وسم..."
-                            className="w-full border-gray-300 rounded-lg text-sm"
+                            className="admin-form-input text-sm"
                         />
                      </Card>
-                    <Card title="ملاحظات المشرف">
+                    <Card title="ملاحظات">
                         <div className="space-y-3 mb-3 max-h-48 overflow-y-auto">
                             {customerDetails.notes.map(note => (
-                                <div key={note.id} className="text-xs bg-gray-50 p-2 rounded-md">
+                                <div key={note.id} className="text-xs bg-gray-50 p-2 rounded-md border">
                                     <p className="text-gray-600">{note.text}</p>
                                     <p className="text-gray-400 text-right mt-1">{note.author} - {note.date}</p>
                                 </div>
                             ))}
                         </div>
-                        <textarea rows={3} placeholder="أضف ملاحظة جديدة..." value={newNote} onChange={(e) => setNewNote(e.target.value)} className="w-full border-gray-300 rounded-lg text-sm"></textarea>
-                        <button onClick={handleAddNote} className="w-full mt-2 bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 text-sm flex items-center justify-center gap-1">
+                        <textarea rows={3} placeholder="أضف ملاحظة جديدة..." value={newNote} onChange={(e) => setNewNote(e.target.value)} className="admin-form-input text-sm"></textarea>
+                        <button onClick={handleAddNote} className="w-full mt-2 bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-200 text-sm flex items-center justify-center gap-1">
                             <PlusIcon size="sm" />
                             إضافة ملاحظة
                         </button>
@@ -152,7 +148,7 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                         </Card>
                     </div>
                      <Card title="سجل الطلبات">
-                        <OrderListTable orders={orders} onView={(order) => navigate('orderDetail', order)} />
+                        <OrderListTable orders={orders} onView={(order) => navigate('orderDetail', order)} onStatusChange={() => {}} />
                     </Card>
                 </div>
             </div>

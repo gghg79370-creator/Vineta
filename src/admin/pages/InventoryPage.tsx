@@ -1,7 +1,8 @@
-
 import React, { useState, useMemo } from 'react';
-import { AdminProduct } from '../data/adminData';
+import { AdminProduct, AdminVariant } from '../data/adminData';
 import { Card } from '../components/ui/Card';
+import { useToast } from '../../hooks/useToast';
+import { MinusIcon, PlusIcon } from '../../components/icons';
 
 interface InventoryPageProps {
     products: AdminProduct[];
@@ -11,24 +12,14 @@ interface InventoryPageProps {
 const InventoryPage: React.FC<InventoryPageProps> = ({ products, setProducts }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [availabilityFilter, setAvailabilityFilter] = useState('All');
+    const [editedStocks, setEditedStocks] = useState<{ [key: string]: number }>({});
+    const [selectedVariants, setSelectedVariants] = useState<Set<string>>(new Set());
+    const [bulkUpdateValue, setBulkUpdateValue] = useState<number>(0);
+    const addToast = useToast();
 
-    const handleStockChange = (productId: number, variantId: number, newStock: number) => {
-        setProducts(prevProducts =>
-            prevProducts.map(p => {
-                if (p.id === productId) {
-                    return {
-                        ...p,
-                        variants: p.variants.map(v =>
-                            v.id === variantId ? { ...v, stock: newStock } : v
-                        ),
-                    };
-                }
-                return p;
-            })
-        );
-    };
+    type VariantWithProductInfo = { product: AdminProduct; variant: AdminVariant };
 
-    const flattenedInventory = useMemo(() => {
+    const flattenedInventory: VariantWithProductInfo[] = useMemo(() => {
         return products
             .flatMap(p => p.variants.map(v => ({ product: p, variant: v })))
             .filter(({ product, variant }) =>
@@ -43,41 +34,126 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ products, setProducts }) 
             });
     }, [products, searchTerm, availabilityFilter]);
 
+    const handleStockChange = (productId: number, variantId: number, newStock: number) => {
+        const key = `${productId}-${variantId}`;
+        setEditedStocks(prev => ({ ...prev, [key]: Math.max(0, newStock) }));
+    };
+
+    const handleSaveStock = (productId: number, variantId: number) => {
+        const key = `${productId}-${variantId}`;
+        const newStock = editedStocks[key];
+
+        if (newStock === undefined) return;
+
+        setProducts(prevProducts =>
+            prevProducts.map(p => {
+                if (p.id === productId) {
+                    return {
+                        ...p,
+                        variants: p.variants.map(v =>
+                            v.id === variantId ? { ...v, stock: newStock } : v
+                        ),
+                    };
+                }
+                return p;
+            })
+        );
+        
+        setEditedStocks(prev => {
+            const newEdits = { ...prev };
+            delete newEdits[key];
+            return newEdits;
+        });
+
+        addToast('تم تحديث المخزون!', 'success');
+    };
+
+    const handleSelectVariant = (productId: number, variantId: number) => {
+        const key = `${productId}-${variantId}`;
+        const newSelection = new Set(selectedVariants);
+        if (newSelection.has(key)) {
+            newSelection.delete(key);
+        } else {
+            newSelection.add(key);
+        }
+        setSelectedVariants(newSelection);
+    };
+
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            const allKeys = flattenedInventory.map(({ product, variant }) => `${product.id}-${variant.id}`);
+            setSelectedVariants(new Set(allKeys));
+        } else {
+            setSelectedVariants(new Set());
+        }
+    };
+    
+    const handleBulkUpdate = () => {
+        if (selectedVariants.size === 0 || bulkUpdateValue === 0) return;
+
+        setProducts(prevProducts => {
+            return prevProducts.map(p => {
+                const newVariants = p.variants.map(v => {
+                    const key = `${p.id}-${v.id}`;
+                    if (selectedVariants.has(key)) {
+                        return { ...v, stock: Math.max(0, v.stock + bulkUpdateValue) };
+                    }
+                    return v;
+                });
+                return { ...p, variants: newVariants };
+            });
+        });
+        
+        addToast(`تم تحديث ${selectedVariants.size} متغيرات.`, 'success');
+        setSelectedVariants(new Set());
+        setBulkUpdateValue(0);
+    };
+
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">المخزون</h1>
-                <p className="text-gray-500 mt-1">تتبع وإدارة مخزون منتجاتك.</p>
-            </div>
-            <Card title="جميع المنتجات">
-                <div className="flex flex-col md:flex-row gap-4 mb-4">
-                    <input
-                        type="search"
-                        placeholder="بحث بالمنتج أو SKU..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full md:w-1/3 border-gray-300 rounded-lg"
-                    />
-                    <select value={availabilityFilter} onChange={e => setAvailabilityFilter(e.target.value)} className="w-full md:w-auto border-gray-300 rounded-lg">
+        <Card title="إدارة المخزون">
+            <div className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <input type="search" placeholder="بحث بالمنتج أو SKU..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="admin-form-input w-full md:w-1/3"/>
+                    <select value={availabilityFilter} onChange={e => setAvailabilityFilter(e.target.value)} className="admin-form-input w-full md:w-auto">
                         <option value="All">كل حالات التوفر</option>
                         <option value="InStock">متوفر</option>
                         <option value="OutOfStock">نفد المخزون</option>
                     </select>
                 </div>
-                 <div className="overflow-x-auto">
+
+                {selectedVariants.size > 0 && (
+                     <div className="bg-admin-accent/10 p-3 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
+                        <p className="font-semibold text-sm text-admin-accent">{selectedVariants.size} متغيرات محددة</p>
+                        <div className="flex items-center gap-2">
+                             <input type="number" value={bulkUpdateValue} onChange={e => setBulkUpdateValue(parseInt(e.target.value, 10) || 0)} className="admin-form-input w-24 text-center" placeholder="± 0"/>
+                             <button onClick={handleBulkUpdate} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg text-sm">تحديث المحدد</button>
+                        </div>
+                    </div>
+                )}
+
+                 <div className="overflow-x-auto -mx-5">
                     <table className="w-full text-sm text-right">
                         <thead className="bg-gray-50 text-gray-500">
                             <tr>
-                                <th className="p-3 font-semibold">المنتج</th>
-                                <th className="p-3 font-semibold">SKU</th>
-                                <th className="p-3 font-semibold">المتوفر</th>
+                                <th className="p-4 w-4">
+                                    <input type="checkbox" onChange={handleSelectAll} checked={selectedVariants.size > 0 && selectedVariants.size === flattenedInventory.length && flattenedInventory.length > 0} className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"/>
+                                </th>
+                                <th className="p-4 font-semibold">المنتج</th>
+                                <th className="p-4 font-semibold">SKU</th>
+                                <th className="p-4 font-semibold">المتوفر</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y">
-                            {flattenedInventory.map(({ product, variant }) => (
-                                <tr key={`${product.id}-${variant.id}`} className="hover:bg-gray-50">
-                                    <td className="p-3">
+                        <tbody className="divide-y divide-gray-200/80">
+                            {flattenedInventory.map(({ product, variant }) => {
+                                const key = `${product.id}-${variant.id}`;
+                                const isEdited = editedStocks[key] !== undefined && editedStocks[key] !== variant.stock;
+                                const currentValue = editedStocks[key] ?? variant.stock;
+                                
+                                return (
+                                <tr key={key} className={`hover:bg-gray-50 ${selectedVariants.has(key) ? 'bg-admin-accent/5' : ''}`}>
+                                     <td className="p-4"><input type="checkbox" checked={selectedVariants.has(key)} onChange={() => handleSelectVariant(product.id, variant.id)} className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"/></td>
+                                    <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <img src={product.image} alt={product.name} className="w-10 h-12 object-cover rounded-md"/>
                                             <div>
@@ -86,22 +162,25 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ products, setProducts }) 
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-3 text-gray-500">{variant.sku}</td>
-                                    <td className="p-3">
-                                        <input
-                                            type="number"
-                                            value={variant.stock}
-                                            onChange={(e) => handleStockChange(product.id, variant.id, parseInt(e.target.value, 10) || 0)}
-                                            className="w-20 border-gray-300 rounded-lg p-1 text-center font-semibold"
-                                        />
+                                    <td className="p-4 text-gray-500">{variant.sku}</td>
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center border border-gray-300 rounded-lg bg-white">
+                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue - 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-r-lg"><MinusIcon size="sm"/></button>
+                                                <input type="number" value={currentValue} onChange={(e) => handleStockChange(product.id, variant.id, parseInt(e.target.value, 10) || 0)} className="w-16 border-y-0 border-x text-center font-semibold focus:ring-0 focus:border-gray-300"/>
+                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue + 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-l-lg"><PlusIcon size="sm"/></button>
+                                            </div>
+                                            {isEdited && <button onClick={() => handleSaveStock(product.id, variant.id)} className="bg-green-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs">حفظ</button>}
+                                        </div>
                                     </td>
                                 </tr>
-                            ))}
+                                )}
+                            )}
                         </tbody>
                     </table>
                 </div>
-            </Card>
-        </div>
+            </div>
+        </Card>
     );
 };
 

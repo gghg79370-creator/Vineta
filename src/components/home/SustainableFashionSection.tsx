@@ -14,7 +14,7 @@ export const SustainableFashionSection = ({ navigateTo }: SustainableFashionSect
                 <div className="relative md:absolute left-0 w-full md:w-1/2 bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-xl text-right animate-fade-in-up border border-white">
                      <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-dark mb-6">أزياء مستدامة</h2>
                     <p className="text-brand-text-light text-lg max-w-lg mx-auto md:mx-0 mb-10 leading-relaxed">اطلعي بمظهر جيد، واشعري بالرضا مع تصاميمنا الصديقة للبيئة والأنيقة التي تحتفي بالاستدامة دون المساومة على الأسلوب.</p>
-                    <button onClick={() => navigateTo('shop')} className="bg-brand-dark text-white font-bold py-4 px-10 rounded-full hover:bg-opacity-90 transition-all hover:scale-105 shadow-md hover:shadow-lg">تسوقي المستدام</button>
+                    <button onClick={() => navigateTo('shop')} className="bg-brand-dark text-white font-bold py-4 px-10 rounded-full hover:bg-opacity-90 transition-all hover:scale-105 active:scale-100 shadow-md hover:shadow-lg">تسوقي المستدام</button>
                 </div>
             </div>
         </div>

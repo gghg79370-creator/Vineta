@@ -1,40 +1,58 @@
-
 import React from 'react';
 import { useCountdown } from '../../hooks/useCountdown';
+import { SaleCampaign } from '../../types';
 
 interface CountdownSaleSectionProps {
-    navigateTo: (pageName: string) => void;
+    navigateTo: (pageName: string, data?: any) => void;
+    campaign: SaleCampaign;
 }
 
-export const CountdownSaleSection = ({ navigateTo }: CountdownSaleSectionProps) => {
-    const timeLeft = useCountdown(new Date("2025-01-01"));
+export const CountdownSaleSection: React.FC<CountdownSaleSectionProps> = ({ navigateTo, campaign }) => {
+    const timeLeft = useCountdown(new Date(campaign.saleEndDate));
+
+    const timeUnits = [
+        { value: timeLeft.days, label: 'أيام' },
+        { value: timeLeft.hours, label: 'ساعات' },
+        { value: timeLeft.minutes, label: 'دقائق' },
+        { value: timeLeft.seconds, label: 'ثواني' },
+    ];
 
     return (
-        <section className="container mx-auto px-4 py-20">
-            <div className="bg-gradient-to-tr from-rose-100 via-white to-orange-100 rounded-2xl flex flex-col md:flex-row items-center overflow-hidden shadow-lg">
-                <div className="flex-1 p-8 md:p-16 text-center md:text-right">
-                    <p className="font-bold text-brand-primary mb-2 text-lg animate-fade-in-up">تخفيضات الصيف الحصرية</p>
-                    <h2 className="text-5xl font-extrabold text-brand-dark mb-4 animate-fade-in-up" style={{animationDelay: '0.2s'}}>خصم 50%</h2>
-                    <p className="text-brand-text-light mb-8 animate-fade-in-up" style={{animationDelay: '0.4s'}}>استخدم الرمز الترويجي عند الدفع:</p>
-                    <div className="inline-block border-2 border-dashed border-brand-primary bg-white py-3 px-6 rounded-lg mb-10 animate-fade-in-up" style={{animationDelay: '0.6s'}}>
-                        <span className="font-extrabold text-2xl text-brand-dark tracking-widest">SUMMER50</span>
+        <section className="container mx-auto px-4 py-10">
+            <div className="bg-orange-50 rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-lg">
+                <div className="md:w-1/2 p-6 md:p-12 text-center flex flex-col items-center order-2 md:order-1">
+                    <p className="font-semibold text-brand-dark tracking-widest text-sm mb-2 uppercase">{campaign.subtitle}</p>
+                    <h2 className="font-sans text-5xl sm:text-7xl font-extrabold text-brand-dark mb-4">{campaign.discountText}</h2>
+                    <p className="font-semibold text-brand-text-light tracking-wider mb-8 uppercase">مع الرمز الترويجي: {campaign.couponCode}</p>
+                    
+                    <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6 mb-8 w-full max-w-sm">
+                        <div className="flex justify-around items-start text-center">
+                             {timeUnits.map((unit, index) => (
+                                <React.Fragment key={unit.label}>
+                                    <div className="w-16">
+                                        <span className="text-4xl sm:text-5xl font-bold text-brand-primary block">
+                                            {String(unit.value).padStart(2, '0')}
+                                        </span>
+                                        <span className="text-xs text-brand-text-light uppercase tracking-wider mt-1">{unit.label}</span>
+                                    </div>
+                                    {index < timeUnits.length - 1 && <span className="text-3xl sm:text-4xl font-bold text-brand-primary/80">:</span>}
+                                </React.Fragment>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="flex justify-center md:justify-start gap-4 mb-10 text-center animate-fade-in-up" style={{animationDelay: '0.8s'}}>
-                        <div className="bg-white/50 p-3 rounded-lg w-20 shadow-sm"><span className="text-4xl font-bold text-brand-dark block">{timeLeft.days}</span> <span className="text-xs text-brand-text-light">أيام</span></div>
-                        <div className="text-4xl font-bold text-brand-dark self-center pb-5">:</div>
-                        <div className="bg-white/50 p-3 rounded-lg w-20 shadow-sm"><span className="text-4xl font-bold text-brand-dark block">{timeLeft.hours}</span> <span className="text-xs text-brand-text-light">ساعات</span></div>
-                        <div className="text-4xl font-bold text-brand-dark self-center pb-5">:</div>
-                        <div className="bg-white/50 p-3 rounded-lg w-20 shadow-sm"><span className="text-4xl font-bold text-brand-dark block">{timeLeft.minutes}</span> <span className="text-xs text-brand-text-light">دقائق</span></div>
-                        <div className="text-4xl font-bold text-brand-dark self-center pb-5">:</div>
-                        <div className="bg-white/50 p-3 rounded-lg w-20 shadow-sm"><span className="text-4xl font-bold text-brand-dark block">{timeLeft.seconds}</span> <span className="text-xs text-brand-text-light">ثواني</span></div>
-                    </div>
-                    <button onClick={() => navigateTo('shop')} className="bg-brand-dark text-white font-bold py-4 px-10 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 animate-fade-in-up" style={{animationDelay: '1s'}}>تسوق العرض الآن</button>
+                    <button 
+                        onClick={() => navigateTo(campaign.page)} 
+                        className="bg-white text-brand-dark font-bold py-3 px-10 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-100">
+                        {campaign.buttonText}
+                    </button>
                 </div>
-                <div className="flex-1 w-full md:w-auto h-64 md:h-auto self-stretch">
-                    <img src="https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto=format&fit=crop" alt="Sale model" className="w-full h-full object-cover"/>
-                </div>
+                <div 
+                    className="md:w-1/2 w-full h-72 md:h-auto self-stretch bg-cover bg-center order-1 md:order-2"
+                    style={{ backgroundImage: `url(${campaign.image})` }}
+                    aria-label={`Sale for ${campaign.subtitle}`}
+                />
             </div>
         </section>
     );
-}
+};

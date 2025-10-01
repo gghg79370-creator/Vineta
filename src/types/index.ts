@@ -1,4 +1,21 @@
 
+export interface WishlistItem {
+    id: number;
+    note: string;
+}
+
+export interface HeroSlide {
+    id: number;
+    bgImage: string;
+    bgVideo?: string;
+    bgVideoType?: string;
+    title: string;
+    subtitle: string;
+    description?: string;
+    buttonText: string;
+    page: string;
+}
+
 export interface Review {
     id: number;
     author: string;
@@ -32,8 +49,7 @@ export interface Product {
     sizes: string[];
     tags: string[];
     category: 'women' | 'men';
-    isNew?: boolean;
-    onSale?: boolean;
+    badges?: { text: string; type: 'new' | 'sale' | 'trending' | 'custom' }[];
     rating?: number;
     reviewCount?: number;
     reviews?: Review[];
@@ -43,6 +59,22 @@ export interface Product {
     soldIn24h?: number;
     saleEndDate?: string;
     variants?: Variant[];
+    specifications?: string[];
+    materialComposition?: string;
+    careInstructions?: string[];
+}
+
+export interface SaleCampaign {
+    id: number;
+    title: string;
+    subtitle: string;
+    discountText: string;
+    couponCode: string;
+    buttonText: string;
+    image: string;
+    saleEndDate: string; // ISO string
+    page: string;
+    status: 'Active' | 'Draft';
 }
 
 export interface CartItem extends Product {
@@ -59,6 +91,9 @@ export interface Filters {
     min: number;
     max: number;
   };
+  rating: number;
+  onSale: boolean;
+  materials: string[];
 }
 
 export interface OrderItem {
@@ -87,26 +122,61 @@ export interface Order {
 }
 
 export interface User {
-    id: string;
+    id:string;
     name: string;
     email: string;
     phone?: string;
     isAdmin?: boolean;
+    role?: 'Administrator' | 'Editor' | 'Support';
+    addresses: Address[];
 }
 
 export interface Address {
     id: number;
     type: 'الشحن' | 'الفوترة';
-    name: string;
-    details: string;
+    name: string; // e.g., 'Home', 'Work'
+    recipientName: string;
+    street: string;
+    city: string; // Governorate
+    postalCode: string;
+    country: string;
     isDefault: boolean;
 }
 
-export interface HeroSlide {
+
+export interface Toast {
     id: number;
-    bgImage: string;
-    title: string;
-    subtitle: string;
-    buttonText: string;
-    page: string;
+    message: string;
+    type: 'success' | 'error' | 'info';
+}
+
+export interface Coupon {
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+}
+
+export interface TodoItem {
+    id: number;
+    text: string;
+    completed: boolean;
+}
+
+export interface AdminAnnouncement {
+    id: number;
+    content: string;
+    status: 'Active' | 'Inactive';
+    startDate: string;
+    endDate: string | null;
+}
+
+export interface Notification {
+  id: number;
+  type: 'order' | 'stock' | 'review';
+  title: string;
+  message: string;
+  timestamp: Date;
+  isRead: boolean;
+  link?: string;
+  data?: any;
 }

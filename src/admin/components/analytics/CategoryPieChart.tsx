@@ -5,12 +5,12 @@ interface PieChartProps {
 }
 
 const CategoryPieChart: React.FC<PieChartProps> = ({ data }) => {
-    const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
+    const colors = ['#3B82F6', '#6366F1', '#8B5CF6', '#EC4899'];
     const total = data.reduce((sum, item) => sum + item.value, 0);
 
     let cumulativePercent = 0;
     const gradients = data.map((item, index) => {
-        const percent = (item.value / total) * 100;
+        const percent = total > 0 ? (item.value / total) * 100 : 0;
         const start = cumulativePercent;
         cumulativePercent += percent;
         const end = cumulativePercent;
@@ -18,7 +18,7 @@ const CategoryPieChart: React.FC<PieChartProps> = ({ data }) => {
     });
 
     return (
-        <div className="flex flex-col items-center justify-center h-full p-4">
+        <div className="flex flex-col items-center justify-center h-full p-4 min-h-[300px]">
             <div
                 className="w-48 h-48 rounded-full relative"
                 style={{

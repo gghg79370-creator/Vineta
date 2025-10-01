@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon, CloseIcon, HeartIcon, UserIcon } from '../icons';
+import { ChevronDownIcon, CloseIcon, HeartIcon, UserIcon, SparklesIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { User } from '../../types';
 
@@ -41,8 +41,12 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
                         <SubMenu title="الرئيسية"><button onClick={() => handleNavigate('home')} className="block py-1">الرئيسية 1</button></SubMenu>
                         <SubMenu title="المتجر"><button onClick={() => handleNavigate('shop')} className="block py-1">قائمة المنتجات</button></SubMenu>
                         <SubMenu title="المنتجات"><button onClick={() => handleNavigate('product', allProducts[0])} className="block py-1">منتج بسيط</button></SubMenu>
+                        <button onClick={() => handleNavigate('blog')} className="w-full text-right block py-3 font-bold text-lg">المدونة</button>
+                        <button onClick={() => handleNavigate('style-me')} className="w-full flex justify-between items-center py-3 font-bold text-lg text-brand-primary">
+                            <span>المصمم الذكي</span>
+                            <SparklesIcon />
+                        </button>
                         <SubMenu title="صفحات"><button onClick={() => handleNavigate('faq')} className="block py-1">الأسئلة الشائعة</button></SubMenu>
-                        <button onClick={() => handleNavigate('home')} className="block py-3 font-bold text-lg">المدونة</button>
                     </div>
                     <div className="p-6 border-t space-y-4">
                          <div className="flex items-center gap-4">
