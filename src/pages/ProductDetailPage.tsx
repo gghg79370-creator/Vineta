@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, CartItem, Review, Variant } from '../types';
 import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, ArrowUpTrayIcon, ChevronRightIcon, CheckIcon, MagicIcon } from '../components/icons';
@@ -510,9 +511,6 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         </div>
                     </div>
                 </div>
-                 <button className={`lg:hidden fixed bottom-[200px] right-4 bg-white p-3 rounded-full shadow-lg z-40 transition-opacity ${showStickyAdd ? 'opacity-100' : 'opacity-0'}`} onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-                    <ArrowUpTrayIcon className="w-6 h-6" />
-                </button>
             </div>
             
             <div className="container mx-auto px-4 py-12">

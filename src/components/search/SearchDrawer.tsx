@@ -252,8 +252,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
                                         </div>
                                     ) : (isAiSearching || suggestions.length > 0) ? (
                                         <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm" /> اقتراحات</h3>{isAiSearching ? <div className="flex justify-start p-4"><Spinner size="md" color="text-brand-dark" /></div> : (<div className="flex flex-col items-start gap-1">{suggestions.map((term, index) => (<button key={index} onClick={() => performSearch(term)} className="px-3 py-1.5 text-sm font-semibold hover:text-brand-primary rounded-md text-right">{term}</button>))}</div>)}</div>
-                                    ) : null
-                                )}
+                                    ) : null}
                                 </div>
                            )}
                         </div>

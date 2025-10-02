@@ -222,7 +222,7 @@ ${productList}
                 </form>
             </div>
             {/* FAB */}
-            <div className={`fixed bottom-24 right-4 md:bottom-8 md:right-8 z-[70] transition-all duration-300 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
+            <div className={`fixed bottom-48 right-4 md:bottom-8 md:right-8 z-[70] transition-all duration-300 ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}>
                 <div className="relative group">
                     <div className="absolute bottom-full right-0 mb-3 bg-brand-dark text-white text-sm font-semibold py-1.5 px-4 rounded-full rounded-br-none whitespace-nowrap animate-tooltip-fade-in-out opacity-0">
                         أهلاً! كيف أساعدك؟
