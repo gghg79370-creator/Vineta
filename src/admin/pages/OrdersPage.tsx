@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { AdminOrder } from '../data/adminData';
 import { Pagination } from '../components/ui/Pagination';
@@ -17,6 +16,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ navigate, orders, onStatusChang
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [sortBy, setSortBy] = useState('date-desc');
     const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
     const addToast = useToast();
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -46,13 +46,30 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ navigate, orders, onStatusChang
     const ordersPerPage = 10;
 
     const filteredOrders = useMemo(() => {
-        return orders
+        let sortedOrders = [...orders]
             .filter(o => 
                 o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 o.customer.name.toLowerCase().includes(searchTerm.toLowerCase())
             )
             .filter(o => statusFilter === 'All' || o.status === statusFilter);
-    }, [orders, searchTerm, statusFilter]);
+
+        sortedOrders.sort((a, b) => {
+            switch (sortBy) {
+                case 'date-asc':
+                    return new Date(a.date).getTime() - new Date(b.date).getTime();
+                case 'date-desc':
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
+                case 'total-asc':
+                    return parseFloat(a.total) - parseFloat(b.total);
+                case 'total-desc':
+                    return parseFloat(b.total) - parseFloat(a.total);
+                default:
+                    return 0;
+            }
+        });
+
+        return sortedOrders;
+    }, [orders, searchTerm, statusFilter, sortBy]);
 
     const indexOfLastOrder = currentPage * ordersPerPage;
     const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -118,6 +135,12 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ navigate, orders, onStatusChang
                             </button>
                         ))}
                     </div>
+                    <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="admin-form-input w-full md:w-auto">
+                        <option value="date-desc">الأحدث أولاً</option>
+                        <option value="date-asc">الأقدم أولاً</option>
+                        <option value="total-desc">الإجمالي (الأعلى)</option>
+                        <option value="total-asc">الإجمالي (الأدنى)</option>
+                    </select>
                     <button className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 text-sm flex items-center gap-2 justify-center flex-shrink-0">
                         <ArrowUpTrayIcon size="sm"/>
                         <span>تصدير</span>

@@ -6,25 +6,16 @@ import { AdminAnnouncement } from '../../types';
 
 interface AnnouncementBarProps {
     announcements: AdminAnnouncement[];
+    setAnnouncements: React.Dispatch<React.SetStateAction<AdminAnnouncement[]>>;
 }
 
-export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
+export const AnnouncementBar = ({ announcements, setAnnouncements }: AnnouncementBarProps) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const [dismissedIds, setDismissedIds] = useState<number[]>(() => {
-        try {
-            const item = window.localStorage.getItem('dismissedAnnouncements');
-            return item ? JSON.parse(item) : [];
-        } catch (error) {
-            console.error("Error reading from localStorage", error);
-            return [];
-        }
-    });
-
     const activeAnnouncements = announcements.filter(
-        a => a.status === 'Active' && !dismissedIds.includes(a.id)
+        a => a.status === 'Active'
     );
     const hasMultipleAnnouncements = activeAnnouncements.length > 1;
     const TIMER_DURATION = 5000;
@@ -56,13 +47,7 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
     }, [currentIndex, isPaused, hasMultipleAnnouncements, activeAnnouncements.length]);
 
     const handleDismiss = (idToDismiss: number) => {
-        const newDismissedIds = [...dismissedIds, idToDismiss];
-        setDismissedIds(newDismissedIds);
-        try {
-            window.localStorage.setItem('dismissedAnnouncements', JSON.stringify(newDismissedIds));
-        } catch (error) {
-            console.error("Error writing to localStorage", error);
-        }
+        setAnnouncements(prev => prev.filter(a => a.id !== idToDismiss));
     };
 
     const containerClasses = `
@@ -91,17 +76,10 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
             onMouseEnter={hasMultipleAnnouncements ? () => setIsPaused(true) : undefined}
             onMouseLeave={hasMultipleAnnouncements ? () => setIsPaused(false) : undefined}
         >
-            <div className="container mx-auto px-4 h-10 flex items-center justify-center lg:justify-between">
-                {/* Language/Currency Selector & Dismiss button on left */}
+            <div className="container mx-auto px-4 h-10 flex items-center justify-center relative lg:justify-between">
+                
+                {/* Desktop Left: Language/Currency */}
                 <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
-                     <button 
-                        onClick={() => handleDismiss(activeAnnouncements[currentIndex].id)} 
-                        className="text-white/50 hover:text-white transition-colors"
-                        aria-label="Dismiss this announcement"
-                    >
-                        <i className="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                    <div className="w-px h-4 bg-white/20"></div>
                     <img src="https://flagcdn.com/eg.svg" width="20" alt="علم مصر" />
                     <button className="flex items-center gap-2 text-sm text-gray-300 hover:text-white">
                         <span>مصر (ج.م) / العربية</span>
@@ -109,13 +87,16 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
                     </button>
                 </div>
 
-                {/* Announcement Display with Controls */}
+                {/* Center: Announcement Text */}
                 <div className="flex-1 overflow-hidden relative h-full flex items-center justify-center">
                     <AnnouncementContent />
-                    
+                </div>
+
+                {/* Desktop Right: Controls & Dismiss */}
+                <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
                     {hasMultipleAnnouncements && (
-                        <div className="absolute right-0 flex items-center gap-4 hidden lg:flex">
-                             <div className="flex items-center gap-1.5">
+                        <>
+                            <div className="flex items-center gap-1.5">
                                 {activeAnnouncements.map((_, index) => (
                                     <button
                                         key={index}
@@ -125,13 +106,22 @@ export const AnnouncementBar = ({ announcements }: AnnouncementBarProps) => {
                                     />
                                 ))}
                             </div>
-                            <button onClick={() => setIsPaused(!isPaused)} className="text-white/70 hover:text-white" aria-label="Toggle autoplay settings">
-                                <i className="fa-solid fa-gear text-sm"></i>
+                            <button onClick={() => setIsPaused(!isPaused)} className="text-white/70 hover:text-white w-6 h-6 flex items-center justify-center" aria-label={isPaused ? "Play announcements" : "Pause announcements"}>
+                                <i className={`fa-solid ${isPaused ? 'fa-play' : 'fa-pause'} text-sm`}></i>
                             </button>
-                        </div>
+                            <div className="w-px h-4 bg-white/20"></div>
+                        </>
                     )}
+                    <button 
+                        onClick={() => handleDismiss(activeAnnouncements[currentIndex].id)} 
+                        className="text-white/50 hover:text-white transition-colors"
+                        aria-label="Dismiss this announcement"
+                    >
+                        <i className="fa-solid fa-xmark text-lg"></i>
+                    </button>
                 </div>
-                 {/* Dismiss button on right for mobile */}
+
+                 {/* Mobile Dismiss */}
                 <div className="lg:hidden flex-shrink-0 absolute right-4">
                      <button 
                         onClick={() => handleDismiss(activeAnnouncements[currentIndex].id)} 

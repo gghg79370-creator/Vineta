@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Product } from '../../types';
-import { CloseIcon, SearchIcon, SparklesIcon, TagIcon, CategoryIcon, FireIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon } from '../icons';
+import { CloseIcon, SearchIcon, SparklesIcon, TagIcon, CategoryIcon, FireIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon, ArrowUpTrayIcon, HeartIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { GoogleGenAI, Type } from "@google/genai";
 import Spinner from '../ui/Spinner';
+import { useAppState } from '../../state/AppState';
 
 interface SearchDrawerProps {
     isOpen: boolean;
@@ -34,6 +35,8 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 
 
 export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }: SearchDrawerProps) => {
+    const { state } = useAppState();
+    const wishlistCount = state.wishlist.length;
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [results, setResults] = useState<Product[]>([]);
@@ -47,6 +50,13 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
     const [visualSearchImage, setVisualSearchImage] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Camera state
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+
 
     const popularCategories = useMemo(() => {
         const mainCategories = ['ملابس', 'إكسسوارات', 'أحذية', 'حقائب', 'ملابس رياضية', 'صيف', 'شتاء', 'كاجوال'];
@@ -69,11 +79,14 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
+            stopCamera();
             setTimeout(() => {
-                setSearchTerm(''); setVisualSearchImage(null); setIsAnalyzing(false);
+                setSearchTerm('');
+                setVisualSearchImage(null);
+                setIsAnalyzing(false);
             }, 300);
         }
-        return () => { document.body.style.overflow = ''; };
+        return () => { document.body.style.overflow = ''; stopCamera(); };
     }, [isOpen]);
 
     const addToHistory = (query: string) => {
@@ -177,25 +190,67 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
         };
     }, [searchTerm]);
 
-    const handleVisualSearchClick = () => fileInputRef.current?.click();
-
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    const analyzeImage = async (imageBlob: Blob) => {
         setSearchTerm(''); setResults([]); setSuggestions([]);
-        const imageUrl = URL.createObjectURL(file);
+        const imageUrl = URL.createObjectURL(imageBlob);
         setVisualSearchImage(imageUrl);
         setIsAnalyzing(true);
         try {
-            const base64Data = await blobToBase64(file);
+            const base64Data = await blobToBase64(imageBlob);
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const imagePart = { inlineData: { mimeType: file.type, data: base64Data } };
-            const textPart = { text: "صف عناصر الموضة في هذه الصورة بعبارة قصيرة وقابلة للبحث باللغة العربية. مثال: 'فستان صيفي أبيض'." };
+            const imagePart = { inlineData: { mimeType: imageBlob.type, data: base64Data } };
+            const textPart = { text: "Describe the fashion items in this image in a short, searchable phrase in Arabic. Example: 'فستان صيفي أبيض'." };
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: { parts: [imagePart, textPart] } });
             setSearchTerm(response.text);
         } catch (error) { console.error("Error analyzing image:", error); } 
         finally { setIsAnalyzing(false); }
     };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            analyzeImage(file);
+        }
+    };
+    
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            setIsCameraOpen(true);
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera. Please check permissions.");
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setIsCameraOpen(false);
+    };
+
+    const captureImage = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d')?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            canvas.toBlob(async (blob) => {
+                if (blob) {
+                    await analyzeImage(blob);
+                    stopCamera();
+                }
+            }, 'image/jpeg', 0.9);
+        }
+    };
+
 
     const performSearch = (query: string) => {
         if (query.trim()) {
@@ -218,21 +273,60 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
     return (
         <>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+             {isCameraOpen && (
+                <div className="fixed inset-0 bg-black z-[80] flex flex-col items-center justify-center animate-fade-in">
+                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-contain"></video>
+                    <canvas ref={canvasRef} className="hidden"></canvas>
+                    <div className="absolute bottom-8 flex items-center justify-center w-full gap-8">
+                        <button onClick={stopCamera} className="text-white bg-black/30 rounded-full py-2 px-6 font-semibold">إلغاء</button>
+                        <button onClick={captureImage} className="w-20 h-20 rounded-full bg-white flex items-center justify-center border-4 border-white/50 ring-4 ring-black/20" aria-label="Capture Image"></button>
+                    </div>
+                </div>
+            )}
             <div className={`hidden md:block fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
             <div className={`hidden md:block fixed top-0 right-0 left-0 bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     <form onSubmit={handleFormSubmit} className="relative mb-8">
                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light pointer-events-none"><SearchIcon size="md"/></div>
-                        <input type="search" placeholder="بحث في Vineta..." className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-24 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-white" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
+                        <input type="search" placeholder="بحث في Vineta..." className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-48 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-white" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
                         <div className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center gap-2">
-                            <button type="button" onClick={handleVisualSearchClick} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-200" aria-label="البحث بالصورة"><CameraIcon /></button>
-                            <button type="button" onClick={() => setIsOpen(false)} className="font-semibold text-sm text-gray-500 hover:text-brand-dark">إلغاء</button>
+                            <button
+                                type="button"
+                                onClick={() => { navigateTo('wishlist'); setIsOpen(false); }}
+                                className="relative text-brand-text-light p-2 rounded-full hover:bg-gray-200"
+                                aria-label={`Wishlist (${wishlistCount} items)`}
+                            >
+                                <HeartIcon size="md" />
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-brand-sale text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                                        {wishlistCount}
+                                    </span>
+                                )}
+                            </button>
+                            <div className="w-px h-6 bg-gray-200"></div>
+                            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-200" aria-label="البحث بصورة من ملف"><ArrowUpTrayIcon/></button>
+                            <button type="button" onClick={startCamera} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-200" aria-label="البحث بالكاميرا"><CameraIcon /></button>
+                            <div className="w-px h-6 bg-gray-200"></div>
+                            <button type="button" onClick={() => setIsOpen(false)} className="font-semibold text-sm text-gray-500 hover:text-brand-dark px-2">إلغاء</button>
                         </div>
                     </form>
 
                     <div className="grid grid-cols-3 gap-8 min-h-[350px]">
                         <div className="col-span-1 border-l pl-8">
-                            {searchTerm.length < 2 && !visualSearchImage ? (
+                            {visualSearchImage ? (
+                                <div className="animate-fade-in">
+                                    <h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CameraIcon size="sm"/> البحث بالصورة</h3>
+                                    <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden border shadow-sm">
+                                        <img src={visualSearchImage} alt="visual search" className="w-full h-full object-cover" />
+                                        {isAnalyzing && (
+                                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4">
+                                                <Spinner />
+                                                <p className="mt-2 text-sm font-semibold text-center">جارٍ تحليل الصورة...</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : searchTerm.length < 2 ? (
                                 <div className="space-y-6 animate-fade-in">
                                     {searchHistory.length > 0 && (
                                         <div>
@@ -245,14 +339,9 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
                                 </div>
                             ) : (
                                 <div className="space-y-6 animate-fade-in">
-                                    {visualSearchImage ? (
-                                        <div>
-                                            <h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CameraIcon size="sm"/> البحث بالصورة</h3>
-                                            <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden border shadow-sm"><img src={visualSearchImage} alt="visual search" className="w-full h-full object-cover" />{isAnalyzing && (<div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4"><Spinner /><p className="mt-2 text-sm font-semibold text-center">جارٍ تحليل الصورة...</p></div>)}</div>
-                                        </div>
-                                    ) : (isAiSearching || suggestions.length > 0) ? (
+                                     {(isAiSearching || suggestions.length > 0) && (
                                         <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm" /> اقتراحات</h3>{isAiSearching ? <div className="flex justify-start p-4"><Spinner size="md" color="text-brand-dark" /></div> : (<div className="flex flex-col items-start gap-1">{suggestions.map((term, index) => (<button key={index} onClick={() => performSearch(term)} className="px-3 py-1.5 text-sm font-semibold hover:text-brand-primary rounded-md text-right">{term}</button>))}</div>)}</div>
-                                    ) : null}
+                                    )}
                                 </div>
                            )}
                         </div>
@@ -262,14 +351,27 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
                             <div className="animate-fade-in">
                                 {isSearching ? <div className="grid grid-cols-3 gap-4"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div> : (
                                     searchTerm.length < 2 && !visualSearchImage ? (
-                                        <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><FireIcon size="sm"/> المنتجات الرائجة</h3><div className="grid grid-cols-3 gap-4">{popularProducts.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate">{product.name}</p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div></div>
+                                        <div>
+                                            <h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><FireIcon size="sm"/> المنتجات الرائجة</h3>
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {popularProducts.map(product => (
+                                                    <div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer">
+                                                        <div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden mb-2">
+                                                            <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                                                        </div>
+                                                        <p className="font-semibold text-sm mt-2 truncate">{product.name}</p>
+                                                        <p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     ) : (isAiSearching || results.length > 0 || aiRecommendations.length > 0) ? (
                                         <div className="space-y-6">
                                             { (isAiSearching || aiRecommendations.length > 0) && <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm"/> توصيات AI لك</h3>{isAiSearching ? <div className="grid grid-cols-3 gap-4"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div> : <div className="grid grid-cols-3 gap-4">{aiRecommendations.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate">{product.name}</p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>}</div>}
                                             {results.length > 0 && <div><h3 className="font-bold mb-3 text-brand-dark">نتائج مباشرة</h3><div className="grid grid-cols-3 gap-4">{results.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate">{product.name}</p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>{allResultsCount > results.length && (<button onClick={() => performSearch(searchTerm)} className="w-full mt-6 bg-brand-subtle text-brand-dark font-bold py-3 rounded-lg text-base hover:bg-brand-border">عرض كل النتائج ({allResultsCount})</button>)}</div>}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8"><p className="font-bold text-brand-dark">لم نجد أي تطابق لـ "{searchTerm}".</p><p className="text-brand-text-light mt-2">جرّب البحث عن شيء آخر أو تحقق من منتجاتنا الرائجة.</p><div className="mt-8 p-6 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200"><h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4><p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p><button onClick={handleVisualSearchClick} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90"><CameraIcon size="sm" /> البحث بالصورة</button></div></div>
+                                        <div className="text-center py-8"><p className="font-bold text-brand-dark">لم نجد أي تطابق لـ "{searchTerm}".</p><p className="text-brand-text-light mt-2">جرّب البحث عن شيء آخر أو تحقق من منتجاتنا الرائجة.</p><div className="mt-8 p-6 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200"><h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4><p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p><button onClick={startCamera} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90"><CameraIcon size="sm" /> البحث بالكاميرا</button></div></div>
                                     )
                                 )}
                             </div>

@@ -31,7 +31,7 @@ export const GoToTopButton = () => {
         <button
             type="button"
             onClick={scrollToTop}
-            className={`fixed bottom-48 md:bottom-6 left-6 z-50 bg-brand-dark text-white rounded-full p-3 shadow-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-110
+            className={`fixed bottom-24 left-4 md:bottom-8 md:left-8 z-50 bg-brand-dark text-white rounded-full p-3 shadow-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-110
                 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}`}
             aria-label="العودة إلى الأعلى"
         >

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { AdminCustomer, AdminOrder, AdminCustomerNote } from '../data/adminData';
 import { Card } from '../components/ui/Card';
 import { OrderListTable } from '../components/orders/OrderListTable';
-import { EnvelopeIcon, PhoneIcon, XCircleIcon, PlusIcon } from '../../components/icons';
+import { EnvelopeIcon, PhoneIcon, XCircleIcon, PlusIcon, UserIcon } from '../../components/icons';
+import { useToast } from '../../hooks/useToast';
 
 interface CustomerDetailPageProps {
     customer: AdminCustomer;
@@ -15,6 +16,7 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
     const [customerDetails, setCustomerDetails] = useState(customer);
     const [tagInput, setTagInput] = useState('');
     const [newNote, setNewNote] = useState('');
+    const addToast = useToast();
 
     useEffect(() => {
         setCustomerDetails(customer);
@@ -43,7 +45,7 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
             const noteToAdd: AdminCustomerNote = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString('ar-EG'),
-                author: 'Admin',
+                author: 'Admin', // In a real app, this would be the current admin's name
                 text: newNote.trim(),
             };
             handleDetailChange('notes', [noteToAdd, ...customerDetails.notes]);
@@ -53,8 +55,11 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
 
     const handleSaveChanges = () => {
         onSave(customerDetails);
-        alert('تم حفظ التغييرات!');
+        addToast('تم حفظ تغييرات العميل!', 'success');
+        navigate('customers');
     };
+    
+    const statusClasses = customerDetails.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
 
     return (
         <div className="space-y-6">
@@ -62,11 +67,19 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                  <div className="flex items-center gap-4">
                     <img src={customerDetails.avatar} alt={customerDetails.name} className="w-16 h-16 rounded-full"/>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{customerDetails.name}</h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl font-bold text-gray-900">{customerDetails.name}</h1>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusClasses}`}>
+                                {customerDetails.status === 'Active' ? 'نشط' : 'محظور'}
+                            </span>
+                        </div>
                         <p className="text-gray-500 mt-1 text-sm">عميل منذ: {customerDetails.registeredDate}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-3">
+                    <button onClick={() => navigate('customers')} className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50">
+                        العودة
+                    </button>
                     <button onClick={handleSaveChanges} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover">
                         حفظ التغييرات
                     </button>
@@ -77,26 +90,24 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                 <div className="lg:col-span-1 space-y-6">
                     <Card title="معلومات العميل">
                          <div className="space-y-4 text-sm">
-                             <div className="flex items-start gap-3">
-                                <EnvelopeIcon size="sm" className="text-gray-400 mt-1"/>
-                                <div>
-                                    <p className="font-semibold text-gray-500">البريد الإلكتروني</p>
-                                    <p className="text-gray-800">{customerDetails.email}</p>
-                                </div>
+                             <div>
+                                <label className="admin-form-label">الاسم الكامل</label>
+                                <input value={customerDetails.name} onChange={(e) => handleDetailChange('name', e.target.value)} className="admin-form-input"/>
                              </div>
-                             <div className="flex items-start gap-3">
-                                <PhoneIcon size="sm" className="text-gray-400 mt-1"/>
-                                <div>
-                                    <p className="font-semibold text-gray-500">الهاتف</p>
-                                    <p className="text-gray-800">{customerDetails.phone}</p>
-                                </div>
+                             <div>
+                                <label className="admin-form-label">البريد الإلكتروني</label>
+                                <input type="email" value={customerDetails.email} onChange={(e) => handleDetailChange('email', e.target.value)} className="admin-form-input"/>
                              </div>
-                              <div className="flex items-center gap-3 pt-3 border-t">
-                                <label className="font-semibold text-gray-500">الحالة</label>
+                             <div>
+                                <label className="admin-form-label">الهاتف</label>
+                                <input type="tel" value={customerDetails.phone} onChange={(e) => handleDetailChange('phone', e.target.value)} className="admin-form-input"/>
+                             </div>
+                              <div className="pt-3 border-t">
+                                <label className="admin-form-label">الحالة</label>
                                 <select 
                                     value={customerDetails.status} 
                                     onChange={(e) => handleDetailChange('status', e.target.value)}
-                                    className="admin-form-input text-sm"
+                                    className="admin-form-input"
                                 >
                                     <option value="Active">نشط</option>
                                     <option value="Blocked">محظور</option>
@@ -130,6 +141,7 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                                     <p className="text-gray-400 text-right mt-1">{note.author} - {note.date}</p>
                                 </div>
                             ))}
+                             {customerDetails.notes.length === 0 && <p className="text-center text-xs text-gray-400 py-4">لا توجد ملاحظات.</p>}
                         </div>
                         <textarea rows={3} placeholder="أضف ملاحظة جديدة..." value={newNote} onChange={(e) => setNewNote(e.target.value)} className="admin-form-input text-sm"></textarea>
                         <button onClick={handleAddNote} className="w-full mt-2 bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-200 text-sm flex items-center justify-center gap-1">
@@ -148,7 +160,14 @@ const CustomerDetailPage: React.FC<CustomerDetailPageProps> = ({ customer, order
                         </Card>
                     </div>
                      <Card title="سجل الطلبات">
-                        <OrderListTable orders={orders} onView={(order) => navigate('orderDetail', order)} onStatusChange={() => {}} />
+                        <OrderListTable 
+                            orders={orders} 
+                            onView={(order) => navigate('orderDetail', order)} 
+                            onStatusChange={() => {}}
+                            selectedOrders={[]}
+                            onSelectAll={() => {}}
+                            onSelectOne={() => {}}
+                        />
                     </Card>
                 </div>
             </div>

@@ -54,7 +54,11 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
                         <div className={`absolute bottom-16 md:bottom-24 w-full flex justify-center transition-all duration-500 ease-out ${activeIndex === index ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-8'}`}>
                             <button 
                                 onClick={() => navigateTo(category.page)}
-                                className="bg-white/90 backdrop-blur-sm text-brand-dark font-bold py-4 px-12 text-lg rounded-full shadow-lg hover:bg-brand-dark hover:text-white transition-all duration-300 transform hover:scale-105"
+                                className={`font-bold py-4 px-12 text-lg rounded-full shadow-lg transition-all duration-300 transform ${
+                                    activeIndex === index 
+                                        ? 'bg-brand-primary text-white scale-105' 
+                                        : 'bg-white/90 backdrop-blur-sm text-brand-dark hover:bg-brand-dark hover:text-white hover:scale-105'
+                                }`}
                             >
                                 <span>{category.name}</span>
                             </button>

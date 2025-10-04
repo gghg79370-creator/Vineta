@@ -38,7 +38,6 @@ import {
     AdminDiscount,
     AdminBlogPost,
     AdminCategory,
-    // FIX: Import AdminVariant to resolve type error.
     AdminVariant
 } from './data/adminData';
 
@@ -74,7 +73,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
                 isRead: false,
                 ...notification,
             };
-            setNotifications(prev => [newNotification, ...prev]);
+            setNotifications(prev => [newNotification, ...prev].slice(0, 20)); // Keep max 20 notifications
         };
 
         const orderTimer = setTimeout(() => {
@@ -129,7 +128,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
             clearTimeout(orderTimer);
             clearTimeout(stockTimer);
         };
-    }, [products]);
+    }, []);
 
     const handleMarkAsRead = (id: number) => {
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
@@ -287,7 +286,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
                         <div className="text-center p-8">
                             <h2 className="text-xl font-bold">لم يتم العثور على العميل</h2>
                             <p className="text-gray-500 mt-2">يرجى العودة إلى قائمة العملاء واختيار عميل لعرض تفاصيله.</p>
-                            <button onClick={() => navigate('customers')} className="mt-4 bg-primary-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-primary-500">
+                            <button onClick={() => navigate('customers')} className="mt-4 bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover">
                                 العودة إلى العملاء
                             </button>
                         </div>

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Product } from '../../types';
 import { WishlistProductCard } from '../product/WishlistProductCard';

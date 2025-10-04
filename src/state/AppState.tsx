@@ -1,4 +1,3 @@
-
 import React, { createContext, useReducer, useContext, useMemo } from 'react';
 import { User, Product, Toast, TodoItem, WishlistItem, Address, Coupon } from '../types';
 import { cartItemsData } from '../data/cart';

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { ordersData } from '../data/orders';
 import { Order, User, Address, Product, TrackingEvent, TodoItem } from '../types';
@@ -37,6 +38,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import OrderTracker from '../components/ui/OrderTracker';
 import { WishlistGrid } from '../components/wishlist/WishlistGrid';
 import AddressModal from '../components/modals/AddressModal';
+import { allProducts } from '../data/products';
+
 
 interface AccountPageProps {
     navigateTo: (pageName: string, data?: any) => void;
@@ -345,6 +348,22 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
                 addToast('تم حفظ الملف الشخصي بنجاح!', 'success');
             }, 1000);
         };
+
+        const handlePasswordSubmit = (e: React.FormEvent) => {
+            e.preventDefault();
+            if (passwordData.newPassword.length < 8) {
+                addToast('يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل.', 'error');
+                return;
+            }
+            if (passwordData.newPassword !== passwordData.confirmPassword) {
+                addToast('كلمتا المرور الجديدتان غير متطابقتين.', 'error');
+                return;
+            }
+            // Mock API call
+            console.log("Updating password...");
+            addToast('تم تحديث كلمة المرور بنجاح!', 'success');
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        };
         
         const InputField = ({ label, value, ...props }: any) => (
             <div>
@@ -448,13 +467,13 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
                     {/* Password Card */}
                     <div className="border p-6 rounded-lg">
                         <h3 className="font-bold text-lg mb-4">كلمة المرور والأمان</h3>
-                        <form className="space-y-4 max-w-lg">
-                            <InputField label="كلمة المرور الحالية" type="password"/>
+                        <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-lg">
+                            <InputField label="كلمة المرور الحالية" type="password" value={passwordData.currentPassword} onChange={(e: any) => setPasswordData({...passwordData, currentPassword: e.target.value})} />
                             <div>
                                 <InputField label="كلمة المرور الجديدة" type="password" value={passwordData.newPassword} onChange={(e: any) => setPasswordData({...passwordData, newPassword: e.target.value})}/>
                                 <PasswordStrengthIndicator password={passwordData.newPassword} />
                             </div>
-                            <InputField label="تأكيد كلمة المرور الجديدة" type="password"/>
+                            <InputField label="تأكيد كلمة المرور الجديدة" type="password" value={passwordData.confirmPassword} onChange={(e: any) => setPasswordData({...passwordData, confirmPassword: e.target.value})}/>
                             <button type="submit" className="bg-brand-dark text-white font-bold py-2.5 px-6 rounded-full">تحديث كلمة المرور</button>
                         </form>
                     </div>
@@ -495,19 +514,23 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
         )
     );
     
-    const TasksContent = () => {
+    const PlannerContent = () => {
         const { state, dispatch } = useAppState();
-        const { todos } = state;
+        const { todos, wishlist } = state;
         const [newTodoText, setNewTodoText] = useState('');
-
-        const handleAddTodo = (e: React.FormEvent) => {
+        const [suggestions, setSuggestions] = useState<string[]>([]);
+        const [isGenerating, setIsGenerating] = useState(false);
+    
+        const handleAddTodo = (e: React.FormEvent, text?: string) => {
             e.preventDefault();
-            if (newTodoText.trim()) {
-                dispatch({ type: 'ADD_TODO', payload: newTodoText.trim() });
-                setNewTodoText('');
+            const textToAdd = text || newTodoText;
+            if (textToAdd.trim()) {
+                dispatch({ type: 'ADD_TODO', payload: textToAdd.trim() });
+                if (!text) setNewTodoText('');
+                if (text) setSuggestions(prev => prev.filter(s => s !== text));
             }
         };
-
+    
         const handleToggleTodo = (id: number) => {
             dispatch({ type: 'TOGGLE_TODO', payload: id });
         };
@@ -516,47 +539,91 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
             dispatch({ type: 'REMOVE_TODO', payload: id });
         };
 
+        const getAiSuggestions = async () => {
+            setIsGenerating(true);
+            setSuggestions([]);
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+
+                const wishlistItems = wishlist.map(item => allProducts.find(p => p.id === item.id)?.name).filter(Boolean).join(', ');
+                const recentOrders = ordersData.slice(0, 2).flatMap(o => o.items.map(i => i.name)).join(', ');
+                
+                const prompt = `أنت مساعد تسوق شخصي. بناءً على نشاط المستخدم الأخير، اقترح 3-5 مهام تسوق قصيرة وقابلة للتنفيذ باللغة العربية.
+- عناصر قائمة الرغبات: ${wishlistItems || 'لا يوجد'}
+- الطلبات الأخيرة: ${recentOrders || 'لا يوجد'}
+- الموسم القادم: الصيف
+
+مثال على المهام: "ابحث عن حذاء رياضي أبيض يتناسب مع بنطلون الجينز", "اشترِ هدية عيد ميلاد لأحمد", "تحقق من مجموعة الصيف الجديدة".
+قم بالرد فقط بمصفوفة JSON من السلاسل النصية.`;
+
+                const response = await ai.models.generateContent({
+                    model: "gemini-2.5-flash",
+                    contents: prompt,
+                    config: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
+                    }
+                });
+                setSuggestions(JSON.parse(response.text));
+
+            } catch (error) {
+                console.error("Error getting AI suggestions:", error);
+                addToast("حدث خطأ أثناء الحصول على الاقتراحات.", "error");
+            } finally {
+                setIsGenerating(false);
+            }
+        };
+    
         return (
              <div>
-                <h2 className="text-2xl font-bold mb-6 text-brand-dark">مهامي</h2>
-                <div className="max-w-xl mx-auto">
-                    <form onSubmit={handleAddTodo} className="flex gap-2 mb-6">
-                        <input
-                            type="text"
-                            value={newTodoText}
-                            onChange={(e) => setNewTodoText(e.target.value)}
-                            placeholder="مهمة جديدة (مثلاً: شراء هدية)"
-                            className="w-full bg-white border border-brand-border rounded-full py-2.5 px-5 focus:outline-none focus:ring-2 focus:ring-brand-dark"
-                        />
-                        <button type="submit" className="bg-brand-dark text-white font-bold py-2.5 px-6 rounded-full hover:bg-opacity-90 flex-shrink-0">
-                            <PlusIcon size="sm" />
+                <h2 className="text-2xl font-bold mb-6 text-brand-dark">مخطط التسوق</h2>
+                <div className="max-w-2xl mx-auto">
+                     <div className="p-4 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200 mb-8 text-center">
+                        <h4 className="font-bold text-brand-dark">هل تحتاج إلى بعض الإلهام؟</h4>
+                        <p className="text-sm text-brand-text-light my-2">دع مساعدنا الذكي يقترح عليك مهام تسوق بناءً على أسلوبك ونشاطك.</p>
+                        <button onClick={getAiSuggestions} disabled={isGenerating} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50">
+                            {isGenerating ? <Spinner size="sm"/> : <><SparklesIcon size="sm" /> <span>الحصول على اقتراحات ذكية</span></>}
                         </button>
+                    </div>
+
+                    {suggestions.length > 0 && (
+                        <div className="mb-6 animate-fade-in">
+                            <h3 className="font-bold mb-3">اقتراحات لك:</h3>
+                            <div className="space-y-2">
+                                {suggestions.map((suggestion, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                                        <span className="text-sm font-semibold">{suggestion}</span>
+                                        <button onClick={(e) => handleAddTodo(e, suggestion)} className="text-sm font-bold text-admin-accent hover:underline flex items-center gap-1"><PlusIcon size="sm"/> إضافة</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleAddTodo} className="flex gap-2 mb-6">
+                        <input type="text" value={newTodoText} onChange={(e) => setNewTodoText(e.target.value)} placeholder="أضف مهمة جديدة..." className="w-full bg-white border border-brand-border rounded-full py-2.5 px-5 focus:outline-none focus:ring-2 focus:ring-brand-dark"/>
+                        <button type="submit" className="bg-brand-dark text-white font-bold py-2.5 px-6 rounded-full hover:bg-opacity-90 flex-shrink-0"><PlusIcon size="sm" /></button>
                     </form>
+
                     <div className="space-y-3">
                         {todos.map(todo => (
                              <div key={todo.id} className="flex items-center justify-between p-3 bg-brand-subtle rounded-lg">
                                  <div className="flex items-center gap-3">
-                                    <input 
-                                        type="checkbox"
-                                        id={`task-${todo.id}`}
-                                        className="sr-only task-input"
-                                        checked={todo.completed}
-                                        onChange={() => handleToggleTodo(todo.id)}
-                                    />
+                                    <input type="checkbox" id={`task-${todo.id}`} className="sr-only task-input" checked={todo.completed} onChange={() => handleToggleTodo(todo.id)}/>
                                     <label htmlFor={`task-${todo.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-brand-border bg-white">
-                                         <svg className="task-checkbox-svg w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                             <polyline className="task-checkbox-path" points="20 6 9 17 4 12"></polyline>
-                                         </svg>
+                                         <svg className="task-checkbox-svg w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline className="task-checkbox-path" points="20 6 9 17 4 12"></polyline></svg>
                                     </label>
-                                    <span className={`font-semibold ${todo.completed ? 'task-text-completed' : 'text-brand-dark'}`}>
-                                        {todo.text}
-                                    </span>
+                                    <span className={`font-semibold ${todo.completed ? 'task-text-completed' : 'text-brand-dark'}`}>{todo.text}</span>
                                  </div>
-                                 <button onClick={() => handleRemoveTodo(todo.id)} className="text-brand-text-light hover:text-brand-sale p-1">
-                                    <TrashIcon size="sm" />
-                                 </button>
+                                 <button onClick={() => handleRemoveTodo(todo.id)} className="text-brand-text-light hover:text-brand-sale p-1"><TrashIcon size="sm" /></button>
                              </div>
                         ))}
+                         {todos.length === 0 && !isGenerating && suggestions.length === 0 && (
+                            <p className="text-center text-gray-500 py-4">قائمتك فارغة. أضف مهمة أو احصل على اقتراحات ذكية للبدء!</p>
+                         )}
                     </div>
                 </div>
             </div>
@@ -652,7 +719,7 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard': return <DashboardContent />; case 'orders': return <OrdersContent />; case 'profile': return <AccountDetailsContent />;
-            case 'wishlist': return <WishlistContent />; case 'tasks': return <TasksContent />; case 'trackOrder': return <TrackOrderContent />; default: return <DashboardContent />;
+            case 'wishlist': return <WishlistContent />; case 'planner': return <PlannerContent />; case 'trackOrder': return <TrackOrderContent />; default: return <DashboardContent />;
         }
     };
     
@@ -676,7 +743,7 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
             { id: 'orders', label: 'طلباتي', icon: <ShoppingBagIcon size="sm" /> },
             { id: 'trackOrder', label: 'تتبع الطلب', icon: <TruckIcon size="sm" /> },
             { id: 'wishlist', label: 'قائمة رغباتي', icon: <HeartIcon size="sm" />, count: wishlist.length },
-            { id: 'tasks', label: 'مهامي', icon: <ClipboardCheckIcon size="sm" /> },
+            { id: 'planner', label: 'مخطط التسوق', icon: <ClipboardCheckIcon size="sm" /> },
             { id: 'profile', label: 'تفاصيل الحساب', icon: <LockClosedIcon size="sm" /> },
         ];
     

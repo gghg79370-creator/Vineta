@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -6,6 +7,7 @@ import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon 
 import { useAppState } from '../state/AppState';
 import { useQuery } from '../hooks/useQuery';
 import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
+import { useToast } from '../hooks/useToast';
 
 interface SearchPageProps {
     navigateTo: (pageName: string, data?: any) => void;
@@ -16,9 +18,8 @@ interface SearchPageProps {
 
 const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: SearchPageProps) => {
     const { state, dispatch } = useAppState();
-    const { compareList, wishlist } = state;
-    // FIX: The 'wishlistItems' prop expects an array of numbers (product IDs), not an array of WishlistItem objects.
-    // We map the wishlist state to an array of IDs.
+    const { compareList, wishlist, currentUser } = state;
+    const addToast = useToast();
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
     const query = useQuery();
     const searchTerm = query.get('q') || '';
@@ -82,7 +83,19 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: S
     };
 
     const addToCompare = (product: Product) => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
-    const toggleWishlist = (product: Product) => dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+    const toggleWishlist = (product: Product) => {
+        if (!currentUser) {
+            addToast('الرجاء تسجيل الدخول لحفظ المنتجات في قائمة رغباتك.', 'info');
+            navigateTo('login');
+            return;
+        }
+        dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+        const isInWishlist = wishlist.some(item => item.id === product.id);
+        addToast(
+            !isInWishlist ? `تمت إضافة ${product.name} إلى قائمة الرغبات!` : `تمت إزالة ${product.name} من قائمة الرغبات.`,
+            'success'
+        );
+    };
 
     return (
     <div className="bg-brand-subtle">

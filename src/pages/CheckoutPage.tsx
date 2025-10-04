@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { CartItem, Product, Address } from '../types';
+import { CartItem, Product, Address, Order } from '../types';
 import { CheckIcon, CouponIcon, MapPinIcon } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { allProducts } from '../data/products';
@@ -115,7 +115,22 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('cod');
 
-    const validate = () => { /* validation logic will go here */ return true; };
+    const validate = () => {
+        const newErrors: { [key: string]: string } = {};
+        if (selectedShippingAddressId === 'new') {
+            if (!formData.shipping_recipientName.trim()) newErrors.shipping_recipientName = "الاسم مطلوب.";
+            if (!formData.shipping_street.trim()) newErrors.shipping_street = "عنوان الشارع مطلوب.";
+            if (!formData.shipping_city.trim()) newErrors.shipping_city = "المدينة مطلوبة.";
+        }
+        if (paymentMethod === 'creditCard') {
+            if (!formData.cardName.trim()) newErrors.cardName = "الاسم على البطاقة مطلوب.";
+            if (!formData.cardNumber.trim().match(/^\d{16}$/)) newErrors.cardNumber = "رقم البطاقة يجب أن يكون 16 رقمًا.";
+            if (!formData.cardExpiry.trim().match(/^(0[1-9]|1[0-2])\/\d{2}$/)) newErrors.cardExpiry = "الصيغة الصحيحة MM/YY.";
+            if (!formData.cardCVC.trim().match(/^\d{3,4}$/)) newErrors.cardCVC = "CVC يجب أن يكون 3 أو 4 أرقام.";
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -125,8 +140,29 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
         e.preventDefault();
         if (validate()) {
             setIsLoading(true);
+
+            const newOrder = {
+                total: finalTotal.toFixed(2),
+                items: cartItems.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    image: item.image,
+                    variant: `${item.selectedSize} / ${item.selectedColor}`,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            };
+    
+            // Simulate API call to submit order
             setTimeout(() => {
                 setIsLoading(false);
+                console.log("Order Submitted:", newOrder, formData);
+                // On success:
+                addToast('تم تقديم طلبك بنجاح!', 'success');
+                dispatch({ type: 'SET_CART', payload: [] }); // Clear the cart
+                dispatch({ type: 'REMOVE_COUPON' });
+                dispatch({ type: 'SET_GIFT_WRAP', payload: false });
+                dispatch({ type: 'SET_ORDER_NOTE', payload: '' });
                 navigateTo('orderConfirmation');
             }, 1500);
         }
@@ -188,11 +224,20 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                         
                         {selectedShippingAddressId === 'new' && (
                             <div className="space-y-4 mt-4 p-4 border rounded-lg bg-white animate-fade-in">
-                                <input name="shipping_recipientName" placeholder="الاسم الكامل *" onChange={handleChange} className="w-full border p-3 rounded-lg border-brand-border" />
-                                <input name="shipping_street" placeholder="عنوان الشارع *" onChange={handleChange} className="w-full border p-3 rounded-lg border-brand-border" />
+                                <div>
+                                    <input name="shipping_recipientName" placeholder="الاسم الكامل *" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.shipping_recipientName ? 'border-red-500' : 'border-brand-border'}`} autoComplete="shipping name" />
+                                    {errors.shipping_recipientName && <p className="text-red-500 text-xs mt-1">{errors.shipping_recipientName}</p>}
+                                </div>
+                                <div>
+                                    <input name="shipping_street" placeholder="عنوان الشارع *" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.shipping_street ? 'border-red-500' : 'border-brand-border'}`} autoComplete="shipping street-address" />
+                                    {errors.shipping_street && <p className="text-red-500 text-xs mt-1">{errors.shipping_street}</p>}
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input name="shipping_city" placeholder="المدينة *" onChange={handleChange} className="w-full border p-3 rounded-lg border-brand-border" />
-                                    <input name="shipping_postalCode" placeholder="الرمز البريدي" onChange={handleChange} className="w-full border p-3 rounded-lg border-brand-border" />
+                                    <div>
+                                        <input name="shipping_city" placeholder="المدينة *" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.shipping_city ? 'border-red-500' : 'border-brand-border'}`} autoComplete="shipping address-level2" />
+                                        {errors.shipping_city && <p className="text-red-500 text-xs mt-1">{errors.shipping_city}</p>}
+                                    </div>
+                                    <input name="shipping_postalCode" placeholder="الرمز البريدي" onChange={handleChange} className="w-full border p-3 rounded-lg border-brand-border" autoComplete="shipping postal-code" />
                                 </div>
                             </div>
                         )}
@@ -212,8 +257,25 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                                         بطاقة الائتمان
                                     </label>
                                     {paymentMethod === 'creditCard' && (
-                                        <div className="mt-4 space-y-4 animate-fade-in">
-                                            {/* Payment form fields here */}
+                                        <div className="mt-4 space-y-4 animate-fade-in pl-8">
+                                            <div>
+                                                <input name="cardName" placeholder="الاسم على البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardName ? 'border-red-500' : 'border-brand-border'}`} />
+                                                {errors.cardName && <p className="text-red-500 text-xs mt-1">{errors.cardName}</p>}
+                                            </div>
+                                            <div>
+                                                <input name="cardNumber" placeholder="رقم البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardNumber ? 'border-red-500' : 'border-brand-border'}`} />
+                                                {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <input name="cardExpiry" placeholder="تاريخ الانتهاء (MM/YY)" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardExpiry ? 'border-red-500' : 'border-brand-border'}`} />
+                                                    {errors.cardExpiry && <p className="text-red-500 text-xs mt-1">{errors.cardExpiry}</p>}
+                                                </div>
+                                                <div>
+                                                    <input name="cardCVC" placeholder="CVC" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardCVC ? 'border-red-500' : 'border-brand-border'}`} />
+                                                    {errors.cardCVC && <p className="text-red-500 text-xs mt-1">{errors.cardCVC}</p>}
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

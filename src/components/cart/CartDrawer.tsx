@@ -386,21 +386,21 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                         )}
                         
                         <div className="p-5 mt-4 bg-brand-subtle">
-                             {isGenerating ? (
-                                <>
-                                <h3 className="font-bold text-lg mb-4">جارٍ البحث عن توصيات...</h3>
-                                <div className="flex gap-4 -mx-5 px-5">
-                                    {[...Array(3)].map((_, i) => <RecommendationSkeleton key={i} />)}
-                                </div>
-                                </>
-                            ) : recommendationsFetched && aiRecommendations.length > 0 ? (
-                                 <Carousel
-                                    title="يُشترى معًا بشكل متكرر"
-                                    items={aiRecommendations}
-                                    renderItem={(item) => renderRecommendationItem(item, true)}
+                            {cartItems.length < 3 ? (
+                                <Carousel
+                                    title={cartItems.length > 0 ? "أكمل إطلالتك" : "ربما يعجبك ايضا"}
+                                    items={defaultRecommendations}
+                                    renderItem={(item) => renderRecommendationItem(item)}
                                 />
-                            ) : !recommendationsFetched && cartItems.length > 0 ? (
-                                 <div className="text-center p-4 border-2 border-dashed rounded-lg bg-indigo-50/50">
+                            ) : isGenerating ? (
+                                <>
+                                    <h3 className="font-bold text-lg mb-4">جارٍ البحث عن توصيات...</h3>
+                                    <div className="flex gap-4 -mx-5 px-5">
+                                        {[...Array(3)].map((_, i) => <RecommendationSkeleton key={i} />)}
+                                    </div>
+                                </>
+                            ) : !recommendationsFetched ? (
+                                <div className="text-center p-4 border-2 border-dashed rounded-lg bg-indigo-50/50">
                                     <h4 className="font-bold text-brand-dark">أكمل طلبك</h4>
                                     <p className="text-sm text-brand-text-light my-2">أكملي طلبك بقطع يشتريها الآخرون عادةً مع منتجاتك.</p>
                                     <button onClick={getAiRecommendations} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90 transition-opacity active:scale-95">
@@ -408,9 +408,15 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                                         الحصول على توصيات AI
                                     </button>
                                 </div>
+                            ) : aiRecommendations.length > 0 ? (
+                                <Carousel
+                                    title="يُشترى معًا بشكل متكرر"
+                                    items={aiRecommendations}
+                                    renderItem={(item) => renderRecommendationItem(item, true)}
+                                />
                             ) : (
                                 <Carousel
-                                    title={cartItems.length > 0 ? "أكمل إطلالتك" : "ربما يعجبك ايضا"}
+                                    title="أكمل إطلالتك"
                                     items={defaultRecommendations}
                                     renderItem={(item) => renderRecommendationItem(item)}
                                 />

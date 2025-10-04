@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -8,6 +6,7 @@ import { CollectionProductListCard } from '../components/product/CollectionProdu
 import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon, PlusIcon, MinusIcon, StarIcon } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
+import { useToast } from '../hooks/useToast';
 
 interface ShopPageProps {
     navigateTo: (pageName: string, data?: Product) => void;
@@ -174,7 +173,8 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
 
 const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filters, setFilters, currentPage, setCurrentPage }: ShopPageProps) => {
     const { state, dispatch } = useAppState();
-    const { compareList, wishlist } = state;
+    const { compareList, wishlist, currentUser } = state;
+    const addToast = useToast();
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
     
     const [isLoading, setIsLoading] = useState(true);
@@ -183,13 +183,24 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
     const [sortBy, setSortBy] = useState('best-selling');
     const productsPerPage = 12;
 
+    const appliedFiltersCount = useMemo(() => {
+        const { brands, colors, sizes, priceRange, rating, onSale, materials } = filters;
+        const hasBrandFilter = brands.length > 0;
+        const hasPriceFilter = priceRange.max < 1000;
+        const hasColorFilter = colors.length > 0;
+        const hasSizeFilter = sizes.length > 0;
+        const hasSaleFilter = onSale;
+        const hasRatingFilter = rating > 0;
+        const hasMaterialFilter = materials.length > 0;
+        return [hasBrandFilter, hasPriceFilter, hasColorFilter, hasSizeFilter, hasSaleFilter, hasRatingFilter, hasMaterialFilter].filter(Boolean).length;
+    }, [filters]);
+
     const filteredAndSortedProducts = useMemo(() => {
         let products = allProducts.filter(p => {
              const brandMatch = filters.brands.length === 0 || (p.brand && filters.brands.includes(p.brand));
              const colorMatch = filters.colors.length === 0 || p.colors.some(c => filters.colors.includes(c));
              const sizeMatch = filters.sizes.length === 0 || p.sizes.some(s => filters.sizes.includes(s));
              const priceMatch = parseFloat(p.price) >= filters.priceRange.min && parseFloat(p.price) <= filters.priceRange.max;
-             // FIX: Property 'onSale' does not exist on type 'Product'. A product is considered on sale if it has an 'oldPrice'.
              const saleMatch = !filters.onSale || !!p.oldPrice;
              const ratingMatch = !filters.rating || (p.rating && p.rating >= filters.rating);
              const materialMatch = filters.materials.length === 0 || filters.materials.some(m => p.tags.includes(m));
@@ -205,6 +216,9 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                 break;
             case 'newest':
                 products.sort((a, b) => b.id - a.id);
+                break;
+            case 'rating':
+                products.sort((a, b) => (b.rating || 0) - (a.rating || 0));
                 break;
             case 'best-selling':
             default:
@@ -236,8 +250,29 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
         setSortBy(e.target.value);
     };
 
-    const addToCompare = (product: Product) => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
-    const toggleWishlist = (product: Product) => dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+    const addToCompare = (product: Product) => {
+        const isInCompare = compareList.includes(product.id);
+        if (!isInCompare && compareList.length >= 4) {
+             addToast('يمكنك مقارنة 4 منتجات كحد أقصى.', 'info');
+             return;
+        }
+        dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
+        addToast(isInCompare ? 'تمت الإزالة من المقارنة.' : 'تمت الإضافة إلى المقارنة!', 'success');
+    };
+
+    const toggleWishlist = (product: Product) => {
+        if (!currentUser) {
+            addToast('الرجاء تسجيل الدخول لحفظ المنتجات في قائمة رغباتك.', 'info');
+            navigateTo('login');
+            return;
+        }
+        dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+        const isInWishlist = wishlist.some(item => item.id === product.id);
+        addToast(
+            !isInWishlist ? `تمت إضافة ${product.name} إلى قائمة الرغبات!` : `تمت إزالة ${product.name} من قائمة الرغبات.`,
+            'success'
+        );
+    };
 
     const gridClasses: {[key: number]: string} = {
         2: 'grid-cols-2',
@@ -267,22 +302,29 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                             <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold">
                                 <FilterIcon/>
                                 <span>فلتر</span>
+                                {appliedFiltersCount > 0 && <span className="bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">{appliedFiltersCount}</span>}
                             </button>
                              <p className="hidden md:block text-sm text-brand-text-light whitespace-nowrap">
                                 عرض {isLoading ? '...' : currentProducts.length} من {filteredAndSortedProducts.length} منتجًا
                             </p>
                         </div>
                         <div className="flex items-center gap-2 w-full md:w-auto">
-                            <select 
-                                value={sortBy}
-                                onChange={handleSortByChange}
-                                className="appearance-none bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
-                            >
-                                <option value="best-selling">الأكثر مبيعًا</option>
-                                <option value="newest">الأحدث</option>
-                                <option value="price-asc">السعر: من الأقل إلى الأعلى</option>
-                                <option value="price-desc">السعر: من الأعلى إلى الأقل</option>
-                            </select>
+                            <div className="relative">
+                                <select 
+                                    value={sortBy}
+                                    onChange={handleSortByChange}
+                                    className="appearance-none bg-white border border-brand-border rounded-full pl-4 pr-10 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
+                                >
+                                    <option value="best-selling">الأكثر مبيعًا</option>
+                                    <option value="newest">الأحدث</option>
+                                    <option value="price-asc">السعر: من الأقل إلى الأعلى</option>
+                                    <option value="price-desc">السعر: من الأعلى إلى الأقل</option>
+                                    <option value="rating">الأعلى تقييمًا</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center px-2 text-gray-500">
+                                    <ChevronDownIcon size="sm"/>
+                                </div>
+                            </div>
                             <div className="hidden md:flex items-center gap-1 border border-brand-border rounded-full p-1 bg-white">
                                 {[2,3,4].map(cols => (
                                     <button 

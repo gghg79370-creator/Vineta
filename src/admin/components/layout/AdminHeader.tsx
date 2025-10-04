@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Notification } from '../../../types';
 import { SearchIcon, BellIcon, ChevronDownIcon, Bars3Icon } from '../../../components/icons';
@@ -61,7 +62,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
                             <BellIcon />
                             {unreadCount > 0 && (
                                 <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                                    {unreadCount}
+                                    {unreadCount > 9 ? '9+' : unreadCount}
                                 </span>
                             )}
                         </button>

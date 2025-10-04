@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Product } from '../../types';
-import { CloseIcon, SearchIcon, SparklesIcon, FireIcon, TagIcon, CategoryIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon } from '../icons';
+import { CloseIcon, SearchIcon, SparklesIcon, FireIcon, TagIcon, CategoryIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon, ArrowUpTrayIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { GoogleGenAI, Type } from "@google/genai";
 import Spinner from '../ui/Spinner';
@@ -39,6 +39,12 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Camera state
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+
     const popularCategories = useMemo(() => {
         const mainCategories = ['ملابس', 'إكسسوارات', 'أحذية', 'حقائب', 'ملابس رياضية', 'صيف', 'شتاء', 'كاجوال'];
         const allTags = new Set(allProducts.flatMap(p => p.tags));
@@ -58,6 +64,7 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
                 setSearchHistory([]);
             }
         } else {
+            stopCamera();
             setTimeout(() => {
                 setSearchTerm('');
                 setVisualSearchImage(null);
@@ -68,6 +75,7 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
                 setAiRecommendations([]);
             }, 300);
         }
+        return () => { stopCamera(); };
     }, [isOpen]);
 
     const addToHistory = (query: string) => {
@@ -172,35 +180,68 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
             clearTimeout(aiSearchHandler);
         };
     }, [searchTerm]);
-    
-    const handleVisualSearchClick = () => fileInputRef.current?.click();
 
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        setSearchTerm('');
-        setResults([]); setSuggestions([]);
-        
-        const imageUrl = URL.createObjectURL(file);
+    const analyzeImage = async (imageBlob: Blob) => {
+        setSearchTerm(''); setResults([]); setSuggestions([]);
+        const imageUrl = URL.createObjectURL(imageBlob);
         setVisualSearchImage(imageUrl);
         setIsAnalyzing(true);
-        
         try {
-            const base64Data = await blobToBase64(file);
+            const base64Data = await blobToBase64(imageBlob);
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-
-            const imagePart = { inlineData: { mimeType: file.type, data: base64Data } };
-            const textPart = { text: "صف عناصر الموضة الرئيسية في هذه الصورة بعبارة قصيرة وقابلة للبحث. ركز فقط على الملابس والأحذية والإكسسوارات. كن موجزًا واستخدم مصطلحات بسيطة. مثال: 'قميص كتان أبيض وبنطلون جينز أزرق' أو 'جاكيت جلد أسود'." };
-            
+            const imagePart = { inlineData: { mimeType: imageBlob.type, data: base64Data } };
+            const textPart = { text: "Describe the fashion items in this image in a short, searchable phrase in Arabic. Example: 'فستان صيفي أبيض'." };
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: { parts: [imagePart, textPart] } });
             setSearchTerm(response.text);
-        } catch (error) {
-            console.error("Error analyzing image:", error);
-        } finally {
-            setIsAnalyzing(false);
+        } catch (error) { console.error("Error analyzing image:", error); } 
+        finally { setIsAnalyzing(false); }
+    };
+    
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            analyzeImage(file);
         }
     };
+
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            setIsCameraOpen(true);
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            alert("Could not access camera. Please check permissions.");
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setIsCameraOpen(false);
+    };
+
+    const captureImage = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d')?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            canvas.toBlob(async (blob) => {
+                if (blob) {
+                    await analyzeImage(blob);
+                    stopCamera();
+                }
+            }, 'image/jpeg', 0.9);
+        }
+    };
+
 
     const performSearch = (query: string) => {
         if (query.trim()) {
@@ -225,14 +266,25 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
     return (
         <div className="fixed inset-0 bg-brand-subtle z-[70] animate-fade-in md:hidden">
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+             {isCameraOpen && (
+                <div className="fixed inset-0 bg-black z-[80] flex flex-col items-center justify-center">
+                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-contain"></video>
+                    <canvas ref={canvasRef} className="hidden"></canvas>
+                    <div className="absolute bottom-8 flex items-center justify-center w-full gap-8">
+                        <button onClick={stopCamera} className="text-white bg-black/30 rounded-full py-2 px-6 font-semibold">إلغاء</button>
+                        <button onClick={captureImage} className="w-20 h-20 rounded-full bg-white flex items-center justify-center border-4 border-white/50 ring-4 ring-black/20" aria-label="Capture Image"></button>
+                    </div>
+                </div>
+            )}
             <div className="container mx-auto px-4 py-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-6">
                     <form onSubmit={handleFormSubmit} className="flex-1 relative">
                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light pointer-events-none"><SearchIcon/></div>
-                        <input type="search" placeholder="بحث..." className="w-full bg-white border border-brand-border rounded-full py-3 pr-12 pl-12 focus:outline-none focus:ring-2 focus:ring-brand-dark" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
-                         <button type="button" onClick={handleVisualSearchClick} className="absolute top-1/2 left-3 -translate-y-1/2 text-brand-text-light p-1 rounded-full hover:bg-gray-100" aria-label="البحث بالصورة">
-                            <CameraIcon />
-                        </button>
+                        <input type="search" placeholder="بحث..." className="w-full bg-white border border-brand-border rounded-full py-3 pr-12 pl-24 focus:outline-none focus:ring-2 focus:ring-brand-dark" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
+                         <div className="absolute top-1/2 left-3 -translate-y-1/2 flex items-center gap-1">
+                             <button type="button" onClick={() => fileInputRef.current?.click()} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-100" aria-label="البحث بصورة من ملف"><ArrowUpTrayIcon/></button>
+                            <button type="button" onClick={startCamera} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-100" aria-label="البحث بالكاميرا"><CameraIcon /></button>
+                         </div>
                     </form>
                     <button onClick={() => setIsOpen(false)} className="font-semibold text-brand-dark flex-shrink-0">إلغاء</button>
                 </div>
@@ -315,8 +367,8 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
                                              <div className="p-6 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200">
                                                 <h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4>
                                                 <p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p>
-                                                <button onClick={handleVisualSearchClick} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90 transition-opacity active:scale-95">
-                                                    <CameraIcon size="sm" /> البحث بالصورة
+                                                <button onClick={startCamera} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90 transition-opacity active:scale-95">
+                                                    <CameraIcon size="sm" /> البحث بالكاميرا
                                                 </button>
                                             </div>
                                         </div>

@@ -250,7 +250,7 @@ const AppContent = () => {
     return (
         <div dir="rtl" className="font-sans">
             <ToastContainer />
-            <AnnouncementBar announcements={announcements} />
+            <AnnouncementBar announcements={announcements} setAnnouncements={setAnnouncements} />
             <Header 
                 navigateTo={navigateTo} 
                 setIsCartOpen={setIsCartOpen}

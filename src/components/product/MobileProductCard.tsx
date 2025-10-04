@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '../../types';
 import { EyeIcon, ShoppingBagIcon } from '../icons';
@@ -16,7 +17,6 @@ export const MobileProductCard: React.FC<MobileProductCardProps> = ({
     openQuickView
 }) => {
     const discountPercent = product.oldPrice ? Math.round(((parseFloat(product.oldPrice) - parseFloat(product.price)) / parseFloat(product.oldPrice)) * 100) : 0;
-    // FIX: Replace non-existent properties `isNew` and `onSale` with logic derived from existing product data.
     const isNew = product.badges?.some(b => b.type === 'new');
     const onSale = !!product.oldPrice;
     

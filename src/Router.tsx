@@ -90,7 +90,7 @@ export const Router: React.FC<RouterProps> = ({
         'style-me': <StyleMePage navigateTo={navigateTo} addToCart={(product) => addToCart(product)} />,
     };
 
-    const protectedPages = ['account'];
+    const protectedPages = ['account', 'wishlist'];
     if (protectedPages.includes(activePage) && !currentUser) {
         // Use a side effect to navigate, but return the login page immediately.
         React.useEffect(() => {

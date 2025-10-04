@@ -3,7 +3,7 @@ import React from 'react';
 export const BrandLogos = () => (
     <div className="py-12 bg-white border-y">
         <div className="container mx-auto px-4">
-            <div className="flex md:flex-wrap justify-start md:justify-center items-center gap-x-12 sm:gap-x-16 gap-y-8 flex-nowrap overflow-x-auto scrollbar-hide">
+            <div className="flex md:flex-wrap justify-start md:justify-center items-center gap-x-12 sm:gap-x-16 gap-y-8 flex-nowrap overflow-x-auto scrollbar-hide scroll-smooth">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Zara_Logo.svg" alt="Zara" className="h-6 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 flex-shrink-0"/>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Pull%26Bear_logo.svg/1280px-Pull%26Bear_logo.svg.png" alt="Pull&Bear" className="h-6 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 flex-shrink-0"/>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" alt="Nike" className="h-9 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 flex-shrink-0"/>

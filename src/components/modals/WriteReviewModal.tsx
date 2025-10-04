@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { CloseIcon, StarIcon, UserIcon, EnvelopeIcon, ArrowUpTrayIcon } from '../icons';
 import { useToast } from '../../hooks/useToast';
 import Spinner from '../ui/Spinner';
@@ -22,6 +23,22 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
 
     const addToast = useToast();
 
+    // Reset form when modal is closed
+    useEffect(() => {
+        if (!isOpen) {
+            setTimeout(() => {
+                setRating(0);
+                setName('');
+                setEmail('');
+                setReviewText('');
+                setImage(null);
+                setImagePreview(null);
+                setErrors({});
+                setIsLoading(false);
+            }, 300); // Delay for animation
+        }
+    }, [isOpen]);
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -33,7 +50,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
             reader.readAsDataURL(file);
         }
     };
-
+    
     const validate = () => {
         const newErrors: { [key: string]: string } = {};
         if (rating === 0) newErrors.rating = 'الرجاء تحديد تقييم.';
@@ -57,6 +74,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
         // Simulate API call
         setTimeout(() => {
             setIsLoading(false);
+            console.log("Review submitted", { rating, name, email, reviewText, imageName: image?.name });
             addToast('شكرًا لك! تقييمك في انتظار المراجعة.', 'success');
             onClose();
         }, 1500);

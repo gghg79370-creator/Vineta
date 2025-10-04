@@ -1,12 +1,34 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { EnvelopeIcon } from '../components/icons';
+import { useToast } from '../hooks/useToast';
+import Spinner from '../components/ui/Spinner';
 
 interface ContactPageProps {
     navigateTo: (pageName: string) => void;
 }
 
 const ContactPage = ({ navigateTo }: ContactPageProps) => {
+    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+    const [loading, setLoading] = useState(false);
+    const addToast = useToast();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+            console.log('Contact form submitted:', formData);
+            addToast('تم إرسال رسالتك بنجاح!', 'success');
+            setFormData({ name: '', email: '', subject: '', message: '' });
+        }, 1000);
+    };
 
     const breadcrumbItems = [
         { label: 'الرئيسية', page: 'home' },
@@ -47,12 +69,14 @@ const ContactPage = ({ navigateTo }: ContactPageProps) => {
                     </div>
                      <div>
                         <div className="bg-white p-8 rounded-lg shadow-md">
-                             <form className="space-y-4">
-                                <input type="text" placeholder="الاسم" className="w-full border p-3 rounded-lg" />
-                                <input type="email" placeholder="البريد الإلكتروني" className="w-full border p-3 rounded-lg" />
-                                <input type="text" placeholder="الموضوع" className="w-full border p-3 rounded-lg" />
-                                <textarea placeholder="رسالتك" rows={5} className="w-full border p-3 rounded-lg"></textarea>
-                                <button type="submit" className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90">إرسال رسالة</button>
+                             <form onSubmit={handleSubmit} className="space-y-4">
+                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم" className="w-full border p-3 rounded-lg" required />
+                                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className="w-full border p-3 rounded-lg" required />
+                                <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="الموضوع" className="w-full border p-3 rounded-lg" required />
+                                <textarea name="message" value={formData.message} onChange={handleChange} placeholder="رسالتك" rows={5} className="w-full border p-3 rounded-lg" required></textarea>
+                                <button type="submit" disabled={loading} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 flex items-center justify-center min-h-[48px]">
+                                    {loading ? <Spinner /> : 'إرسال رسالة'}
+                                </button>
                             </form>
                         </div>
                     </div>

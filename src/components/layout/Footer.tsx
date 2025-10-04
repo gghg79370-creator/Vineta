@@ -1,10 +1,27 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import { useToast } from '../../hooks/useToast';
 
 interface FooterProps {
     navigateTo: (pageName: string) => void;
 }
 
-export const Footer = ({ navigateTo }: FooterProps) => (
+export const Footer = ({ navigateTo }: FooterProps) => {
+    const [email, setEmail] = useState('');
+    const addToast = useToast();
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email.trim() && /\S+@\S+\.\S+/.test(email)) {
+            console.log('Newsletter subscription:', email);
+            addToast('شكرًا لاشتراكك!', 'success');
+            setEmail('');
+        } else {
+            addToast('الرجاء إدخال بريد إلكتروني صالح.', 'error');
+        }
+    };
+
+    return (
     <footer className="bg-brand-dark text-gray-300">
         <div className="container mx-auto px-4 py-16">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 text-center md:text-right">
@@ -52,13 +69,16 @@ export const Footer = ({ navigateTo }: FooterProps) => (
                     <p className="text-sm leading-relaxed mb-4 max-w-sm mx-auto md:mx-0">
                         كن أول من يعرف عن أحدث الوافدين والعروض الحصرية.
                     </p>
-                     <form className="flex mb-4 max-w-sm mx-auto md:mx-0">
+                     <form onSubmit={handleNewsletterSubmit} className="flex mb-4 max-w-sm mx-auto md:mx-0">
                         <input 
                             type="email" 
                             placeholder="عنوان البريد الإلكتروني" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="bg-gray-800 text-white placeholder-gray-500 rounded-r-full py-3 px-4 focus:outline-none w-full text-sm border border-gray-700 focus:border-brand-primary focus:ring-0"
+                            required
                         />
-                        <button className="bg-brand-primary text-white font-bold py-3 px-5 rounded-l-full text-sm hover:opacity-90 transition-opacity">
+                        <button type="submit" className="bg-brand-primary text-white font-bold py-3 px-5 rounded-l-full text-sm hover:opacity-90 transition-opacity">
                             <i className="fas fa-arrow-left"></i>
                         </button>
                     </form>
@@ -80,4 +100,5 @@ export const Footer = ({ navigateTo }: FooterProps) => (
             </div>
         </div>
     </footer>
-);
+    );
+};

@@ -1,9 +1,8 @@
 
 
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, CartItem, Review, Variant } from '../types';
-import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, ArrowUpTrayIcon, ChevronRightIcon, CheckIcon, MagicIcon } from '../components/icons';
+import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, ArrowUpTrayIcon, ChevronRightIcon, CheckIcon, MagicIcon, FireIcon } from '../components/icons';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import { ReviewsSection } from '../components/product/ReviewsSection';
 import { allProducts } from '../data/products';
@@ -38,10 +37,39 @@ const AccordionItem = ({ title, children, defaultOpen = false }: { title: string
     )
 }
 
+const useCountUp = (endValue: number, duration: number) => {
+  const [count, setCount] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    startTimeRef.current = null;
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const progress = timestamp - startTimeRef.current;
+      const percentage = Math.min(progress / duration, 1);
+      const newCount = Math.floor(endValue * percentage);
+      setCount(newCount);
+
+      if (progress < duration) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+        if(animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    }
+  }, [endValue, duration]);
+
+  return count;
+};
+
+
 export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCart, openQuickView, setIsAskQuestionOpen }: ProductDetailPageProps) => {
     const product = initialProduct || allProducts[0];
     const { state, dispatch } = useAppState();
-    const { compareList, wishlist } = state;
+    const { compareList, wishlist, currentUser } = state;
     const addToast = useToast();
 
     const [mainImage, setMainImage] = useState(product.images ? product.images[1] : product.image);
@@ -61,6 +89,9 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
     const imageContainerRef = useRef<HTMLDivElement>(null);
     const ZOOM_LEVEL = 2.5;
 
+    const soldCount = useCountUp(product.soldIn24h || 0, 1500);
+    const [barWidth, setBarWidth] = useState(0);
+
 
     const isInCompare = compareList.includes(product.id);
     const isInWishlist = wishlist.some(item => item.id === product.id);
@@ -70,6 +101,8 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
         if (!product.variants || product.variants.length === 0) return null;
         return product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || null;
     }, [product.variants, selectedSize, selectedColor]);
+    
+    const stockCount = selectedVariant?.stock ?? product.itemsLeft;
 
     useEffect(() => {
         dispatch({ type: 'ADD_TO_RECENTLY_VIEWED', payload: product.id });
@@ -95,9 +128,20 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
         };
 
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        
+        const totalStockForBar = 20; // Assume a low stock threshold for the bar's 100% mark
+        const percentage = stockCount !== undefined && stockCount < totalStockForBar
+            ? ((totalStockForBar - stockCount) / totalStockForBar) * 100 
+            : 0;
 
-    }, [product, dispatch]);
+        const timer = setTimeout(() => setBarWidth(100 - percentage), 100);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            clearTimeout(timer);
+        };
+
+    }, [product, dispatch, stockCount]);
 
     const handleSelectColor = (color: string) => {
         setSelectedColor(color);
@@ -123,9 +167,10 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
 
     const displayPrice = selectedVariant?.price || product.price;
     const displayOldPrice = selectedVariant?.oldPrice || product.oldPrice;
-    const stockCount = selectedVariant?.stock ?? product.itemsLeft;
+    
     const isOutOfStock = stockCount !== undefined && stockCount === 0;
     const sku = selectedVariant?.sku || product.sku;
+    const discountPercent = displayOldPrice ? Math.round(((parseFloat(displayOldPrice) - parseFloat(displayPrice)) / parseFloat(displayOldPrice)) * 100) : 0;
 
     const handleAddToCart = () => {
         if (isOutOfStock) return;
@@ -139,26 +184,29 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
         addToCart(productForCart, { quantity, selectedSize, selectedColor });
         navigateTo('checkout');
     };
-
-    const handleToggleWishlist = () => {
-        dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
-        addToast(
-            isInWishlist ? 'تمت الإزالة من قائمة الرغبات' : 'تمت الإضافة إلى قائمة الرغبات',
-            'success'
-        );
-    };
-    const handleAddToCompare = () => dispatch({ type: 'TOGGLE_COMPARE', payload: product.id });
     
-    const toggleWishlistForRecommended = (recommendedProduct: Product) => {
-        dispatch({ type: 'TOGGLE_WISHLIST', payload: recommendedProduct.id });
+    const toggleWishlist = (productToToggle: Product) => {
+        if (!currentUser) {
+            addToast('الرجاء تسجيل الدخول لحفظ المنتجات في قائمة رغباتك.', 'info');
+            navigateTo('login');
+            return;
+        }
+        dispatch({ type: 'TOGGLE_WISHLIST', payload: productToToggle.id });
+        const pIsInWishlist = wishlist.some(item => item.id === productToToggle.id);
         addToast(
-            wishlist.some(i => i.id === recommendedProduct.id) ? 'تمت الإزالة من قائمة الرغبات' : 'تمت الإضافة إلى قائمة الرغبات',
+            !pIsInWishlist ? `تمت إضافة ${productToToggle.name} إلى قائمة الرغبات!` : `تمت إزالة ${productToToggle.name} من قائمة الرغبات.`,
             'success'
         );
     };
-
-    const addToCompareForRecommended = (recommendedProduct: Product) => {
-        dispatch({ type: 'TOGGLE_COMPARE', payload: recommendedProduct.id });
+    
+    const handleAddToCompare = (productToCompare: Product) => {
+        const pIsInCompare = compareList.includes(productToCompare.id);
+        if (!pIsInCompare && compareList.length >= 4) {
+            addToast('يمكنك مقارنة 4 منتجات كحد أقصى.', 'info');
+            return;
+        }
+        dispatch({ type: 'TOGGLE_COMPARE', payload: productToCompare.id });
+        addToast(pIsInCompare ? 'تمت الإزالة من المقارنة.' : 'تمت الإضافة إلى المقارنة!', 'success');
     };
 
     const handleShare = () => {
@@ -195,11 +243,6 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
 
     const actionButtonClasses = "flex items-center gap-2 transform transition-all duration-300 ease-in-out hover:bg-brand-primary/10 hover:text-brand-primary hover:scale-105 rounded-full px-4 py-2";
     
-    const getAvailabilityClasses = () => {
-        if (isOutOfStock) return 'bg-red-100 text-red-800';
-        return 'bg-green-100 text-green-800';
-    };
-
     const categoryMap: { [key: string]: { name: string, page: string } } = {
         women: { name: 'ملابس نسائية', page: 'shop' },
         men: { name: 'ملابس رجالية', page: 'shop' },
@@ -258,7 +301,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         <div className="lg:hidden">
                             <div className="relative mb-3 rounded-lg overflow-hidden group aspect-[4/5]">
                                 <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
-                                <DynamicBadges />
+                                {discountPercent > 0 && <div className="absolute top-3 right-3 bg-brand-sale text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">-{discountPercent}%</div>}
                                 <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
                                     <button onClick={() => scrollImage('prev')} className="bg-white/60 rounded-full p-2 shadow-md hover:bg-white transition-colors" aria-label="الصورة السابقة">
                                         <ChevronRightIcon className="transform rotate-180 w-5 h-5"/>
@@ -268,9 +311,9 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 scroll-smooth">
                                 {(product.images || []).map((img, index) => (
-                                    <button key={index} onClick={() => setMainImage(img)} className={`w-20 h-24 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${mainImage === img ? 'border-brand-dark' : 'border-transparent hover:border-brand-border'}`}>
+                                    <button key={index} onClick={() => setMainImage(img)} className={`w-20 h-24 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${mainImage === img ? 'border-brand-dark' : 'border-transparent hover:border-brand-dark'}`}>
                                         <img src={img} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                                     </button>
                                 ))}
@@ -281,7 +324,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         <div className="hidden lg:flex flex-col-reverse lg:flex-row-reverse gap-4">
                             <div className="flex lg:flex-col gap-3 justify-center">
                                 {(product.images || []).map((img, index) => (
-                                    <button key={index} onClick={() => setMainImage(img)} className={`w-20 h-24 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${mainImage === img ? 'border-brand-dark' : 'border-transparent hover:border-brand-border'}`}>
+                                    <button key={index} onClick={() => setMainImage(img)} className={`w-20 h-24 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${mainImage === img ? 'border-brand-dark' : 'border-transparent hover:border-brand-border hover:opacity-100 opacity-70'}`}>
                                         <img src={img} alt={`${product.name} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                                     </button>
                                 ))}
@@ -293,7 +336,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                                 onMouseMove={handleMouseMove}
                                 className="relative flex-1 rounded-lg overflow-hidden group aspect-[4/5] cursor-crosshair">
                                 <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
-                                <DynamicBadges />
+                                {discountPercent > 0 && <div className="absolute top-4 right-4 bg-brand-sale text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-md">-{discountPercent}%</div>}
                                 <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-4">
                                     <button onClick={() => scrollImage('prev')} className="bg-white/70 rounded-full p-3 shadow-md opacity-50 group-hover:opacity-100 transition-all" aria-label="الصورة السابقة"><ChevronRightIcon className="transform rotate-180"/></button>
                                     <button onClick={() => scrollImage('next')} className="bg-white/70 rounded-full p-3 shadow-md opacity-50 group-hover:opacity-100 transition-all" aria-label="الصورة التالية"><ChevronRightIcon/></button>
@@ -314,96 +357,84 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                     
                     {/* Product Details */}
                     <div className="mt-6 lg:mt-0">
-                        <p className="font-bold text-brand-text-light text-sm">{product.brand}</p>
+                        <p className="font-bold text-brand-text-light text-sm uppercase">{product.brand}</p>
                         <h2 className="text-3xl lg:text-4xl font-bold text-brand-dark my-2">{product.name}</h2>
                         <div className="flex items-center gap-2 mb-4">
                             {renderStars(product.rating || 0)}
                             <span className="text-sm text-brand-text-light">({approvedReviews.length} تقييمًا)</span>
                         </div>
                         <div className="flex items-baseline gap-3 mb-4">
-                            <span className="text-3xl font-extrabold text-brand-primary">{displayPrice} ج.م</span>
+                            <span className="text-3xl font-extrabold text-brand-dark">{displayPrice} ج.م</span>
                             {displayOldPrice && <span className="text-xl text-brand-text-light line-through">{displayOldPrice} ج.م</span>}
+                            {discountPercent > 0 && <span className="bg-brand-sale text-white text-sm font-bold px-3 py-1 rounded-md">خصم {discountPercent}%</span>}
                         </div>
 
-                        <div className="flex gap-4 items-center mb-4 text-sm">
-                            <span className={`${getAvailabilityClasses()} font-bold py-1 px-3 rounded-md`}>
-                                {isOutOfStock ? 'نفد المخزون' : 'متوفر'}
-                            </span>
-                            {product.soldIn24h && <span className="text-brand-text-light">🔥 {product.soldIn24h} بيعت في آخر 24 ساعة</span>}
-                        </div>
-                        
-                        {product.saleEndDate && new Date(product.saleEndDate) > new Date() ? (
-                             <div className="my-5 p-4 border border-red-200 rounded-lg bg-red-50">
-                                <p className="text-sm font-bold text-red-600 mb-2">اسرع! ينتهي العرض في:</p>
-                                <div className="flex justify-start gap-4 text-center">
-                                    <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{timeLeft.days}</span> <span className="text-xs text-brand-text-light">أيام</span></div>
-                                    <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{timeLeft.hours}</span> <span className="text-xs text-brand-text-light">ساعات</span></div>
-                                    <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{timeLeft.minutes}</span> <span className="text-xs text-brand-text-light">دقائق</span></div>
-                                    <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{timeLeft.seconds}</span> <span className="text-xs text-brand-text-light">ثواني</span></div>
-                                </div>
-                            </div>
-                        ) : stockCount !== undefined && stockCount > 0 && stockCount < 10 && (
-                             <div className="my-5">
-                                <p className="text-sm font-bold text-red-600 mb-2">اسرع! تبقى {stockCount} قطع فقط!</p>
-                                <div className="w-full bg-red-200 rounded-full h-1.5"><div className="bg-gradient-to-r from-red-400 to-brand-primary h-1.5 rounded-full" style={{width: `${(stockCount/10)*100}%`}}></div></div>
-                            </div>
-                        )}
-
-
-                        <div className="mb-5">
-                            <label className="font-bold text-brand-dark mb-2 block">الألوان:</label>
-                            <div className="relative">
-                                <button 
-                                    type="button"
-                                    onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} 
-                                    className="w-full flex items-center justify-between text-right p-3 border border-brand-border rounded-lg bg-white"
-                                    aria-haspopup="listbox"
-                                    aria-expanded={isColorPickerOpen}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-6 h-6 rounded-full border" style={{ backgroundColor: selectedColor }}></span>
-                                        <span className="font-semibold">{colorName(selectedColor)}</span>
+                        <div className="my-6 space-y-4 animate-fade-in">
+                            <div className="flex items-center gap-4 text-sm">
+                                <span className="font-bold py-1 px-3 rounded-md flex items-center gap-1.5 bg-green-100 text-green-800">
+                                    <CheckIcon size="sm" />
+                                    {isOutOfStock ? 'نفد المخزون' : 'متوفر'}
+                                </span>
+                                {product.soldIn24h && (
+                                    <div className="flex items-center gap-1.5 text-brand-text-light">
+                                        <FireIcon className="text-orange-500" />
+                                        <span className="font-bold text-brand-dark">{soldCount}</span>
+                                        <span>بيعت في آخر 24 ساعة</span>
                                     </div>
-                                    <ChevronDownIcon size="sm" className={`transform transition-transform text-gray-400 ${isColorPickerOpen ? 'rotate-180' : ''}`} />
-                                </button>
-                                {isColorPickerOpen && (
-                                    <ul 
-                                        className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
-                                        role="listbox"
-                                    >
-                                        {product.colors.map(color => {
-                                            const isAvailable = product.variants?.some(v => v.color === color) ?? true;
-                                            return (
-                                                <li key={color}>
-                                                    <button 
-                                                        onClick={() => { handleSelectColor(color); setIsColorPickerOpen(false); }}
-                                                        disabled={!isAvailable}
-                                                        className="w-full text-right p-3 hover:bg-brand-subtle flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        role="option"
-                                                        aria-selected={selectedColor === color}
-                                                    >
-                                                        <span className="w-6 h-6 rounded-full border" style={{ backgroundColor: color }}></span>
-                                                        <span>{colorName(color)}</span>
-                                                        {selectedColor === color && <CheckIcon size="sm" className="mr-auto text-brand-primary" />}
-                                                    </button>
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
                                 )}
+                            </div>
+
+                             {product.saleEndDate && new Date(product.saleEndDate) > new Date() ? (
+                                <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+                                    <p className="text-sm font-bold text-red-600 mb-2">اسرع! ينتهي العرض في:</p>
+                                    <div className="flex justify-start gap-4 text-center">
+                                        <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{String(timeLeft.days).padStart(2,'0')}</span> <span className="text-xs text-brand-text-light">أيام</span></div>
+                                        <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{String(timeLeft.hours).padStart(2,'0')}</span> <span className="text-xs text-brand-text-light">ساعات</span></div>
+                                        <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{String(timeLeft.minutes).padStart(2,'0')}</span> <span className="text-xs text-brand-text-light">دقائق</span></div>
+                                        <div className="bg-white rounded-md p-2 border border-red-100 w-16"><span className="text-xl font-bold text-brand-dark block">{String(timeLeft.seconds).padStart(2,'0')}</span> <span className="text-xs text-brand-text-light">ثواني</span></div>
+                                    </div>
+                                </div>
+                            ) : stockCount !== undefined && stockCount > 0 && stockCount <= 10 && (
+                                <div>
+                                    <p className="text-sm font-bold text-red-600 mb-2">اسرع! تبقى {stockCount} قطع فقط!</p>
+                                    <div className="w-full bg-red-100 rounded-full h-2.5 relative overflow-hidden">
+                                        <div className="bg-brand-primary h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${barWidth}%` }}></div>
+                                    </div>
+                                </div>
+                            )}
+                             <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                                <div className="flex -space-x-2">
+                                    <img className="w-6 h-6 rounded-full ring-2 ring-white" src="https://randomuser.me/api/portraits/women/12.jpg" alt="user"/>
+                                    <img className="w-6 h-6 rounded-full ring-2 ring-white" src="https://randomuser.me/api/portraits/men/32.jpg" alt="user"/>
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold flex items-center justify-center ring-2 ring-white">+10</div>
+                                </div>
+                                <p className="text-xs text-gray-600 font-semibold">
+                                    اخرون يشاهدون المنتج الان
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mb-5 border-t pt-5">
+                            <label className="font-bold text-brand-dark mb-2 block">الألوان: <span className="font-normal text-brand-text-light">{colorName(selectedColor)}</span></label>
+                            <div className="flex gap-3">
+                                {product.colors.map(color => {
+                                    const isAvailable = product.variants?.some(v => v.color === color && v.stock > 0) ?? true;
+                                    return (
+                                        <button key={color} onClick={() => handleSelectColor(color)} disabled={!isAvailable} className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent'} ${!isAvailable ? 'opacity-25 cursor-not-allowed' : ''}`} aria-label={`Select color ${colorName(color)}`}>
+                                            <span className="w-8 h-8 rounded-full border border-black/10" style={{backgroundColor: color}}></span>
+                                        </button>
+                                    )
+                                })}
                             </div>
                         </div>
 
                         <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                                 <p className="font-bold text-brand-dark">المقاس:</p>
-                                <div className="flex items-center gap-4">
-                                    <button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-brand-text-light underline hover:text-brand-dark transition-colors flex items-center gap-1">
-                                        <MagicIcon size="sm"/>
-                                        <span>اعثر على مقاسي</span>
-                                    </button>
-                                    <a href="#" className="text-sm text-brand-text-light underline">دليل المقاسات</a>
-                                </div>
+                                <button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-brand-text-light underline hover:text-brand-dark transition-colors flex items-center gap-1">
+                                    <MagicIcon size="sm"/>
+                                    <span>دليل المقاسات</span>
+                                </button>
                             </div>
                             <div className="flex gap-3 flex-wrap">
                                 {product.sizes.map(size => {
@@ -414,69 +445,39 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex items-center gap-3 mb-6">
                              <div className="flex items-center border border-brand-border rounded-full bg-white justify-between w-32">
                                 <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 text-brand-text-light hover:text-brand-dark"><MinusIcon size="sm"/></button>
                                 <span className="text-center font-bold text-base">{quantity}</span>
                                 <button onClick={() => setQuantity(q => q + 1)} className="p-3 text-brand-text-light hover:text-brand-dark"><PlusIcon size="sm"/></button>
                             </div>
-                        </div>
-                         <div className="grid grid-cols-2 gap-3 mb-4">
-                            <button onClick={handleAddToCart} disabled={isOutOfStock} className="w-full bg-brand-dark text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
-                            <button onClick={handleBuyNow} disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3.5 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">اشترِ الآن</button>
+                             <div className="flex-1 space-y-3">
+                                <button onClick={handleAddToCart} disabled={isOutOfStock} className="w-full bg-brand-dark text-white font-bold py-3.5 px-8 rounded-full transition-transform duration-200 transform hover:scale-105 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
+                                <button onClick={handleBuyNow} disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3.5 px-8 rounded-full transition-transform duration-200 transform hover:scale-105 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed">اشترِ الآن</button>
+                            </div>
                         </div>
                          <div className="text-center mb-6"><a href="#" className="text-sm font-semibold underline hover:text-brand-primary">المزيد من خيارات الدفع</a></div>
 
                          <div className="flex items-center justify-around text-sm text-brand-dark font-semibold border-t border-b border-brand-border py-2">
-                             <button onClick={handleToggleWishlist} className={`${actionButtonClasses} ${isInWishlist ? 'text-brand-primary' : ''}`}>
-                                <HeartIcon size="sm" filled={isInWishlist} /> {isInWishlist ? 'إزالة من قائمة الرغبات' : 'أضف إلى قائمة الرغبات'}
+                             <button onClick={() => toggleWishlist(product)} className={`${actionButtonClasses} ${isInWishlist ? 'text-brand-primary' : ''}`}>
+                                <HeartIcon size="sm" filled={isInWishlist} /> {isInWishlist ? 'في قائمة الرغبات' : 'أضف للرغبات'}
                             </button>
-                            <button onClick={handleAddToCompare} className={`${actionButtonClasses} ${isInCompare ? 'text-brand-primary' : ''}`}>
+                            <button onClick={() => handleAddToCompare(product)} className={`${actionButtonClasses} ${isInCompare ? 'text-brand-primary' : ''}`}>
                                 {isInCompare ? <CheckIcon size="sm"/> : <CompareIcon size="sm"/>}
                                 {isInCompare ? 'مضاف للمقارنة' : 'مقارنة'}
                             </button>
                             <button onClick={() => setIsAskQuestionOpen(true)} className={actionButtonClasses}><QuestionIcon size="sm"/> اسأل سؤالاً</button>
                             <button onClick={handleShare} className={actionButtonClasses}><ShareIcon size="sm"/> مشاركة</button>
                          </div>
-
-                         <div className="mt-6">
-                            <h3 className="font-bold text-brand-dark mb-3">شارك هذا المنتج:</h3>
-                            <div className="flex items-center gap-3">
-                                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-[#1877F2] text-white rounded-full hover:opacity-90 transition-opacity" aria-label="Share on Facebook">
-                                    <i className="fa-brands fa-facebook-f"></i>
-                                </a>
-                                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product.name)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-brand-dark text-white rounded-full hover:opacity-90 transition-opacity p-2" aria-label="Share on X">
-                                    <i className="fa-brands fa-x-twitter"></i>
-                                </a>
-                                <a href={`http://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&media=${encodeURIComponent(product.image)}&description=${encodeURIComponent(product.name)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-[#E60023] text-white rounded-full hover:opacity-90 transition-opacity" aria-label="Pin on Pinterest">
-                                    <i className="fa-brands fa-pinterest"></i>
-                                </a>
-                            </div>
-                        </div>
                          
                          <div className="text-sm text-brand-text-light space-y-2 mt-6">
                             <p><span className="font-semibold text-brand-dark w-20 inline-block">SKU:</span> {sku}</p>
                             <p><span className="font-semibold text-brand-dark w-20 inline-block">الفئة:</span> <button onClick={() => navigateTo('shop')} className="hover:text-brand-primary">{categoryName}</button></p>
                          </div>
-                         <div className="mt-4">
-                            <span className="font-semibold text-brand-dark text-sm">الوسوم:</span>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {product.tags.map(tag => (
-                                    <button
-                                        key={tag}
-                                        onClick={() => navigateTo('search', { q: tag })}
-                                        className="bg-brand-subtle text-brand-text-light text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-brand-border hover:text-brand-dark transition-colors"
-                                    >
-                                        #{tag}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-
+                        
                          <div className="mt-6">
                             <h3 className="font-bold text-brand-dark mb-3">الدفع الآمن المضمون:</h3>
-                            <div className="flex gap-1.5 items-center">
+                            <div className="flex gap-1.5 items-center flex-wrap">
                                <img src="https://cdn.shopify.com/s/files/1/0605/7353/7349/files/visa.svg?v=1650634288" alt="Visa" className="h-6"/>
                                <img src="https://cdn.shopify.com/s/files/1/0605/7353/7349/files/discover.svg?v=1650634288" alt="Discover" className="h-6"/>
                                <img src="https://cdn.shopify.com/s/files/1/0605/7353/7349/files/master.svg?v=1650634288" alt="Mastercard" className="h-6"/>
@@ -490,25 +491,20 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                 </div>
 
                 {/* Mobile Add to Cart Sticky Footer */}
-                <div className={`lg:hidden fixed bottom-[80px] left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 z-40 rounded-t-2xl transition-transform duration-300 ${showStickyAdd ? 'translate-y-0' : 'translate-y-full'}`}>
-                    <div className="flex items-center justify-between mb-3">
-                         <div className="flex items-center gap-3">
-                             <div>
-                                <p className="font-bold text-sm">{`${colorName(selectedColor)} / ${selectedSize} - ${displayPrice} ج.م`}</p>
-                            </div>
-                         </div>
-                         <button><ChevronDownIcon className="transform -rotate-180" /></button>
-                    </div>
+                <div className={`fixed bottom-[80px] left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 z-40 rounded-t-2xl transition-transform duration-300 ${showStickyAdd ? 'translate-y-0' : 'translate-y-full'}`}>
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center border rounded-full bg-white justify-between w-32">
+                        <button onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} className="flex-1 text-right flex items-center justify-between border rounded-full p-2 hover:bg-gray-50">
+                            <p className="font-bold text-sm mx-2 truncate">{`${colorName(selectedColor)} / ${selectedSize}`}</p>
+                            <ChevronDownIcon className={`transition-transform flex-shrink-0 ${isColorPickerOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                         <div className="flex items-center border rounded-full bg-white justify-between">
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3"><MinusIcon size="sm" /></button>
                             <span className="w-6 text-center font-bold">{quantity}</span>
                             <button onClick={() => setQuantity(q => q + 1)} className="p-3"><PlusIcon size="sm" /></button>
                         </div>
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                             <button onClick={handleAddToCart} disabled={isOutOfStock} className="w-full bg-brand-dark text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 transition disabled:opacity-50">{isOutOfStock ? 'نفد المخزون' : 'أضف إلى السلة'}</button>
-                             <button onClick={handleBuyNow} disabled={isOutOfStock} className="w-full bg-brand-primary text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 transition disabled:opacity-50">اشترِ الآن</button>
-                        </div>
+                        <button onClick={handleAddToCart} disabled={isOutOfStock} className="bg-brand-dark text-white font-bold py-3 px-4 rounded-full hover:bg-opacity-90 disabled:opacity-50">
+                            أضف
+                        </button>
                     </div>
                 </div>
             </div>
@@ -555,7 +551,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
             </div>
 
             <ReviewsSection reviews={approvedReviews} onWriteReviewClick={() => setIsReviewModalOpen(true)} />
-            <TrendingProductsSection title="الناس اشتروا أيضا" products={allProducts.slice(4, 8)} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} isCarousel addToCompare={handleAddToCompare} toggleWishlist={handleToggleWishlist} />
+            <TrendingProductsSection title="الناس اشتروا أيضا" products={allProducts.slice(4, 8)} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} isCarousel addToCompare={handleAddToCompare} toggleWishlist={toggleWishlist} />
             
             <RecentlyViewedSection
                 title="المنتجات التي تمت مشاهدتها مؤخرًا"
@@ -563,7 +559,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                 addToCart={addToCart}
                 openQuickView={openQuickView}
                 addToCompare={handleAddToCompare}
-                toggleWishlist={handleToggleWishlist}
+                toggleWishlist={toggleWishlist}
             />
             
             <SizeGuideModal 

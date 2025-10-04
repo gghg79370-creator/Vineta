@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Notification } from '../../../types';
-import { ShoppingBagIcon, CubeIcon } from '../../../components/icons';
+import { ShoppingBagIcon, CubeIcon, StarIcon } from '../../../components/icons';
 
 interface NotificationPanelProps {
     notifications: Notification[];
@@ -41,7 +42,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
     const icons: { [key: string]: React.ReactNode } = {
         order: <ShoppingBagIcon size="sm" className="text-blue-500" />,
         stock: <CubeIcon size="sm" className="text-amber-500" />,
-        review: <CubeIcon size="sm" className="text-green-500" />
+        review: <StarIcon size="sm" className="text-green-500" />
     };
 
     return (
@@ -52,7 +53,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                     وضع علامة "مقروء" على الكل
                 </button>
             </div>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto admin-sidebar-scrollbar">
                 {notifications.length === 0 ? (
                     <p className="text-center text-gray-500 py-8 text-sm">لا توجد إشعارات جديدة.</p>
                 ) : (
@@ -62,14 +63,18 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                             onClick={() => handleNotificationClick(notification)}
                             className="w-full text-right p-3 flex items-start gap-3 hover:bg-gray-50 border-b last:border-b-0"
                         >
-                            <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${notification.type === 'order' ? 'bg-blue-100' : 'bg-amber-100'}`}>
+                            <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                notification.type === 'order' ? 'bg-blue-100' :
+                                notification.type === 'stock' ? 'bg-amber-100' :
+                                'bg-green-100'
+                            }`}>
                                 {icons[notification.type]}
                             </div>
-                            <div className="flex-1">
-                                <p className={`font-semibold text-sm ${!notification.isRead ? 'text-gray-900' : 'text-gray-600'}`}>
+                            <div className="flex-1 overflow-hidden">
+                                <p className={`font-semibold text-sm truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-600'}`}>
                                     {notification.title}
                                 </p>
-                                <p className="text-xs text-gray-500">{notification.message}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2">{notification.message}</p>
                                 <p className="text-xs text-gray-400 mt-1">{formatTimeAgo(notification.timestamp)}</p>
                             </div>
                             {!notification.isRead && (

@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 import { Product } from '../../types';
 import { CloseIcon, StarIcon, CheckCircleIcon, XCircleIcon, ShoppingBagIcon, SparklesIcon, ArrowLongRightIcon } from '../icons';

@@ -69,6 +69,7 @@ export const CustomerListTable: React.FC<CustomerListTableProps> = ({ customers,
                                 />
                             </th>
                             <th className="p-4 font-semibold">العميل</th>
+                            <th className="p-4 font-semibold">تاريخ التسجيل</th>
                             <th className="p-4 font-semibold">الطلبات</th>
                             <th className="p-4 font-semibold">إجمالي الإنفاق</th>
                             <th className="p-4 font-semibold"></th>
@@ -91,9 +92,11 @@ export const CustomerListTable: React.FC<CustomerListTableProps> = ({ customers,
                                         <div>
                                             <span className="font-semibold text-gray-800">{customer.name}</span>
                                             <p className="text-xs text-gray-500">{customer.email}</p>
+                                            <p className="text-xs text-gray-500">{customer.phone}</p>
                                         </div>
                                     </div>
                                 </td>
+                                <td className="p-4 text-gray-500">{customer.registeredDate}</td>
                                 <td className="p-4 text-center">{customer.orderCount}</td>
                                 <td className="p-4 font-semibold">{customer.totalSpent.toFixed(2)} ج.م</td>
                                 <td className="p-4 text-left">

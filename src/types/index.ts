@@ -1,4 +1,5 @@
 
+
 export interface WishlistItem {
     id: number;
     note: string;
@@ -14,6 +15,7 @@ export interface HeroSlide {
     description?: string;
     buttonText: string;
     page: string;
+    status: 'Visible' | 'Hidden';
 }
 
 export interface Review {

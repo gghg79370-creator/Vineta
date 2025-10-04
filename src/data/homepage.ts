@@ -11,7 +11,8 @@ export const heroSlidesData: HeroSlide[] = [
         title: 'تألقي بشكل لم يسبق له مثيل',
         subtitle: 'اكتشفي أحدث مجموعاتنا الصيفية',
         buttonText: 'تسوقي الآن',
-        page: 'shop'
+        page: 'shop',
+        status: 'Visible'
     },
     {
         id: 2,
@@ -19,7 +20,8 @@ export const heroSlidesData: HeroSlide[] = [
         title: 'تخفيضات نهاية الموسم',
         subtitle: 'خصم يصل إلى 50% على منتجات مختارة',
         buttonText: 'اكتشفي العروض',
-        page: 'shop'
+        page: 'shop',
+        status: 'Visible'
     },
     {
         id: 3,
@@ -27,6 +29,7 @@ export const heroSlidesData: HeroSlide[] = [
         title: 'مجموعة الرجال الجديدة',
         subtitle: 'أناقة وعملية لكل يوم',
         buttonText: 'تسوق الرجال',
-        page: 'shop'
+        page: 'shop',
+        status: 'Visible'
     }
 ];

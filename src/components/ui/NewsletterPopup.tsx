@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CloseIcon, EnvelopeIcon } from '../icons';
+import { useToast } from '../../hooks/useToast';
 
 interface NewsletterPopupProps {
     setShow: (show: boolean) => void;
 }
 
-export const NewsletterPopup = ({ setShow }: NewsletterPopupProps) => (
+export const NewsletterPopup = ({ setShow }: NewsletterPopupProps) => {
+    const [email, setEmail] = useState('');
+    const addToast = useToast();
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email.trim() && /\S+@\S+\.\S+/.test(email)) {
+            console.log('Popup Newsletter subscription:', email);
+            addToast('شكرًا لاشتراكك!', 'success');
+            setEmail('');
+            setShow(false); // Close popup on success
+        } else {
+            addToast('الرجاء إدخال بريد إلكتروني صالح.', 'error');
+        }
+    };
+
+    return (
     <div className="fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4 animate-fade-in">
         <div className="bg-white rounded-2xl max-w-lg w-full shadow-xl overflow-hidden relative animate-fade-in-up">
              <button onClick={() => setShow(false)} className="absolute top-4 right-4 text-brand-dark bg-white/50 hover:bg-white rounded-full p-1 z-10"><CloseIcon size="sm"/></button>
@@ -15,14 +32,20 @@ export const NewsletterPopup = ({ setShow }: NewsletterPopupProps) => (
              <div className="p-8 text-center">
                  <h2 className="text-3xl font-bold mb-2 text-brand-dark">اشترك في نشرتنا</h2>
                  <p className="text-brand-text-light mb-6">كن أول من يعرف عن أحدث الاتجاهات والعروض الترويجية والمزيد!</p>
-                 <form className="flex flex-col gap-4">
+                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                      <div className="relative">
                         <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-brand-text-light">
                             <EnvelopeIcon/>
                         </div>
-                        <input type="email" placeholder="عنوان بريدك الإلكتروني" className="w-full border border-brand-border rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark"/>
+                        <input 
+                            type="email" 
+                            placeholder="عنوان بريدك الإلكتروني" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="w-full border border-brand-border rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark"/>
                      </div>
-                     <button className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 transition-colors">إرسال</button>
+                     <button type="submit" className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 transition-colors">إرسال</button>
                  </form>
                  <div className="flex justify-center gap-4 mt-6">
                     <a href="#" aria-label="X"><i className="fa-brands fa-x-twitter text-xl"></i></a>
@@ -36,4 +59,5 @@ export const NewsletterPopup = ({ setShow }: NewsletterPopupProps) => (
              </div>
         </div>
     </div>
-);
+    );
+};

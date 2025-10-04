@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { Product } from '../../types';
 import { EyeIcon, HeartIcon, ShoppingBagIcon, StarIcon, CompareIcon } from '../icons';
@@ -78,8 +80,8 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
                     <div className="translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 p-4 pt-12 bg-gradient-to-t from-black/10 to-transparent">
                         <div className="flex items-center justify-around gap-0 bg-white/95 backdrop-blur-sm rounded-full shadow-lg p-1">
                             <div className="group/tooltip flex-1 relative">
-                                <button onClick={handleAddToCompare} className="p-2.5 w-full hover:bg-brand-subtle rounded-full text-brand-dark transition-transform active:scale-90" aria-label="قارن"><CompareIcon size="sm" /></button>
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-dark text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">قارن</span>
+                                <button onClick={handleAddToCompare} className={`p-2.5 w-full hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInCompare ? 'text-brand-primary' : 'text-brand-dark'}`} aria-label="قارن"><CompareIcon size="sm" /></button>
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-dark text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">{isInCompare ? 'إزالة من المقارنة' : 'أضف للمقارنة'}</span>
                             </div>
                              <div className="group/tooltip flex-1 relative border-x border-gray-200">
                                 <button onClick={handleOpenQuickView} className="p-2.5 w-full hover:bg-brand-subtle rounded-full text-brand-dark transition-transform active:scale-90" aria-label="نظرة سريعة"><EyeIcon size="sm" /></button>
@@ -87,7 +89,7 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
                             </div>
                             <div className="group/tooltip flex-1 relative">
                                 <button onClick={handleToggleWishlist} className={`p-2.5 w-full hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInWishlist ? 'text-brand-primary' : 'text-brand-dark'}`} aria-label="أضف إلى قائمة الرغبات"><HeartIcon filled={isInWishlist} size="sm" /></button>
-                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-dark text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">قائمة الرغبات</span>
+                                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-dark text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">{isInWishlist ? 'إزالة من الرغبات' : 'أضف للرغبات'}</span>
                             </div>
                             <div className="group/tooltip flex-1 relative border-l border-gray-200">
                                 <button onClick={handleAddToCart} className="p-2.5 w-full hover:bg-brand-subtle rounded-full text-brand-dark transition-transform active:scale-90" aria-label="أضف إلى السلة"><ShoppingBagIcon size="sm" /></button>
@@ -100,7 +102,7 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
                 {/* Desktop Hover Actions */}
                 <div className="hidden md:block absolute bottom-3 right-0 left-0 px-3 product-actions-container">
                     <div className="flex items-center justify-center gap-1 bg-white rounded-full shadow-lg p-1.5">
-                         <button onClick={handleAddToCompare} className="flex-1 p-2 hover:bg-brand-subtle rounded-full text-brand-dark hover:text-brand-primary transition-transform active:scale-90" aria-label="Compare"><CompareIcon size="sm" /></button>
+                         <button onClick={handleAddToCompare} className={`flex-1 p-2 hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInCompare ? 'text-brand-primary' : 'text-brand-dark hover:text-brand-primary'}`} aria-label="Compare"><CompareIcon size="sm" /></button>
                          <button onClick={handleOpenQuickView} className="flex-1 p-2 hover:bg-brand-subtle rounded-full border-x text-brand-dark hover:text-brand-primary transition-transform active:scale-90" aria-label="Quick view"><EyeIcon size="sm" /></button>
                          <button onClick={handleToggleWishlist} className={`flex-1 p-2 hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInWishlist ? 'text-brand-primary' : 'text-brand-dark hover:text-brand-primary'}`} aria-label="Add to wishlist"><HeartIcon filled={isInWishlist} size="sm" /></button>
                          <button onClick={handleAddToCart} className="flex-1 p-2 hover:bg-brand-subtle rounded-full border-l text-brand-dark hover:text-brand-primary transition-transform active:scale-90" aria-label="Add to cart"><ShoppingBagIcon size="sm" /></button>

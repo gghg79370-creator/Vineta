@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product } from '../../types';
 import { CollectionProductCard } from '../product/CollectionProductCard';
@@ -36,7 +37,6 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
         return () => clearTimeout(timer);
     }, [activeTab]);
 
-    // FIX: Replaced non-existent `isNew` and `onSale` properties with correct logic based on data structure.
     const activeProducts = useMemo(() => {
         switch(activeTab) {
             case 'trending': 
