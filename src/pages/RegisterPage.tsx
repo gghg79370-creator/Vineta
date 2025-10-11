@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { UserIcon, EnvelopeIcon, LockClosedIcon, PhoneIcon } from '../components/icons';
 import Spinner from '../components/ui/Spinner';
+import { authService } from '../services/authService';
+import { useToast } from '../hooks/useToast';
 
 interface RegisterPageProps {
     navigateTo: (pageName: string) => void;
@@ -18,6 +20,7 @@ const RegisterPage = ({ navigateTo }: RegisterPageProps) => {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const addToast = useToast();
 
     const validate = () => {
         const newErrors: { [key: string]: string } = {};
@@ -46,17 +49,31 @@ const RegisterPage = ({ navigateTo }: RegisterPageProps) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
         
         setLoading(true);
-        // Mock registration logic
-        setTimeout(() => {
-            console.log('Registering user:', formData);
+        
+        try {
+            const { user, error } = await authService.signUp(
+                formData.email,
+                formData.password,
+                formData.fullName
+            );
+            
+            if (error) {
+                setErrors({ general: error });
+            } else if (user) {
+                addToast('✅ تم إنشاء الحساب بنجاح!', 'success');
+                navigateTo('emailVerification');
+            }
+        } catch (err) {
+            console.error('Registration error:', err);
+            setErrors({ general: 'حدث خطأ أثناء التسجيل. حاول مرة أخرى.' });
+        } finally {
             setLoading(false);
-            navigateTo('emailVerification');
-        }, 1500);
+        }
     };
     
     const AuthInput = ({ name, type, placeholder, icon, value, onChange, error }: any) => (

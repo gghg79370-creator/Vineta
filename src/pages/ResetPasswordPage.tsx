@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { LockClosedIcon } from '../components/icons';
+import { authService } from '../services/authService';
 
 interface ResetPasswordPageProps {
     navigateTo: (pageName: string) => void;
@@ -41,7 +42,7 @@ const ResetPasswordPage = ({ navigateTo }: ResetPasswordPageProps) => {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         if (password.length < 8) {
@@ -54,11 +55,22 @@ const ResetPasswordPage = ({ navigateTo }: ResetPasswordPageProps) => {
         }
 
         setLoading(true);
-        setTimeout(() => {
+        
+        try {
+            const { error: updateError } = await authService.updatePassword(password);
+            
+            if (updateError) {
+                setError(updateError);
+                setLoading(false);
+            } else {
+                setSuccess(true);
+                setTimeout(() => navigateTo('login'), 2000);
+            }
+        } catch (err) {
+            console.error('Password update error:', err);
+            setError('حدث خطأ أثناء تحديث كلمة المرور. حاول مرة أخرى.');
             setLoading(false);
-            setSuccess(true);
-            setTimeout(() => navigateTo('login'), 2000);
-        }, 1000);
+        }
     };
 
     if (success) {
