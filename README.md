@@ -96,8 +96,13 @@ View your app in AI Studio: https://ai.studio/apps/drive/11-CkPHZ0N4S79DAX0O2zoN
 
 ## 📚 Documentation
 
-For detailed setup instructions, architecture overview, and deployment guide, see:
+For detailed information, see:
 - **[SETUP.md](SETUP.md)** - Complete setup and configuration guide
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and data flow
+- **[STRUCTURE.md](STRUCTURE.md)** - Project structure and organization
+- **[INTEGRATION.md](INTEGRATION.md)** - Service integration patterns
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment guide
+- **[components/README.md](src/components/README.md)** - Component documentation
 - **[supabase/schema.sql](supabase/schema.sql)** - Database schema and RLS policies
 
 ## 🏗️ Project Structure
@@ -106,18 +111,27 @@ For detailed setup instructions, architecture overview, and deployment guide, se
 vineta/
 ├── src/
 │   ├── admin/              # Admin dashboard
-│   ├── components/         # Reusable UI components
-│   ├── data/               # Mock data (fallback)
-│   ├── lib/                # Libraries (Supabase client)
+│   │   ├── components/     # Admin UI components
+│   │   ├── pages/          # Admin pages
+│   │   ├── data/           # Admin mock data
+│   │   └── utils/          # Admin utilities
+│   ├── components/         # Frontend components (organized by feature)
 │   ├── pages/              # Page components
-│   ├── services/           # API service layer
-│   ├── state/              # Global state management
-│   └── types/              # TypeScript definitions
-├── supabase/
-│   └── schema.sql          # Database schema
-├── .env.local.example      # Environment template
-└── package.json
+│   ├── services/           # Backend service layer
+│   ├── hooks/              # Custom React hooks
+│   ├── utils/              # Utility functions
+│   ├── constants/          # Application constants
+│   ├── config/             # Configuration
+│   ├── state/              # State management
+│   ├── types/              # TypeScript types
+│   ├── data/               # Mock data
+│   └── lib/                # External libraries
+├── supabase/               # Database
+│   └── schema.sql          # Schema and policies
+└── [config files]
 ```
+
+**📖 See [STRUCTURE.md](STRUCTURE.md) for detailed structure documentation.**
 
 ## 🗄️ Database Schema
 
