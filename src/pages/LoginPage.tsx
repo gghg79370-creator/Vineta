@@ -5,6 +5,7 @@ import { AuthLayout } from '../components/layout/AuthLayout';
 import { EnvelopeIcon, LockClosedIcon } from '../components/icons';
 import Spinner from '../components/ui/Spinner';
 import { useToast } from '../hooks/useToast';
+import { authService } from '../services/authService';
 
 interface LoginPageProps {
     navigateTo: (pageName: string) => void;
@@ -19,7 +20,7 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
     const [loading, setLoading] = useState(false);
     const addToast = useToast();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
         
@@ -34,25 +35,21 @@ const LoginPage = ({ navigateTo, onLogin }: LoginPageProps) => {
 
         setLoading(true);
 
-        // Mock login logic
-        setTimeout(() => {
-            if (email === 'user@example.com' && password === 'password123') {
-                const mockUser: User = { 
-                    id: '1', 
-                    name: 'فينيتا فام', 
-                    email: 'user@example.com', 
-                    phone: '01234567890', 
-                    addresses: [
-                         { id: 1, type: 'الشحن', name: 'المنزل', recipientName: 'فينيتا فام', street: '123 شارع ياران', city: 'القاهرة', postalCode: '11511', country: 'مصر', isDefault: true }
-                    ] 
-                };
-                onLogin(mockUser);
-                addToast(`👋 مرحباً بعودتك، ${mockUser.name}!`, 'success');
-            } else {
-                setErrors({ general: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
+        try {
+            const { user, error } = await authService.signIn(email, password);
+            
+            if (error) {
+                setErrors({ general: error });
+            } else if (user) {
+                onLogin(user);
+                addToast(`👋 مرحباً بعودتك، ${user.name}!`, 'success');
             }
+        } catch (err) {
+            console.error('Login error:', err);
+            setErrors({ general: 'حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.' });
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     return (

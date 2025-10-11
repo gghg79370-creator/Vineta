@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { EnvelopeIcon } from '../components/icons';
+import { authService } from '../services/authService';
 
 interface ForgotPasswordPageProps {
     navigateTo: (pageName: string) => void;
@@ -9,22 +10,30 @@ interface ForgotPasswordPageProps {
 const ForgotPasswordPage = ({ navigateTo }: ForgotPasswordPageProps) => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
+        setError('');
 
-        // Mock API call
-        setTimeout(() => {
-            if (email) {
-                 setMessage('إذا كان البريد الإلكتروني موجودًا في نظامنا، فستتلقى رابطًا لإعادة تعيين كلمة المرور قريبًا.');
+        try {
+            const { error: resetError } = await authService.resetPassword(email);
+            
+            if (resetError) {
+                setError(resetError);
+            } else {
+                setMessage('إذا كان البريد الإلكتروني موجودًا في نظامنا، فستتلقى رابطًا لإعادة تعيين كلمة المرور قريبًا.');
+                setEmail('');
             }
+        } catch (err) {
+            console.error('Password reset error:', err);
+            setError('حدث خطأ أثناء إرسال البريد. حاول مرة أخرى.');
+        } finally {
             setLoading(false);
-            // In a real app, you wouldn't clear the email field.
-            setEmail('');
-        }, 1000);
+        }
     };
 
     return (
@@ -35,6 +44,12 @@ const ForgotPasswordPage = ({ navigateTo }: ForgotPasswordPageProps) => {
             {message && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
                     <span className="block sm:inline">{message}</span>
+                </div>
+            )}
+            
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
+                    <span className="block sm:inline">{error}</span>
                 </div>
             )}
 
