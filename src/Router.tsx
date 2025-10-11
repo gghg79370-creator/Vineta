@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
+// FIX: Changed to named import as ProductDetailPage is not a default export.
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import AccountPage from './pages/AccountPage';
 import FaqPage from './pages/FaqPage';

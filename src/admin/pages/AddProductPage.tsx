@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '../components/ui/Card';
 import { ImageUpload } from '../components/products/ImageUpload';
 import { AdminProduct, AdminVariant } from '../data/adminData';
@@ -40,6 +40,17 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
     const [isGenerating, setIsGenerating] = useState<{ [key: string]: boolean }>({});
     const [badges, setBadges] = useState<{ text: string; type: string }[]>(productToEdit?.badges || []);
     const [newBadge, setNewBadge] = useState({ text: '', type: 'custom' });
+
+    const totalVariantStock = useMemo(() => {
+        if (!hasVariants || variants.length === 0) return null;
+        return variants.reduce((sum, v) => sum + v.stock, 0);
+    }, [hasVariants, variants]);
+
+    const getStockInfo = (stock: number) => {
+        if (stock === 0) return { text: 'نفد المخزون', className: 'text-red-600' };
+        if (stock <= 10) return { text: 'مخزون منخفض', className: 'text-amber-600' };
+        return { text: 'متوفر', className: 'text-green-600' };
+    };
 
 
     useEffect(() => {
@@ -166,6 +177,22 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                             <span>هذا المنتج له متغيرات (مثل المقاس أو اللون)</span>
                         </label>
                         
+                        {hasVariants && totalVariantStock !== null && (
+                            <div className="mb-4 p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                                <span className="font-bold">إجمالي المخزون</span>
+                                <div>
+                                    <span className="font-bold text-lg">{totalVariantStock}</span>
+                                    <span className={`text-xs font-bold mr-2 px-2 py-0.5 rounded-full ${
+                                        totalVariantStock === 0 ? 'bg-red-100 text-red-700' :
+                                        totalVariantStock <= 10 ? 'bg-amber-100 text-amber-700' :
+                                        'bg-green-100 text-green-700'
+                                    }`}>
+                                        {totalVariantStock === 0 ? 'نفد المخزون' : totalVariantStock <= 10 ? 'مخزون منخفض' : 'متوفر'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                        
                         {hasVariants ? (
                             <VariantManager variants={variants} setVariants={setVariants} />
                         ) : (
@@ -186,7 +213,14 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                         <input type="text" name="sku" value={product.sku} onChange={handleChange} className="admin-form-input"/>
                                     </div>
                                     <div>
-                                        <label className="admin-form-label">الكمية</label>
+                                        <div className="flex justify-between items-center">
+                                            <label className="admin-form-label">الكمية</label>
+                                            {product.stock !== undefined && (
+                                                <span className={`text-xs font-bold ${getStockInfo(product.stock).className}`}>
+                                                    {getStockInfo(product.stock).text}
+                                                </span>
+                                            )}
+                                        </div>
                                         <input type="number" name="stock" value={product.stock} onChange={handleChange} className="admin-form-input"/>
                                     </div>
                                 </div>

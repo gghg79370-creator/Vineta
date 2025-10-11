@@ -1,3 +1,4 @@
+
 import React, { createContext, useReducer, useContext, useMemo } from 'react';
 import { User, Product, Toast, TodoItem, WishlistItem, Address, Coupon } from '../types';
 import { cartItemsData } from '../data/cart';
@@ -11,6 +12,13 @@ interface CartDetail {
     selectedColor: string;
 }
 
+interface ThemeState {
+    primaryColor: string;
+    fontFamily: string;
+    logoUrl: string | null;
+    siteName: string;
+}
+
 interface State {
     currentUser: User | null;
     cart: CartDetail[];
@@ -22,6 +30,8 @@ interface State {
     appliedCoupon: Coupon | null;
     giftWrap: boolean;
     orderNote: string;
+    theme: ThemeState;
+    themeMode: 'light' | 'dark';
 }
 
 type Action =
@@ -50,7 +60,9 @@ type Action =
     | { type: 'DELETE_ADDRESS'; payload: number }
     | { type: 'SET_DEFAULT_ADDRESS'; payload: number }
     | { type: 'SET_GIFT_WRAP'; payload: boolean }
-    | { type: 'SET_ORDER_NOTE'; payload: string };
+    | { type: 'SET_ORDER_NOTE'; payload: string }
+    | { type: 'SET_THEME'; payload: ThemeState }
+    | { type: 'SET_THEME_MODE'; payload: 'light' | 'dark' };
 
 
 // Reducer
@@ -205,10 +217,35 @@ const appReducer = (state: State, action: Action): State => {
             return { ...state, giftWrap: action.payload };
         case 'SET_ORDER_NOTE':
             return { ...state, orderNote: action.payload };
+        case 'SET_THEME':
+            return { ...state, theme: action.payload };
+        case 'SET_THEME_MODE':
+            try {
+                localStorage.setItem('themeMode', action.payload);
+            } catch (e) {
+                console.error("Failed to set theme mode in localStorage", e);
+            }
+            return { ...state, themeMode: action.payload };
         default:
             return state;
     }
 };
+
+const getInitialThemeMode = (): 'light' | 'dark' => {
+    try {
+        const storedTheme = localStorage.getItem('themeMode');
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+            return storedTheme;
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+    } catch (e) {
+        // Can fail in SSR or restricted environments
+    }
+    return 'light';
+};
+
 
 // Initial State
 const initialCartDetails = cartItemsData.map(item => ({
@@ -247,6 +284,13 @@ const initialState: State = {
     appliedCoupon: null,
     giftWrap: false,
     orderNote: '',
+    theme: {
+        primaryColor: '#ff6f61',
+        fontFamily: "'Poppins', 'Tajawal', sans-serif",
+        logoUrl: null,
+        siteName: 'Vineta',
+    },
+    themeMode: getInitialThemeMode(),
 };
 
 // Context and Provider

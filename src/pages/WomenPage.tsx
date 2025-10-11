@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -22,16 +21,26 @@ interface ShopPageProps {
 
 const AccordionItem = ({ title, children, defaultOpen = false, hasActiveFilter = false }: { title: string, children?: React.ReactNode, defaultOpen?: boolean, hasActiveFilter?: boolean }) => {
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
+    const contentId = `filter-accordion-${title.replace(/\s+/g, '-')}`;
     return (
         <div className="border-b">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold text-brand-dark">
+            <button 
+                onClick={() => setIsOpen(!isOpen)} 
+                className="w-full flex justify-between items-center text-right py-4 font-semibold text-brand-dark"
+                aria-expanded={isOpen}
+                aria-controls={contentId}
+            >
                  <span className="flex items-center gap-2">
                     {title}
                     {hasActiveFilter && <span className="w-2 h-2 bg-brand-primary rounded-full"></span>}
                 </span>
                 <span className={`transform transition-transform text-brand-text-light ${isOpen ? '' : 'rotate-180'}`}>{isOpen ? <MinusIcon size="sm"/> : <PlusIcon size="sm"/>}</span>
             </button>
-            {isOpen && <div className="pb-4 text-brand-text-light animate-fade-in">{children}</div>}
+            <div id={contentId} className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                <div className="overflow-hidden">
+                    <div className="pb-4 pt-2 text-brand-text-light">{children}</div>
+                </div>
+            </div>
         </div>
     )
 }
@@ -269,7 +278,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                 <main className="w-full lg:w-3/4">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-4 bg-white rounded-lg shadow-sm border">
                         <div className="flex items-center gap-4 w-full md:w-auto">
-                            <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold">
+                            <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-95">
                                 <FilterIcon/>
                                 <span>فلتر</span>
                             </button>
@@ -294,14 +303,14 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                                     <button 
                                         key={cols}
                                         onClick={() => { setViewMode('grid'); setGridCols(cols); }} 
-                                        className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' && gridCols === cols ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} 
+                                        className={`p-1.5 rounded-full transition-colors active:scale-95 ${viewMode === 'grid' && gridCols === cols ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} 
                                         aria-label={`${cols} Column Grid View`}
                                     >
                                         <GridViewIcon columns={cols} className="w-5 h-5" />
                                     </button>
                                 ))}
                                 <div className="w-px h-5 bg-gray-200 mx-1"></div>
-                                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-full transition-colors ${viewMode === 'list' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="List View">
+                                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-full transition-colors active:scale-95 ${viewMode === 'list' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="List View">
                                     <Bars3Icon size="sm" />
                                 </button>
                             </div>
@@ -314,12 +323,12 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                         </div>
                     ) : currentProducts.length > 0 ? (
                         viewMode === 'grid' ? (
-                             <div className={`grid ${gridClasses[gridCols]} gap-6`}>
+                             <div className={`grid ${gridClasses[gridCols]} gap-x-4 gap-y-8`}>
                                 {currentProducts.map(product => <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
+                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         )
                     ) : (
@@ -331,13 +340,13 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                     
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center mt-12 space-x-2 space-x-reverse">
-                            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors rotate-180 disabled:opacity-50" aria-label="Previous Page"><ChevronRightIcon /></button>
+                            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors rotate-180 disabled:opacity-50 active:scale-95" aria-label="Previous Page"><ChevronRightIcon /></button>
                             {[...Array(totalPages).keys()].map(number => (
-                                <button key={number + 1} onClick={() => paginate(number + 1)} className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors ${currentPage === number + 1 ? 'bg-brand-dark text-white' : 'bg-white border border-brand-border hover:bg-brand-subtle'}`}>
+                                <button key={number + 1} onClick={() => paginate(number + 1)} className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors active:scale-95 ${currentPage === number + 1 ? 'bg-brand-dark text-white' : 'bg-white border border-brand-border hover:bg-brand-subtle'}`}>
                                     {number + 1}
                                 </button>
                             ))}
-                            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors disabled:opacity-50" aria-label="Next Page"><ChevronRightIcon /></button>
+                            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors disabled:opacity-50 active:scale-95" aria-label="Next Page"><ChevronRightIcon /></button>
                         </div>
                     )}
                 </main>

@@ -39,27 +39,22 @@ export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps)
     if (!isOpen) return null;
 
     const generateAiComparison = async () => {
-        if (compareList.length !== 2) return;
+        if (compareList.length < 2) return;
         setIsGeneratingSummary(true);
         setShowSummary(true);
         setAiSummary('');
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const [product1, product2] = compareList;
+            const productsToCompare = compareList.map(p => `
+المنتج: ${p.name}
+الوصف: ${p.description}
+السعر: ${p.price} ج.م
+الخامة: ${p.materialComposition || 'غير محدد'}
+`).join('\n');
 
-            const prompt = `أنت Vinnie، مساعد أزياء خبير وودود لمتجر Vineta. يقوم العميل بمقارنة منتجين. قدم ملخص مقارنة مفيد بلغة طبيعية باللغة العربية. حلل أسلوبهما، وخاماتهما، وسعرهما، وأفضل حالات الاستخدام. اختتم بتوصية واضحة حول أيهما قد يكون أفضل لأنواع مختلفة من العملاء أو المناسبات. كن ودودًا وحواريًا. إليك المنتجات:
-
-المنتج 1: ${product1.name}
-الوصف: ${product1.description}
-السعر: ${product1.price} ج.م
-الخامة: ${product1.materialComposition || 'غير محدد'}
-
-المنتج 2: ${product2.name}
-الوصف: ${product2.description}
-السعر: ${product2.price} ج.م
-الخامة: ${product2.materialComposition || 'غير محدد'}
-
+            const prompt = `أنت Vinnie، مساعد أزياء خبير وودود لمتجر Vineta. يقوم العميل بمقارنة هذه المنتجات. قدم ملخص مقارنة مفيد بلغة طبيعية باللغة العربية. حلل أسلوبهما، وخاماتهما، وسعرهما، وأفضل حالات الاستخدام. اختتم بتوصية واضحة حول أيهما قد يكون أفضل لأنواع مختلفة من العملاء أو المناسبات. كن ودودًا وحواريًا. إليك المنتجات:
+${productsToCompare}
 ابدأ بـ "أهلاً! أنا Vinnie، دعنا نلقي نظرة فاحصة على هذين الخيارين الرائعين..."`;
 
             const response = await ai.models.generateContent({
@@ -109,7 +104,7 @@ export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps)
                 <div className="p-5 flex justify-between items-center border-b flex-shrink-0">
                     <h2 className="font-bold text-lg text-brand-dark">مقارنة المنتجات ({compareList.length}/4)</h2>
                     <div className="flex items-center gap-2">
-                        {compareList.length === 2 && !showSummary && (
+                        {compareList.length >= 2 && !showSummary && (
                             <button onClick={generateAiComparison} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold text-sm py-2 px-4 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity active:scale-95">
                                 <SparklesIcon size="sm" />
                                 مقارنة بالذكاء الاصطناعي
@@ -175,7 +170,7 @@ export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps)
                                         </td>
                                     ))}
                                 </tr>
-                                <tr className="border-b">
+                                <tr className="border-b bg-gray-50">
                                     <td className="py-4 font-bold">السعر</td>
                                     {compareList.map(p => (
                                         <td key={p.id} className="p-2 text-center">
@@ -190,11 +185,23 @@ export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps)
                                         <td key={p.id} className="p-2 text-center text-xs text-brand-text-light leading-relaxed">{p.description?.substring(0, 80)}...</td>
                                     ))}
                                 </tr>
+                                <tr className="border-b bg-gray-50">
+                                    <td className="py-4 font-bold">الخامة</td>
+                                    {compareList.map(p => (
+                                        <td key={p.id} className="p-2 text-center text-xs text-brand-text-light leading-relaxed">{p.materialComposition || '-'}</td>
+                                    ))}
+                                </tr>
                                 <tr className="border-b">
+                                    <td className="py-4 font-bold">تعليمات العناية</td>
+                                    {compareList.map(p => (
+                                        <td key={p.id} className="p-2 text-center text-xs text-brand-text-light leading-relaxed">{p.careInstructions?.join(', ') || '-'}</td>
+                                    ))}
+                                </tr>
+                                <tr className="border-b bg-gray-50">
                                     <td className="py-4 font-bold">التوفر</td>
                                     {compareList.map(p => (
                                         <td key={p.id} className="p-2 text-center font-semibold">
-                                            {p.availability === 'متوفر' ? 
+                                            {p.availability === 'متوفر' || (p.itemsLeft && p.itemsLeft > 0) ? 
                                                 <span className="inline-flex items-center gap-1 text-green-600"><CheckCircleIcon size="sm"/> متوفر</span> : 
                                                 <span className="inline-flex items-center gap-1 text-red-500"><XCircleIcon size="sm"/> غير متوفر</span>
                                             }
@@ -212,7 +219,7 @@ export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps)
                                         </td>
                                     ))}
                                 </tr>
-                                <tr>
+                                <tr className="bg-gray-50">
                                     <td className="py-4 font-bold"></td>
                                     {compareList.map(p => (
                                         <td key={p.id} className="p-2 text-center">

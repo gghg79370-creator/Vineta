@@ -1,11 +1,13 @@
 import React from 'react';
+import { ShoppingBagIcon } from '../icons';
 
 const InstagramImage = ({ src }: { src: string }) => (
     <div className="group relative overflow-hidden rounded-lg aspect-square">
         <img src={src} alt="منشور انستغرام" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-            <a href="#" className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-label="عرض على انستغرام">
-                <i className="fa-solid fa-camera text-2xl"></i>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center p-4">
+            <a href="#" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black text-white text-sm font-bold py-2 px-4 rounded-full flex items-center gap-2" aria-label="عرض المنتج">
+                <ShoppingBagIcon size="sm" />
+                <span>عرض المنتج</span>
             </a>
         </div>
     </div>
@@ -14,7 +16,7 @@ const InstagramImage = ({ src }: { src: string }) => (
 export const InstagramSection = () => (
     <section className="py-12 md:py-20 bg-brand-subtle">
         <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark mb-8">تسوقي من @Gram</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark mb-8">Shop by @Gram</h2>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 <InstagramImage src="https://images.unsplash.com/photo-1581404917852-2e5356230887?q=80&w=1964&auto.format&fit=crop" />

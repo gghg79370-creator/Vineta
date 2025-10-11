@@ -1,5 +1,3 @@
-
-
 export interface WishlistItem {
     id: number;
     note: string;
@@ -59,11 +57,14 @@ export interface Product {
     availability?: string;
     itemsLeft?: number;
     soldIn24h?: number;
+    viewingNow?: number;
     saleEndDate?: string;
     variants?: Variant[];
     specifications?: string[];
     materialComposition?: string;
     careInstructions?: string[];
+    weight?: number;
+    weightUnit?: 'kg' | 'g';
 }
 
 export interface SaleCampaign {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { EnvelopeIcon } from '../components/icons';
@@ -12,7 +11,22 @@ interface ContactPageProps {
 const ContactPage = ({ navigateTo }: ContactPageProps) => {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const addToast = useToast();
+    
+    const validate = () => {
+        const newErrors: { [key: string]: string } = {};
+        if (!formData.name.trim()) newErrors.name = 'الاسم مطلوب.';
+        if (!formData.email.trim()) {
+            newErrors.email = 'البريد الإلكتروني مطلوب.';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'البريد الإلكتروني غير صالح.';
+        }
+        if (!formData.subject.trim()) newErrors.subject = 'الموضوع مطلوب.';
+        if (!formData.message.trim()) newErrors.message = 'الرسالة مطلوبة.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,6 +34,7 @@ const ContactPage = ({ navigateTo }: ContactPageProps) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validate()) return;
         setLoading(true);
         // Simulate API call
         setTimeout(() => {
@@ -70,10 +85,22 @@ const ContactPage = ({ navigateTo }: ContactPageProps) => {
                      <div>
                         <div className="bg-white p-8 rounded-lg shadow-md">
                              <form onSubmit={handleSubmit} className="space-y-4">
-                                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم" className="w-full border p-3 rounded-lg" required />
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className="w-full border p-3 rounded-lg" required />
-                                <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="الموضوع" className="w-full border p-3 rounded-lg" required />
-                                <textarea name="message" value={formData.message} onChange={handleChange} placeholder="رسالتك" rows={5} className="w-full border p-3 rounded-lg" required></textarea>
+                                <div>
+                                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم" className={`w-full border p-3 rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                                </div>
+                                <div>
+                                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className={`w-full border p-3 rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                </div>
+                                <div>
+                                    <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="الموضوع" className={`w-full border p-3 rounded-lg ${errors.subject ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
+                                </div>
+                                <div>
+                                    <textarea name="message" value={formData.message} onChange={handleChange} placeholder="رسالتك" rows={5} className={`w-full border p-3 rounded-lg ${errors.message ? 'border-red-500' : 'border-gray-200'}`} required></textarea>
+                                    {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
+                                </div>
                                 <button type="submit" disabled={loading} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 flex items-center justify-center min-h-[48px]">
                                     {loading ? <Spinner /> : 'إرسال رسالة'}
                                 </button>

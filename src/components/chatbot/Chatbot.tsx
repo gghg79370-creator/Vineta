@@ -4,6 +4,7 @@ import { allProducts } from '../../data/products';
 import { Product } from '../../types';
 import { CloseIcon, PaperAirplaneIcon, SparklesIcon, ChatBubbleOvalLeftEllipsisIcon, UserIcon } from '../icons';
 import { ProductCardInChat } from './ProductCardInChat';
+import { useAppState } from '../../state/AppState';
 
 interface Message {
     sender: 'user' | 'ai';
@@ -20,6 +21,7 @@ interface ChatbotProps {
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({ navigateTo, isOpen, setIsOpen, activePage, productContext }) => {
+    const { state: { theme } } = useAppState();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -70,14 +72,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo, isOpen, setIsOpen, active
                 const productList = allProducts.map(p => `- ${p.name} (ID: ${p.id}, الفئة: ${p.category}, السعر: ${p.price} ج.م, الوسوم: [${p.tags.join(', ')}])`).join('\n');
                 
                 let initialUserMessage = "مرحباً";
-                let welcomeMessage = "أهلاً بك في Vineta! أنا Vinnie، مساعدك الشخصي في عالم الموضة. كيف يمكنني أن أجعلك تتألق اليوم؟ ✨";
+                let welcomeMessage = `أهلاً بك في ${theme.siteName}! أنا Vinnie، مساعدك الشخصي في عالم الموضة. كيف يمكنني أن أجعلك تتألق اليوم؟ ✨`;
 
                 if (productContext) {
                     initialUserMessage = `أنا حالياً أنظر إلى منتج: ${productContext.name}.`;
                     welcomeMessage = `أرى أنك مهتم بـ ${productContext.name}! قطعة رائعة. هل لديك أي أسئلة حولها، أو تود بعض النصائح لتنسيقها؟ styling tips or sizing questions? 😊`;
                 }
 
-                const systemInstruction = `أنت Vinnie، مساعد أزياء ذكي وودود لمتجر إلكتروني يسمى Vineta. مهمتك هي مساعدة المستخدمين في العثور على المنتجات، وتقديم نصائح حول الأناقة، والإجابة على الأسئلة. كن دائمًا مهذبًا ومتعاونًا ومختصرًا.
+                const systemInstruction = `أنت Vinnie، مساعد أزياء ذكي وودود لمتجر إلكتروني يسمى ${theme.siteName}. مهمتك هي مساعدة المستخدمين في العثور على المنتجات، وتقديم نصائح حول الأناقة، والإجابة على الأسئلة. كن دائمًا مهذبًا ومتعاونًا ومختصرًا.
 
 معلومات المتجر:
 - الشحن: مجاني للطلبات فوق 500 ج.م.
@@ -106,7 +108,7 @@ ${productList}
         if (isOpen && !chat) {
             initializeChat();
         }
-    }, [isOpen, chat, productContext]);
+    }, [isOpen, chat, productContext, theme.siteName]);
 
     const handleAiResponse = (responseText: string) => {
         const productRegex = /\*\*(.*?)\*\*/g;
@@ -166,7 +168,7 @@ ${productList}
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-brand-instock rounded-full border-2 border-brand-dark"></span>
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">مساعد Vineta</h3>
+                            <h3 className="font-bold text-lg">مساعد {theme.siteName}</h3>
                             <p className="text-xs text-gray-300">متصل الآن</p>
                         </div>
                     </div>

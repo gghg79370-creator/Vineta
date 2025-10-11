@@ -1,6 +1,3 @@
-
-
-
 import React from 'react';
 import { Product, HeroSlide, SaleCampaign } from '../types';
 import { HeroSection } from '../components/home/HeroSection';
@@ -18,6 +15,7 @@ import { InspiredByYouSection } from '../components/home/InspiredByYouSection';
 import { AiRecommendationsSection } from '../components/home/AiRecommendationsSection';
 import { useToast } from '../hooks/useToast';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
+import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 
 
 interface HomePageProps {
@@ -65,10 +63,17 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
         toggleWishlist: toggleWishlist,
         addToCompare: addToCompare,
     };
+    
+    const vipPicks = allProducts.filter(p => [5, 9, 8].includes(p.id));
+    const trendingProducts = allProducts.filter(p => 
+        p.badges?.some(b => b.type === 'trending') || p.tags.includes('رائج')
+    ).slice(0, 4);
 
     return (
         <>
-            <HeroSection navigateTo={navigateTo} heroSlides={heroSlides} />
+            <div className="-mt-20">
+                <HeroSection navigateTo={navigateTo} heroSlides={heroSlides} />
+            </div>
             
             <CategoriesSection navigateTo={navigateTo} />
             <TabbedProductSection {...commonProductProps} />
@@ -80,6 +85,30 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
             ))}
             
             <FeaturedProductSection navigateTo={navigateTo} />
+            
+            <div className="bg-brand-subtle">
+                <TrendingProductsSection
+                    title="اختيارات VIP"
+                    products={vipPicks}
+                    navigateTo={navigateTo}
+                    addToCart={addToCart}
+                    openQuickView={openQuickView}
+                    addToCompare={addToCompare}
+                    toggleWishlist={toggleWishlist}
+                    isCarousel
+                />
+            </div>
+            
+            <TrendingProductsSection
+                title="المنتجات الرائجة"
+                products={trendingProducts}
+                navigateTo={navigateTo}
+                addToCart={addToCart}
+                openQuickView={openQuickView}
+                addToCompare={addToCompare}
+                toggleWishlist={toggleWishlist}
+            />
+
             <InspiredByYouSection navigateTo={navigateTo} />
             <TestimonialsSection navigateTo={navigateTo} />
             <RecentlyViewedSection

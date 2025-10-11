@@ -1,6 +1,7 @@
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { CartItem, Product } from '../../types';
-import { CloseIcon, MinusIcon, PlusIcon, GiftIcon, NoteIcon, TruckIcon as ShippingIcon, ArrowLongRightIcon, ChevronDownIcon, SparklesIcon, CheckIcon, CouponIcon, ShoppingBagIcon } from '../icons';
+import { CloseIcon, MinusIcon, PlusIcon, GiftIcon, NoteIcon, TruckIcon as ShippingIcon, ArrowLongRightIcon, ChevronDownIcon, SparklesIcon, CheckIcon, CouponIcon, ShoppingBagIcon, HeartIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { useAppState } from '../../state/AppState';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -24,10 +25,17 @@ interface BottomModalProps {
 }
 
 const BottomModal: React.FC<BottomModalProps> = ({ isOpen, onClose, title, children }) => {
+    const titleId = `bottom-modal-title-${title.replace(/\s+/g, '-')}`;
     return (
         <div className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isOpen ? 'bg-black/50' : 'bg-transparent pointer-events-none'}`} onClick={onClose}>
-            <div className={`fixed bottom-0 right-0 left-0 bg-white rounded-t-2xl shadow-2xl p-6 transform transition-transform duration-400 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-brand-dark mb-4">{title}</h3>
+            <div 
+                className={`fixed bottom-0 right-0 left-0 bg-white rounded-t-2xl shadow-2xl p-6 transform transition-transform duration-400 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} 
+                onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+            >
+                <h3 id={titleId} className="text-xl font-bold text-brand-dark mb-4">{title}</h3>
                 {children}
             </div>
         </div>
@@ -50,7 +58,7 @@ const RecommendationSkeleton = () => (
 
 export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartDrawerProps) => {
     const { state, dispatch, cartSubtotal, discountAmount, finalTotal, cartCount } = useAppState();
-    const { currentUser } = state;
+    const { currentUser, theme } = state;
     const addToast = useToast();
     
     const [activeModal, setActiveModal] = useState<null | 'gift' | 'note' | 'shipping'>(null);
@@ -147,6 +155,21 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
     const handleRemoveItem = (id: number, size: string, color: string) => {
         dispatch({ type: 'REMOVE_FROM_CART', payload: { id, selectedSize: size, selectedColor: color } });
     };
+
+    const handleMoveToWishlist = (item: CartItem) => {
+        if (!currentUser) {
+            addToast('الرجاء تسجيل الدخول لاستخدام قائمة الرغبات.', 'info');
+            navigateTo('login');
+            setIsOpen(false);
+            return;
+        }
+        const isInWishlist = state.wishlist.some(wishlistItem => wishlistItem.id === item.id);
+        if (!isInWishlist) {
+            dispatch({ type: 'TOGGLE_WISHLIST', payload: item.id });
+        }
+        handleRemoveItem(item.id, item.selectedSize, item.selectedColor);
+        addToast(`${item.name} تم نقله إلى قائمة الرغبات.`, 'success');
+    };
     
     const defaultRecommendations = useMemo(() => {
         const cartItemIds = new Set(cartItems.map(item => item.id));
@@ -173,7 +196,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                 .map(p => p.name)
                 .join(', ');
 
-            const prompt = `أنت خبير تسويق إلكتروني لمتجر أزياء يسمى Vineta. لدى المستخدم هذه المنتجات في سلته: ${cartContent}. من قائمة المنتجات المتاحة التالية، أوصِ بـ 3 منتجات محددة تُشترى غالبًا مع المنتجات الموجودة في السلة. قدم سببًا قصيرًا وأنيقًا باللغة العربية لكل توصية. لا توصِ بمنتجات موجودة بالفعل في السلة. المنتجات المتاحة: ${availableProductsString}. قم بالرد فقط بكائن JSON.`;
+            const prompt = `أنت خبير تسويق إلكتروني لمتجر أزياء يسمى ${theme.siteName}. لدى المستخدم هذه المنتجات في سلته: ${cartContent}. من قائمة المنتجات المتاحة التالية، أوصِ بـ 3 منتجات محددة تُشترى غالبًا مع المنتجات الموجودة في السلة. قدم سببًا قصيرًا وأنيقًا باللغة العربية لكل توصية. لا توصِ بمنتجات موجودة بالفعل في السلة. المنتجات المتاحة: ${availableProductsString}. قم بالرد فقط بكائن JSON.`;
     
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
@@ -307,14 +330,19 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
     return (
         <>
             <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${shouldBeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
-            <div className={`fixed top-0 right-0 h-full w-[90vw] max-w-md bg-brand-subtle shadow-lg z-[60] ${getAnimationClass()}`}>
-                 <div className="flex flex-col h-full">
-                     <div className="p-5 flex justify-between items-center border-b bg-white">
-                        <h2 className="font-bold text-xl text-brand-dark">عربة التسوق ({cartCount})</h2>
+            <div 
+                className={`fixed top-0 right-0 h-full w-[90vw] max-w-md bg-white shadow-lg z-[60] ${getAnimationClass()}`}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="cart-drawer-title"
+            >
+                 <div className="grid grid-rows-[auto_1fr_auto] h-full">
+                     <div className="p-5 flex justify-between items-center border-b bg-brand-subtle">
+                        <h2 id="cart-drawer-title" className="font-bold text-xl text-brand-dark">عربة التسوق ({cartCount})</h2>
                         <button onClick={() => setIsOpen(false)} aria-label="إغلاق السلة" className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto bg-white">
+                    <div className="overflow-y-auto">
                          {lastAddedItemName && (
                             <div className="p-4 bg-green-100 border-b border-green-200 animate-fade-in">
                                 <div className="flex items-center gap-3 text-sm">
@@ -334,9 +362,20 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                                     <span className="text-brand-instock font-bold">لقد حصلت على شحن مجاني!</span>
                                 )}
                             </p>
-                            <div className="w-full bg-gray-200 rounded-full h-2 relative">
+                            <div
+                                className="w-full bg-gray-200 rounded-full h-2 relative"
+                                role="progressbar"
+                                aria-valuenow={cartSubtotal}
+                                aria-valuemin="0"
+                                aria-valuemax={shippingThreshold}
+                                aria-label="التقدم نحو الشحن المجاني"
+                            >
                                 <div className="bg-gradient-to-r from-red-400 to-brand-primary h-full rounded-full transition-all duration-500" style={{width: `${shippingProgress}%`}}></div>
-                                <div className="absolute top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-brand-primary border-4 border-white shadow-md flex items-center justify-center transition-all duration-500" style={{ right: `calc(${shippingProgress}% - 16px)` }}>
+                                <div
+                                    className="absolute top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-brand-primary border-4 border-white shadow-md flex items-center justify-center transition-all duration-500"
+                                    style={{ right: `calc(${shippingProgress}% - 16px)` }}
+                                    aria-hidden="true"
+                                >
                                     <ShippingIcon size="sm" className="text-white"/>
                                 </div>
                             </div>
@@ -354,6 +393,11 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                                                     <button onClick={() => handleRemoveItem(item.id, item.selectedSize, item.selectedColor)} className="text-brand-text-light hover:text-red-500 flex-shrink-0 p-1 -mr-1"><CloseIcon size="sm"/></button>
                                                 </div>
                                                 <p className="text-xs text-brand-text-light mt-1">{`اللون: ${item.selectedColor}, المقاس: ${item.selectedSize}`}</p>
+                                                {!state.wishlist.some(wishlistItem => wishlistItem.id === item.id) && (
+                                                    <button onClick={() => handleMoveToWishlist(item)} className="flex items-center gap-1 text-xs mt-1 text-brand-text-light hover:text-brand-primary">
+                                                        <HeartIcon size="sm" /> <span>انقل إلى قائمة الرغبات</span>
+                                                    </button>
+                                                )}
                                             </div>
                                             
                                             <div className="flex justify-between items-center mt-auto pt-2">
@@ -424,7 +468,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                         </div>
                     </div>
 
-                    <div className="p-5 border-t space-y-4 bg-white mt-auto">
+                    <div className="p-5 border-t space-y-4 bg-brand-subtle">
                          <div className="grid grid-cols-3 gap-2 text-center text-xs text-brand-text-light">
                             <button onClick={() => setActiveModal('gift')} className={`flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle ${state.giftWrap ? 'text-brand-primary' : ''}`}><GiftIcon size="sm"/> <span>تغليف هدية</span></button>
                             <button onClick={() => setActiveModal('note')} className={`flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle ${state.orderNote ? 'text-brand-primary' : ''}`}><NoteIcon size="sm"/> <span>ملاحظة</span></button>
@@ -432,7 +476,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
                          </div>
                          
                          <form className="flex gap-2" onSubmit={handleApplyCoupon}>
-                            <input type="text" placeholder="أدخل رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-brand-dark" />
+                            <input type="text" placeholder="أدخل رمز الكوبون" aria-label="أدخل رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-brand-dark" />
                             <button type="submit" className="bg-brand-dark text-white font-bold py-2 px-6 rounded-full text-sm hover:bg-opacity-90 transition-all active:scale-95">تطبيق</button>
                         </form>
                         <div className="flex flex-wrap gap-2">

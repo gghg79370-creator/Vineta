@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminProduct } from '../data/adminData';
 import { ProductListTable } from '../components/products/ProductListTable';
@@ -21,6 +20,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [stockFilter, setStockFilter] = useState('All');
+    const [onSaleFilter, setOnSaleFilter] = useState('All');
     const [productToDelete, setProductToDelete] = useState<AdminProduct[] | null>(null);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,8 +57,14 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
                 if (stockFilter === 'LowStock') return totalStock > 0 && totalStock <= 10;
                 if (stockFilter === 'OutOfStock') return totalStock === 0;
                 return true;
+            })
+            .filter(p => {
+                if (onSaleFilter === 'All') return true;
+                if (onSaleFilter === 'On Sale') return !!p.compareAtPrice;
+                if (onSaleFilter === 'Not On Sale') return !p.compareAtPrice;
+                return true;
             });
-    }, [products, searchTerm, statusFilter, stockFilter]);
+    }, [products, searchTerm, statusFilter, stockFilter, onSaleFilter]);
 
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -93,11 +99,12 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
         );
     }
     
-    const filtersAreActive = statusFilter !== 'All' || stockFilter !== 'All' || searchTerm !== '';
+    const filtersAreActive = statusFilter !== 'All' || stockFilter !== 'All' || onSaleFilter !== 'All' || searchTerm !== '';
     const clearFilters = () => {
         setSearchTerm('');
         setStatusFilter('All');
         setStockFilter('All');
+        setOnSaleFilter('All');
         setCurrentPage(1);
     };
 
@@ -124,6 +131,11 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
                             <option value="InStock">متوفر</option>
                             <option value="LowStock">مخزون منخفض</option>
                             <option value="OutOfStock">نفد</option>
+                        </select>
+                        <select value={onSaleFilter} onChange={e => setOnSaleFilter(e.target.value)} className="admin-form-input w-full md:w-auto">
+                            <option value="All">كل حالات الخصم</option>
+                            <option value="On Sale">عليه خصم</option>
+                            <option value="Not On Sale">ليس عليه خصم</option>
                         </select>
                         {filtersAreActive && (
                             <button onClick={clearFilters} className="text-sm font-semibold text-admin-accent hover:underline whitespace-nowrap">

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -7,6 +8,7 @@ import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon,
 import { useAppState } from '../state/AppState';
 import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
 import { useToast } from '../hooks/useToast';
+import Spinner from '../components/ui/Spinner';
 
 interface ShopPageProps {
     navigateTo: (pageName: string, data?: Product) => void;
@@ -44,6 +46,21 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
         const materials = [...new Set(allProducts.flatMap(p => p.tags.filter(tag => materialsList.includes(tag))))];
         return { brands, colors, sizes, materials };
     }, []);
+    
+    const [priceInputs, setPriceInputs] = useState({ min: filters.priceRange.min, max: filters.priceRange.max });
+
+    useEffect(() => {
+        setPriceInputs({ min: filters.priceRange.min, max: filters.priceRange.max });
+    }, [filters.priceRange]);
+
+    const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setPriceInputs(prev => ({ ...prev, [name]: value === '' ? 0 : Number(value) }));
+    };
+
+    const applyPriceFilter = () => {
+        setFilters(prev => ({ ...prev, priceRange: { min: Number(priceInputs.min) || 0, max: Number(priceInputs.max) || 1000 }}));
+    };
 
     const handleBrandChange = (brand: string) => {
         const newBrands = filters.brands.includes(brand) ? filters.brands.filter(b => b !== brand) : [...filters.brands, brand];
@@ -58,10 +75,6 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
     const handleSizeChange = (size: string) => {
         const newSizes = filters.sizes.includes(size) ? filters.sizes.filter(s => s !== size) : [...filters.sizes, size];
         setFilters(prev => ({ ...prev, sizes: newSizes }));
-    };
-
-    const handlePriceChange = (newMax: number) => {
-      setFilters(prev => ({ ...prev, priceRange: { ...prev.priceRange, max: newMax } }));
     };
     
     const handleOnSaleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,12 +130,36 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
                     ))}
                 </div>
             </AccordionItem>
-            <AccordionItem title="السعر" defaultOpen hasActiveFilter={filters.priceRange.max < 1000}>
-                <div className="px-2 pt-2">
-                    <input type="range" min="0" max="1000" value={filters.priceRange.max} onChange={(e) => handlePriceChange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-dark" />
-                    <div className="flex justify-between items-center mt-2">
-                        <p className="text-sm font-bold">السعر: 0 ج.م — {filters.priceRange.max} ج.م</p>
+            <AccordionItem title="السعر" defaultOpen hasActiveFilter={filters.priceRange.min > 0 || filters.priceRange.max < 1000}>
+                <div className="p-2 space-y-3">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                        <div className="relative">
+                            <label className="absolute -top-2 right-3 text-xs bg-white px-1 text-gray-500">من</label>
+                            <input
+                                type="number"
+                                name="min"
+                                value={priceInputs.min}
+                                onChange={handlePriceInputChange}
+                                placeholder="0"
+                                className="w-full border border-gray-300 rounded-md p-2 text-center"
+                            />
+                        </div>
+                        <span>-</span>
+                        <div className="relative">
+                            <label className="absolute -top-2 right-3 text-xs bg-white px-1 text-gray-500">إلى</label>
+                            <input
+                                type="number"
+                                name="max"
+                                value={priceInputs.max}
+                                onChange={handlePriceInputChange}
+                                placeholder="1000"
+                                className="w-full border border-gray-300 rounded-md p-2 text-center"
+                            />
+                        </div>
                     </div>
+                    <button onClick={applyPriceFilter} className="w-full bg-gray-100 text-brand-dark font-bold py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                        تطبيق
+                    </button>
                 </div>
             </AccordionItem>
              <AccordionItem title="الخامة" defaultOpen hasActiveFilter={filters.materials.length > 0}>
@@ -178,6 +215,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
     
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [gridCols, setGridCols] = useState(3);
     const [sortBy, setSortBy] = useState('best-selling');
@@ -186,7 +224,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
     const appliedFiltersCount = useMemo(() => {
         const { brands, colors, sizes, priceRange, rating, onSale, materials } = filters;
         const hasBrandFilter = brands.length > 0;
-        const hasPriceFilter = priceRange.max < 1000;
+        const hasPriceFilter = priceRange.min > 0 || priceRange.max < 1000;
         const hasColorFilter = colors.length > 0;
         const hasSizeFilter = sizes.length > 0;
         const hasSaleFilter = onSale;
@@ -233,17 +271,20 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
         setIsLoading(true);
         const timer = setTimeout(() => setIsLoading(false), 500);
         return () => clearTimeout(timer);
-    }, [filters, sortBy, currentPage]);
+    }, [filters, sortBy]);
 
-    const indexOfLastProduct = currentPage * productsPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-    const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-    const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+    const currentProducts = useMemo(() => {
+        return filteredAndSortedProducts.slice(0, currentPage * productsPerPage);
+    }, [filteredAndSortedProducts, currentPage]);
+    
+    const hasMoreProducts = currentProducts.length < filteredAndSortedProducts.length;
 
-    const paginate = (pageNumber: number) => {
-        if (pageNumber < 1 || pageNumber > totalPages) return;
-        setCurrentPage(pageNumber);
-        window.scrollTo({ top: 300, behavior: 'smooth' });
+    const handleLoadMore = () => {
+        setIsLoadingMore(true);
+        setTimeout(() => {
+            setCurrentPage(currentPage + 1);
+            setIsLoadingMore(false);
+        }, 500);
     };
 
     const handleSortByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -277,7 +318,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
     const gridClasses: {[key: number]: string} = {
         2: 'grid-cols-2',
         3: 'grid-cols-2 md:grid-cols-3',
-        4: 'grid-cols-2 md:grid-cols-4',
+        4: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
     };
 
     return (
@@ -345,17 +386,17 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                     </div>
                     
                     {isLoading ? (
-                        <div className={`grid ${gridClasses[gridCols]} gap-6`}>
+                        <div className={`grid ${gridClasses[gridCols]} gap-x-4 gap-y-8`}>
                             {Array.from({ length: productsPerPage }).map((_, index) => <ProductCardSkeleton key={index} />)}
                         </div>
                     ) : currentProducts.length > 0 ? (
                         viewMode === 'grid' ? (
-                             <div className={`grid ${gridClasses[gridCols]} gap-6`}>
+                             <div className={`grid ${gridClasses[gridCols]} gap-x-4 gap-y-8`}>
                                 {currentProducts.map(product => <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
+                                {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                             </div>
                         )
                     ) : (
@@ -365,15 +406,15 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                         </div>
                     )}
                     
-                    {totalPages > 1 && (
-                        <div className="flex justify-center items-center mt-12 space-x-2 space-x-reverse">
-                            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors rotate-180 disabled:opacity-50" aria-label="Previous Page"><ChevronRightIcon /></button>
-                            {[...Array(totalPages).keys()].map(number => (
-                                <button key={number + 1} onClick={() => paginate(number + 1)} className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors ${currentPage === number + 1 ? 'bg-brand-dark text-white' : 'bg-white border border-brand-border hover:bg-brand-subtle'}`}>
-                                    {number + 1}
-                                </button>
-                            ))}
-                            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors disabled:opacity-50" aria-label="Next Page"><ChevronRightIcon /></button>
+                    {!isLoading && hasMoreProducts && (
+                        <div className="text-center mt-12">
+                            <button
+                                onClick={handleLoadMore}
+                                disabled={isLoadingMore}
+                                className="bg-white border border-brand-border text-brand-dark font-bold py-3 px-8 rounded-full hover:bg-brand-subtle transition-all duration-200 disabled:opacity-50 flex items-center justify-center min-w-[150px] mx-auto active:scale-98"
+                            >
+                                {isLoadingMore ? <Spinner size="sm" color="text-brand-dark" /> : 'تحميل المزيد'}
+                            </button>
                         </div>
                     )}
                 </main>

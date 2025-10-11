@@ -1,9 +1,12 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { 
     HomeIcon, ShoppingBagIcon, CubeIcon, UsersIcon, ChartBarIcon, TagIcon, 
     MegaphoneIcon, PaintBrushIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, 
     ChevronDownIcon, StarIcon, DocumentTextIcon, CloseIcon
 } from '../../../components/icons';
+import { useAppState } from '../../../state/AppState';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -67,6 +70,7 @@ interface SidebarContentProps {
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({ activePage, setActivePage, isMobile, closeSidebar }) => {
+    const { state: { theme } } = useAppState();
     const salesPages = ['orders', 'discounts'];
     const catalogPages = ['products', 'categories', 'inventory', 'reviews'];
     const onlineStorePages = ['theme'];
@@ -78,7 +82,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ activePage, setActivePa
     return (
         <>
             <div className="flex items-center justify-between h-20 px-6 shrink-0">
-                <span className="font-serif text-4xl font-bold text-white">Vineta</span>
+                <span className="font-serif text-4xl font-bold text-white">{theme.siteName}</span>
                 {isMobile && (
                      <button onClick={closeSidebar} className="text-admin-textMuted hover:text-white p-2 -mr-2">
                         <CloseIcon />

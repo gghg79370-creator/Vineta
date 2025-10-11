@@ -1,19 +1,21 @@
+
 import React from 'react';
 import { Product } from '../../types';
-import { StarIcon, ShoppingBagIcon, CompareIcon, HeartIcon } from '../icons';
+import { StarIcon, ShoppingBagIcon, CompareIcon, HeartIcon, EyeIcon } from '../icons';
 import { useAppState } from '../../state/AppState';
 
 interface CollectionProductListCardProps {
     product: Product;
     navigateTo: (pageName: string, data?: Product) => void;
     addToCart: (product: Product) => void;
+    openQuickView: (product: Product) => void;
     compareList: number[];
     addToCompare: (product: Product) => void;
     wishlistItems: number[];
     toggleWishlist: (product: Product) => void;
 }
 
-export const CollectionProductListCard: React.FC<CollectionProductListCardProps> = ({ product, navigateTo, addToCart, compareList, addToCompare, wishlistItems, toggleWishlist }) => {
+export const CollectionProductListCard: React.FC<CollectionProductListCardProps> = ({ product, navigateTo, addToCart, openQuickView, compareList, addToCompare, wishlistItems, toggleWishlist }) => {
     
     const isInCompare = compareList.includes(product.id);
     const isInWishlist = wishlistItems.includes(product.id);
@@ -53,6 +55,9 @@ export const CollectionProductListCard: React.FC<CollectionProductListCardProps>
                     <div className="flex items-center gap-2">
                         <button onClick={() => toggleWishlist(product)} className={`border rounded-full p-2.5 transition-colors ${isInWishlist ? 'text-red-500 border-red-500/50 bg-red-500/10' : 'border-brand-border hover:bg-brand-subtle'}`} aria-label="Toggle Wishlist">
                             <HeartIcon filled={isInWishlist} size="sm" />
+                        </button>
+                         <button onClick={(e) => { e.stopPropagation(); openQuickView(product); }} className="border rounded-full p-2.5 transition-colors border-brand-border hover:bg-brand-subtle" aria-label="Quick View">
+                            <EyeIcon size="sm" />
                         </button>
                         <button onClick={() => addToCompare(product)} className={`border rounded-full p-2.5 transition-colors ${isInCompare ? 'text-brand-primary border-brand-primary/50 bg-brand-primary/10' : 'border-brand-border hover:bg-brand-subtle'}`} aria-label="Add to compare">
                             <CompareIcon size="sm" />

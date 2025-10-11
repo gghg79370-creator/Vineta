@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product } from '../../types';
 import { CollectionProductCard } from '../product/CollectionProductCard';
@@ -20,13 +19,13 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
     const { wishlist, compareList } = state;
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
 
-    const [activeTab, setActiveTab] = useState('trending');
+    const [activeTab, setActiveTab] = useState('new-arrivals');
     const [isLoading, setIsLoading] = useState(false);
     
     const tabs = [
-        { id: 'trending', name: 'رائج' },
+        { id: 'new-arrivals', name: 'وصل حديثاً' },
+        { id: 'best-sellers', name: 'الأكثر مبيعاً' },
         { id: 'on-sale', name: 'تخفيضات' },
-        { id: 'top-sellers', name: 'الأكثر مبيعاً' },
     ];
 
     useEffect(() => {
@@ -39,11 +38,11 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
 
     const activeProducts = useMemo(() => {
         switch(activeTab) {
-            case 'trending': 
-                return products.filter(p => p.badges?.some(b => b.type === 'new') || p.tags.includes('trending')).slice(0, 8);
+            case 'new-arrivals': 
+                return products.filter(p => p.badges?.some(b => b.type === 'new')).slice(0, 8);
             case 'on-sale': 
                 return products.filter(p => !!p.oldPrice).slice(0, 8);
-            case 'top-sellers': 
+            case 'best-sellers': 
                 return [...products].sort((a, b) => (b.soldIn24h || 0) - (a.soldIn24h || 0)).slice(0, 8);
             default: 
                 return [];
@@ -59,7 +58,7 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`text-2xl md:text-3xl font-bold pb-2 relative transition-all duration-300 focus:outline-none active:scale-95
+                                className={`text-xl md:text-3xl font-bold pb-2 relative transition-all duration-300 focus:outline-none active:scale-95
                                     ${activeTab === tab.id 
                                         ? 'text-brand-primary' 
                                         : 'text-brand-text-light hover:text-brand-dark'}`

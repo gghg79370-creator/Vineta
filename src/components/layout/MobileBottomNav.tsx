@@ -71,29 +71,28 @@ export const MobileBottomNav = ({
     ];
 
     return (
-        <footer className="fixed bottom-0 right-0 left-0 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 rounded-t-2xl border-t border-brand-border/50">
-            <nav className="flex justify-around items-start pt-3 h-20">
+        <footer className="fixed bottom-0 right-0 left-0 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 rounded-t-2xl border-t border-brand-border/50 h-16">
+            <nav className="flex justify-around items-start pt-2 h-full">
                 {navItems.map(item => {
                     const isActive = item.isActive;
                     return (
                         <button 
                             key={item.id} 
                             onClick={item.onClick} 
-                            className={`flex flex-col items-center gap-1.5 transition-all duration-300 ease-out relative w-16
-                                ${isActive ? 'text-brand-primary -translate-y-1' : 'text-brand-text-light'}
+                            className={`flex flex-col items-center gap-1 transition-all duration-300 ease-out relative w-16
+                                ${isActive ? 'text-brand-primary' : 'text-brand-text-light'}
                                 active:scale-95 ${item.id === 'cart' && isCartAnimating ? 'animate-cart-add' : ''}`}
                             aria-current={isActive ? 'page' : undefined}
                         >
-                            <div className="relative">
-                                <i className={`${item.icon} text-xl w-6 text-center`}></i>
+                            <div className={`relative w-12 h-8 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-brand-primary/10' : ''}`}>
+                                <i className={`${item.icon} text-xl w-6 text-center`} aria-hidden="true"></i>
                                 {item.count && item.count > 0 && (
-                                    <span className="absolute -top-1.5 -right-2 bg-brand-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                                    <span className="absolute -top-1.5 -right-1.5 bg-brand-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
                                         {item.count}
                                     </span>
                                 )}
                             </div>
                             <span className={`text-xs transition-all duration-300 ${isActive ? 'font-extrabold' : 'font-bold'}`}>{item.label}</span>
-                             {isActive && <div className="absolute -bottom-1.5 h-1.5 w-1.5 rounded-full bg-brand-primary transition-all duration-300"></div>}
                         </button>
                     );
                 })}

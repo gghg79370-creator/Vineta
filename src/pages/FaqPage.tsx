@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '../components/icons';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -33,9 +34,13 @@ const FaqPage = ({navigateTo}: FaqPageProps) => {
             <div className="border-b">
                 <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold">
                     <span>{q}</span>
-                    <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}><ChevronDownIcon/></span>
+                    <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><ChevronDownIcon/></span>
                 </button>
-                {isOpen && <div className="pb-4 text-brand-text-light">{a}</div>}
+                <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                        <div className="pb-4 pt-2 text-brand-text-light">{a}</div>
+                    </div>
+                </div>
             </div>
         )
     }

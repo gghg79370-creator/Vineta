@@ -31,11 +31,11 @@ export const GoToTopButton = () => {
         <button
             type="button"
             onClick={scrollToTop}
-            className={`fixed bottom-24 left-4 md:bottom-8 md:left-8 z-50 bg-brand-dark text-white rounded-full p-3 shadow-lg hover:bg-opacity-80 transition-all duration-300 transform hover:scale-110
+            className={`fixed bottom-20 left-4 md:bottom-8 md:left-8 z-50 bg-white rounded-lg p-3 shadow-lg hover:shadow-xl border border-brand-border transition-all duration-300 transform hover:scale-105
                 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}`}
             aria-label="العودة إلى الأعلى"
         >
-            <ArrowUpIcon />
+            <ArrowUpIcon className="text-brand-dark" />
         </button>
     );
 };

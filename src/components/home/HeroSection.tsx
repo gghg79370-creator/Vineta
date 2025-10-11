@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { HeroSlide } from '../../types';
 import { ChevronRightIcon, ChevronLeftIcon } from '../icons';
@@ -50,7 +51,7 @@ export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
     
     return (
         <section 
-            className="relative w-full h-screen bg-black text-white overflow-hidden"
+            className="relative w-full h-[65vh] lg:h-screen bg-brand-dark text-white overflow-hidden group"
             onMouseEnter={resetTimeout}
             onMouseLeave={() => {
                 resetTimeout();
@@ -71,7 +72,7 @@ export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
                             playsInline
                             preload="auto"
                             poster={slide.bgImage}
-                            className="w-full h-full object-cover opacity-60"
+                            className="w-full h-full object-cover"
                         >
                             <source src={slide.bgVideo} type={slide.bgVideoType || 'video/mp4'} />
                         </video>
@@ -79,31 +80,31 @@ export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
                         <img
                             src={slide.bgImage}
                             alt={slide.title}
-                            className={`w-full h-full object-cover opacity-50 transition-transform duration-[8000ms] ease-out ${slideIndex === currentIndex ? 'scale-110' : 'scale-100'}`}
+                            className={`w-full h-full object-cover ${slideIndex === currentIndex ? 'animate-ken-burns' : ''}`}
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 lg:bg-gradient-to-r lg:from-black/70 lg:via-black/40 lg:to-transparent"></div>
                 </div>
             ))}
            
             {/* Slide Content */}
-            <div className="relative h-full flex items-center justify-start">
-                <div className="container mx-auto px-4">
+            <div className="relative h-full flex items-center justify-center lg:justify-start">
+                <div className="container mx-auto px-8 lg:px-4">
                     {/* Keyed div to re-trigger animations */}
-                    <div key={currentIndex} className="max-w-2xl text-right">
+                    <div key={currentIndex} className="max-w-2xl text-center lg:text-right">
                         <div className="overflow-hidden">
-                            <p className="text-lg md:text-xl text-gray-300 font-semibold mb-4 animate-text-reveal-up [animation-delay:0.2s]">
+                            <p className="text-lg md:text-xl text-gray-300 font-semibold mb-4 animate-hero-text-reveal [animation-delay:0.2s]">
                                 {visibleSlides[currentIndex].subtitle}
                             </p>
                         </div>
                         <div className="overflow-hidden">
-                            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight mb-6 animate-text-reveal-up [animation-delay:0.4s]">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-white leading-tight mb-6 animate-hero-text-reveal [animation-delay:0.4s]">
                                 {visibleSlides[currentIndex].title}
                             </h1>
                         </div>
                         {visibleSlides[currentIndex].description && (
                              <div className="overflow-hidden">
-                                <p className="text-base md:text-lg text-gray-300 mb-10 max-w-lg ml-auto animate-text-reveal-up [animation-delay:0.8s]">
+                                <p className="text-base md:text-lg text-gray-300 mb-10 max-w-lg mx-auto lg:ml-auto animate-hero-text-reveal [animation-delay:0.6s]">
                                     {visibleSlides[currentIndex].description}
                                 </p>
                             </div>
@@ -111,7 +112,7 @@ export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
                         <div className="overflow-hidden">
                              <button
                                 onClick={() => navigateTo(visibleSlides[currentIndex].page)}
-                                className="bg-white text-black font-bold py-3 px-10 rounded-full text-lg hover:bg-white/90 transition-all duration-300 transform hover:scale-105 active:scale-100 animate-text-reveal-up [animation-delay:1.2s]"
+                                className="bg-white text-black font-bold py-3 px-10 rounded-full text-lg hover:bg-white/90 transition-all duration-300 transform hover:scale-105 active:scale-100 animate-hero-text-reveal [animation-delay:0.8s]"
                             >
                                 {visibleSlides[currentIndex].buttonText}
                             </button>
@@ -123,25 +124,32 @@ export const HeroSection = ({ navigateTo, heroSlides }: HeroSectionProps) => {
             {/* Navigation Arrows */}
             {visibleSlides.length > 1 && (
                 <>
-                    <button onClick={goToPrevious} aria-label="Previous slide" className="absolute top-1/2 -translate-y-1/2 left-4 z-10 p-3 bg-white/20 rounded-full hover:bg-white/40 transition-colors">
-                        <ChevronLeftIcon className="w-6 h-6 text-white"/>
+                    <button onClick={goToPrevious} aria-label="Previous slide" className="absolute top-1/2 -translate-y-1/2 right-6 lg:right-8 z-10 w-12 h-12 lg:w-14 lg:h-14 bg-white/10 backdrop-blur-sm rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20 hover:scale-105 disabled:opacity-50 hidden lg:flex">
+                        <ChevronRightIcon className="w-6 h-6 lg:w-8 lg:h-8 text-white"/>
                     </button>
-                     <button onClick={goToNext} aria-label="Next slide" className="absolute top-1/2 -translate-y-1/2 right-4 z-10 p-3 bg-white/20 rounded-full hover:bg-white/40 transition-colors">
-                        <ChevronRightIcon className="w-6 h-6 text-white"/>
+                     <button onClick={goToNext} aria-label="Next slide" className="absolute top-1/2 -translate-y-1/2 left-6 lg:left-8 z-10 w-12 h-12 lg:w-14 lg:h-14 bg-white/10 backdrop-blur-sm rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20 hover:scale-105 disabled:opacity-50 hidden lg:flex">
+                        <ChevronLeftIcon className="w-6 h-6 lg:w-8 lg:h-8 text-white"/>
                     </button>
                 </>
             )}
 
-            {/* Dot Indicators */}
+            {/* Progress Bar Indicators */}
             {visibleSlides.length > 1 && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-4rem)] max-w-sm lg:max-w-md flex gap-2 z-10">
                     {visibleSlides.map((_, slideIndex) => (
                         <button 
                             key={slideIndex}
                             onClick={() => goToSlide(slideIndex)}
-                            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === slideIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`}
+                            className="flex-1 group h-1 rounded-full bg-white/20 hover:bg-white/40 transition-colors duration-300"
                             aria-label={`Go to slide ${slideIndex + 1}`}
-                        />
+                        >
+                             <div 
+                                // key is important to restart animation on slide change
+                                key={currentIndex === slideIndex ? currentIndex : `not-active-${slideIndex}`}
+                                className={`h-full rounded-full ${currentIndex > slideIndex ? 'bg-white w-full' : 'bg-white/50'} ${currentIndex === slideIndex ? 'animate-progress-fill-width' : 'w-0'}`}
+                                style={{ animationDuration: `${AUTOPLAY_DELAY}ms` }}
+                            />
+                        </button>
                     ))}
                 </div>
             )}

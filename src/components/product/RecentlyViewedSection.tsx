@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Product } from '../../types';
 import { ProductCard } from './ProductCard';

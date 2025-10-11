@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Product } from '../../types';
 import { CloseIcon, MagicIcon } from '../icons';

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -163,7 +164,7 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                                 <button
                                     onClick={handleGenerateLook}
                                     disabled={isLoading}
-                                    className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-full hover:bg-opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-full hover:bg-opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-98"
                                 >
                                     <SparklesIcon />
                                     <span>{isLoading ? 'جارٍ الإنشاء...' : 'أنشئ إطلالتي'}</span>

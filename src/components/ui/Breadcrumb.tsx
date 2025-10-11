@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface BreadcrumbItem {
@@ -12,7 +13,7 @@ interface BreadcrumbProps {
 }
 
 export const Breadcrumb = ({ items, navigateTo, title }: BreadcrumbProps) => (
-    <div className="text-center py-10 mb-8 bg-gradient-to-r from-orange-50 to-amber-50">
+    <div className="text-center py-10 mb-8 bg-transparent">
         <h1 className="text-4xl font-bold text-brand-dark mb-3">{title}</h1>
         <nav aria-label="Breadcrumb">
             <ol className="list-none p-0 inline-flex items-center text-brand-text-light text-base">

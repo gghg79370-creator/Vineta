@@ -77,13 +77,18 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
                     />
                 </div>
                 
-                <div className="absolute top-0 right-0 left-0 bottom-0 bg-black/40 md:flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden">
-                    <button onClick={handleAddToCartClick} disabled={isOutOfStock} className="bg-white/90 text-brand-dark rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-brand-primary hover:text-white transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add to Cart">
-                        <ShoppingBagIcon />
-                    </button>
-                    <button onClick={handleRemoveClick} className="bg-white/90 text-brand-dark rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-brand-sale hover:text-white transition-all transform hover:scale-110" aria-label="Remove from Wishlist">
-                        <TrashIcon />
-                    </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-4 md:flex flex-col items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden">
+                    {product.description && (
+                        <p className="text-white text-xs mb-3 text-center line-clamp-3">{product.description}</p>
+                    )}
+                    <div className="flex items-center justify-center gap-3">
+                        <button onClick={handleAddToCartClick} disabled={isOutOfStock} className="bg-white/90 text-brand-dark rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-brand-primary hover:text-white transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Add to Cart">
+                            <ShoppingBagIcon />
+                        </button>
+                        <button onClick={handleRemoveClick} className="bg-white/90 text-brand-dark rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-brand-sale hover:text-white transition-all transform hover:scale-110" aria-label="Remove from Wishlist">
+                            <TrashIcon />
+                        </button>
+                    </div>
                 </div>
 
                 {isOutOfStock && (

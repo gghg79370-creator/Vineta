@@ -22,13 +22,24 @@ const AccordionItem = ({ title, children, defaultOpen = false, hasActiveFilter =
                 </span>
                 <span className={`transform transition-transform text-brand-text-light ${isOpen ? '' : 'rotate-180'}`}>{isOpen ? <MinusIcon size="sm"/> : <PlusIcon size="sm"/>}</span>
             </button>
-            {isOpen && <div className="pb-4 text-brand-text-light animate-fade-in">{children}</div>}
+             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                <div className="overflow-hidden">
+                    <div className="pb-4 pt-2 text-brand-text-light">{children}</div>
+                </div>
+            </div>
         </div>
     )
 }
 
 export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterDrawerProps) => {
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+    const [localPrice, setLocalPrice] = useState({ min: filters.priceRange.min, max: filters.priceRange.max });
+
+    useEffect(() => {
+        if (isOpen) {
+            setLocalPrice({ min: filters.priceRange.min, max: filters.priceRange.max });
+        }
+    }, [filters.priceRange, isOpen]);
 
     const handleClose = () => {
         setIsAnimatingOut(true);
@@ -67,9 +78,14 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
             : [...filters.sizes, size];
         setFilters(prev => ({ ...prev, sizes: newSizes }));
     };
-
-    const handlePriceChange = (newMax: number) => {
-      setFilters(prev => ({ ...prev, priceRange: { ...prev.priceRange, max: newMax } }));
+    
+    const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setLocalPrice(prev => ({ ...prev, [name]: value === '' ? 0 : Number(value) }));
+    };
+    
+    const applyPriceFilter = () => {
+        setFilters(prev => ({ ...prev, priceRange: { min: Number(localPrice.min) || 0, max: Number(localPrice.max) || 1000 }}));
     };
 
     const handleOnSaleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +116,7 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
     };
 
     const hasBrandFilter = filters.brands.length > 0;
-    const hasPriceFilter = filters.priceRange.max < 1000;
+    const hasPriceFilter = filters.priceRange.min > 0 || filters.priceRange.max < 1000;
     const hasColorFilter = filters.colors.length > 0;
     const hasSizeFilter = filters.sizes.length > 0;
     const hasSaleFilter = filters.onSale;
@@ -172,18 +188,34 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                         </div>
                     </AccordionItem>
                     <AccordionItem title="السعر" defaultOpen={true} hasActiveFilter={hasPriceFilter}>
-                         <div className="px-2 pt-2">
-                            <input 
-                                type="range" 
-                                min="0" 
-                                max="1000" 
-                                value={filters.priceRange.max} 
-                                onChange={(e) => handlePriceChange(Number(e.target.value))} 
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-dark" 
-                            />
-                            <div className="flex justify-between items-center mt-2">
-                                <p className="text-sm font-bold">السعر: 0 ج.م — {filters.priceRange.max} ج.م</p>
+                        <div className="p-2 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <label className="text-xs text-center block mb-1 text-gray-500">من (ج.م)</label>
+                                    <input
+                                        type="number"
+                                        name="min"
+                                        value={localPrice.min}
+                                        onChange={handlePriceInputChange}
+                                        placeholder="0"
+                                        className="w-full border border-gray-300 rounded-md p-2 text-center"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                     <label className="text-xs text-center block mb-1 text-gray-500">إلى (ج.م)</label>
+                                    <input
+                                        type="number"
+                                        name="max"
+                                        value={localPrice.max}
+                                        onChange={handlePriceInputChange}
+                                        placeholder="1000"
+                                        className="w-full border border-gray-300 rounded-md p-2 text-center"
+                                    />
+                                </div>
                             </div>
+                             <button onClick={applyPriceFilter} className="w-full bg-gray-100 text-brand-dark font-bold py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                                تطبيق
+                            </button>
                         </div>
                     </AccordionItem>
                     <AccordionItem title="الخامة" defaultOpen hasActiveFilter={hasMaterialFilter}>
@@ -230,8 +262,8 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                     </AccordionItem>
                 </div>
                 <div className="p-4 border-t grid grid-cols-2 gap-4 flex-shrink-0">
-                    <button onClick={clearFilters} className="w-full bg-white border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle">مسح الكل</button>
-                    <button onClick={handleClose} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90">عرض النتائج</button>
+                    <button onClick={clearFilters} className="w-full bg-white border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle transition-transform active:scale-98">مسح الكل</button>
+                    <button onClick={handleClose} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 transition-transform active:scale-98">عرض النتائج</button>
                 </div>
             </div>
         </>

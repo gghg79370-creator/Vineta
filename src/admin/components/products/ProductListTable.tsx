@@ -1,6 +1,6 @@
 import React from 'react';
 import { AdminProduct } from '../../data/adminData';
-import { PencilIcon, TrashIcon } from '../../../components/icons';
+import { PencilIcon, TrashIcon, FireIcon } from '../../../components/icons';
 
 interface ProductListTableProps {
     products: AdminProduct[];
@@ -22,7 +22,9 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
     };
     
     const getStockInfo = (product: AdminProduct) => {
-        const totalStock = product.variants.reduce((acc, v) => acc + v.stock, 0);
+        const totalStock = product.variants && product.variants.length > 0
+            ? product.variants.reduce((acc, v) => acc + v.stock, 0)
+            : product.stock;
         
         let statusText = 'متوفر';
         let statusClass = 'bg-green-100 text-green-800';
@@ -66,10 +68,16 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                 </div>
                             </div>
                             <div className="mt-3 pt-3 border-t flex justify-between items-center">
-                                <div>
+                                <div className="flex items-center gap-4">
                                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${stockInfo.statusClass}`}>
                                         {stockInfo.statusText}: {stockInfo.totalStock}
                                     </span>
+                                    {product.unitsSold && (
+                                        <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+                                            <FireIcon size="sm" className="text-orange-500" />
+                                            <span>{product.unitsSold}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button onClick={() => onEdit(product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}><PencilIcon size="sm"/></button>
@@ -97,6 +105,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                             <th className="p-4 font-semibold text-right">المنتج</th>
                             <th className="p-4 font-semibold text-right">SKU</th>
                             <th className="p-4 font-semibold text-right">المخزون</th>
+                            <th className="p-4 font-semibold text-right">المبيعات</th>
                             <th className="p-4 font-semibold text-right">الحالة</th>
                             <th className="p-4 font-semibold text-right">إجراءات</th>
                         </tr>
@@ -131,6 +140,16 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                                 {statusText}
                                             </span>
                                         </div>
+                                    </td>
+                                    <td className="p-4 text-gray-500">
+                                        {product.unitsSold ? (
+                                            <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                                {product.unitsSold > 100 && <FireIcon size="sm" className="text-orange-500" />}
+                                                <span>{product.unitsSold}</span>
+                                            </div>
+                                        ) : (
+                                            <span>-</span>
+                                        )}
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${getStatusClasses(product.status)}`}>

@@ -101,6 +101,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Desktop Hover Actions */}
                 <div className="hidden md:block absolute bottom-3 right-0 left-0 px-3 product-actions-container">
+                    {product.description && (
+                        <div className="bg-black/70 backdrop-blur-sm text-white text-xs rounded-lg p-2 mb-2 shadow-lg">
+                            <p className="line-clamp-2">{product.description}</p>
+                        </div>
+                    )}
                     <div className="flex items-center justify-center gap-1 bg-white rounded-full shadow-lg p-1.5">
                          <button onClick={handleAddToCompare} className={`flex-1 p-2 hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInCompare ? 'text-brand-primary' : 'text-brand-dark hover:text-brand-primary'}`} aria-label="Compare"><CompareIcon size="sm" /></button>
                          <button onClick={handleOpenQuickView} className="flex-1 p-2 hover:bg-brand-subtle rounded-full border-x text-brand-dark hover:text-brand-primary transition-transform active:scale-90" aria-label="Quick view"><EyeIcon size="sm" /></button>

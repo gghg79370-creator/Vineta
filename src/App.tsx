@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Product, Filters, User, Review, HeroSlide, SaleCampaign, AdminAnnouncement } from './types';
 import { allProducts } from './data/products';
@@ -26,6 +24,8 @@ import { FloatingCartBubble } from './components/cart/FloatingCartBubble';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import Chatbot from './components/chatbot/Chatbot';
 import { SearchDrawer } from './components/search/SearchDrawer';
+import { WriteReviewModal } from './components/modals/WriteReviewModal';
+import { SizeGuideModal } from './components/modals/SizeGuideModal';
 
 const serializeUrlParams = (filters: Filters, page: number) => {
     const params = new URLSearchParams();
@@ -72,7 +72,7 @@ const getInitialStateFromUrl = () => {
 
 const AppContent = () => {
     const { state, dispatch } = useAppState();
-    const { currentUser, cart, wishlist, compareList } = state;
+    const { currentUser, cart, wishlist, compareList, theme, themeMode } = state;
 
     const [activePage, setActivePage] = useState(getInitialStateFromUrl().page);
     const [pageData, setPageData] = useState<any>(getInitialStateFromUrl().pageData);
@@ -91,6 +91,10 @@ const AppContent = () => {
     
     const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
     const [isAskQuestionOpen, setIsAskQuestionOpen] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+    const [modalProductContext, setModalProductContext] = useState<Product | null>(null);
+
     
     const [isCompareOpen, setIsCompareOpen] = useState(false);
 
@@ -131,6 +135,42 @@ const AppContent = () => {
             document.body.classList.remove('admin-body');
         }
     }, [activePage]);
+
+    // Update document title dynamically
+    useEffect(() => {
+        document.title = `${theme.siteName} - متجر أزياء عصري`;
+    }, [theme.siteName]);
+
+    // Apply dark/light theme
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', themeMode);
+    }, [themeMode]);
+
+    // Apply theme styles dynamically
+    useEffect(() => {
+        const styleId = 'dynamic-theme-styles';
+        let styleTag = document.getElementById(styleId) as HTMLStyleElement | null;
+        if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = styleId;
+            document.head.appendChild(styleTag);
+        }
+
+        const { primaryColor, fontFamily } = theme;
+
+        styleTag.innerHTML = `
+            :root {
+                --primary: ${primaryColor};
+                --brand-primary: ${primaryColor};
+            }
+            body {
+                font-family: ${fontFamily};
+            }
+            .font-sans {
+                font-family: ${fontFamily};
+            }
+        `;
+    }, [theme]);
     
     useEffect(() => {
         const handleScroll = () => {
@@ -235,6 +275,10 @@ const AppContent = () => {
         setQuickViewProduct(null);
     }
 
+    const setThemeMode = (mode: 'light' | 'dark') => {
+        dispatch({ type: 'SET_THEME_MODE', payload: mode });
+    };
+
     if (activePage.startsWith('admin')) {
         return <AdminDashboard 
             currentUser={currentUser}
@@ -250,13 +294,16 @@ const AppContent = () => {
     return (
         <div dir="rtl" className="font-sans">
             <ToastContainer />
-            <AnnouncementBar announcements={announcements} setAnnouncements={setAnnouncements} />
+            <AnnouncementBar announcements={announcements} />
             <Header 
                 navigateTo={navigateTo} 
                 setIsCartOpen={setIsCartOpen}
                 setIsMenuOpen={setIsMenuOpen}
                 setIsSearchOpen={setIsSearchOpen}
                 setIsCompareOpen={setIsCompareOpen}
+                setThemeMode={setThemeMode}
+                themeMode={themeMode}
+                activePage={activePage}
             />
             <FloatingCartBubble 
                 isVisible={isCartOpen && isCartMinimized}
@@ -303,17 +350,23 @@ const AppContent = () => {
                 addToCart={addToCart}
                 navigateTo={navigateTo}
             />
+            {/* FIX: Pass missing 'filters' and 'setFilters' props to SearchOverlay */}
              <SearchOverlay
                 isOpen={isSearchOpen}
                 setIsOpen={setIsSearchOpen}
                 navigateTo={navigateTo}
                 setIsChatbotOpen={setIsChatbotOpen}
+                filters={filters}
+                setFilters={setFilters}
             />
+            {/* FIX: Pass missing 'filters' and 'setFilters' props to SearchDrawer */}
             <SearchDrawer
                 isOpen={isSearchOpen}
                 setIsOpen={setIsSearchOpen}
                 navigateTo={navigateTo}
                 setIsChatbotOpen={setIsChatbotOpen}
+                filters={filters}
+                setFilters={setFilters}
             />
             <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} navigateTo={navigateTo} currentUser={currentUser} />
             <FilterDrawer isOpen={isFilterOpen} setIsOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />

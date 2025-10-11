@@ -10,11 +10,44 @@ interface WishlistGridProps {
     navigateTo: (pageName: string, data?: Product) => void;
 }
 
+const ConfirmationModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+}> = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
+    return (
+        <div 
+            className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in" 
+            onClick={onClose}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+            aria-describedby="confirmation-message"
+        >
+            <div className="bg-white w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <h3 id="confirmation-title" className="text-xl font-bold text-brand-dark mb-2">{title}</h3>
+                <p id="confirmation-message" className="text-brand-text-light mb-6">{message}</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <button onClick={onClose} className="bg-gray-100 text-brand-dark font-bold py-3 rounded-full hover:bg-gray-200">إلغاء</button>
+                    <button onClick={onConfirm} className="bg-brand-sale text-white font-bold py-3 rounded-full hover:bg-opacity-90">تأكيد الحذف</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
     const { state, dispatch } = useAppState();
     const { compareList, wishlist } = state;
     const addToast = useToast();
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [itemsToRemove, setItemsToRemove] = useState<number[]>([]);
 
     const wishlistItems: (Product & { note: string })[] = useMemo(() => {
         return state.wishlist.map(item => {
@@ -39,15 +72,26 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
             setSelectedIds(wishlistItems.map(item => item.id));
         }
     };
-
-    const handleBulkRemove = () => {
-        selectedIds.forEach(id => {
-            dispatch({ type: 'TOGGLE_WISHLIST', payload: id });
-        });
-        addToast(`${selectedIds.length} ${selectedIds.length > 1 ? 'منتجات' : 'منتج'} تمت إزالتها من قائمة الرغبات.`, 'success');
-        setSelectedIds([]);
+    
+    const startRemoveProcess = (ids: number[]) => {
+        if (ids.length > 0) {
+            setItemsToRemove(ids);
+            setIsConfirmOpen(true);
+        }
     };
     
+    const confirmRemove = () => {
+        itemsToRemove.forEach(id => {
+            dispatch({ type: 'TOGGLE_WISHLIST', payload: id });
+        });
+        addToast(`${itemsToRemove.length} ${itemsToRemove.length > 1 ? 'منتجات' : 'منتج'} تمت إزالتها من قائمة الرغبات.`, 'success');
+        
+        setSelectedIds(prev => prev.filter(id => !itemsToRemove.includes(id)));
+        setItemsToRemove([]);
+        setIsConfirmOpen(false);
+    };
+
+
     const handleBulkAddToCart = () => {
         selectedIds.forEach(id => {
             const product = wishlistItems.find(p => p.id === id);
@@ -83,11 +127,6 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
         addToast('تم حفظ الملاحظة!', 'success');
     };
 
-    const handleRemoveItem = (productId: number) => {
-        dispatch({ type: 'TOGGLE_WISHLIST', payload: productId });
-        addToast('تمت الإزالة من قائمة الرغبات.', 'success');
-    };
-
     const handleAddToCart = (product: Product) => {
         dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedSize: product.sizes[0], selectedColor: product.colors[0] } });
         addToast(`${product.name} أضيف إلى السلة!`, 'success');
@@ -95,6 +134,14 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
 
     return (
         <>
+            <ConfirmationModal 
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={confirmRemove}
+                title="تأكيد الحذف"
+                message={`هل أنت متأكد أنك تريد إزالة ${itemsToRemove.length} ${itemsToRemove.length > 1 ? 'منتجات' : 'منتج'} من قائمة رغباتك؟`}
+            />
+
             {wishlistItems.length > 0 ? (
                 <>
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -118,7 +165,7 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
                                 onUpdateNote={handleUpdateNote}
                                 isSelected={selectedIds.includes(product.id)}
                                 onSelect={handleSelect}
-                                onRemove={handleRemoveItem}
+                                onRemove={() => startRemoveProcess([product.id])}
                                 onAddToCart={handleAddToCart}
                             />
                         ))}
@@ -140,7 +187,7 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
                     <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                          <p className="font-bold text-brand-dark">{selectedIds.length} عنصر محدد</p>
                          <div className="flex items-center gap-3">
-                             <button onClick={handleBulkRemove} className="flex items-center gap-2 font-semibold text-brand-sale hover:bg-brand-sale/10 py-2 px-4 rounded-full transition-colors"><TrashIcon size="sm"/> <span>إزالة</span></button>
+                             <button onClick={() => startRemoveProcess(selectedIds)} className="flex items-center gap-2 font-semibold text-brand-sale hover:bg-brand-sale/10 py-2 px-4 rounded-full transition-colors"><TrashIcon size="sm"/> <span>إزالة</span></button>
                              <button onClick={handleBulkAddToCompare} className="flex items-center gap-2 font-semibold text-brand-dark hover:bg-brand-subtle py-2 px-4 rounded-full transition-colors"><CompareIcon size="sm"/> <span>مقارنة</span></button>
                              <button onClick={handleBulkAddToCart} className="flex items-center gap-2 font-bold text-white bg-brand-dark py-2 px-5 rounded-full hover:bg-opacity-90 transition-colors"><ShoppingBagIcon size="sm"/> <span>نقل إلى السلة</span></button>
                          </div>

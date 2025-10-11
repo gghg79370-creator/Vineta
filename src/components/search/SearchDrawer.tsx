@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Product } from '../../types';
+import { Product, Filters } from '../../types';
 import { CloseIcon, SearchIcon, SparklesIcon, TagIcon, CategoryIcon, FireIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon, ArrowUpTrayIcon, HeartIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { GoogleGenAI, Type } from "@google/genai";
 import Spinner from '../ui/Spinner';
 import { useAppState } from '../../state/AppState';
+import { useToast } from '../../hooks/useToast';
 
 interface SearchDrawerProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     navigateTo: (pageName: string, data?: any) => void;
     setIsChatbotOpen: (isOpen: boolean) => void;
+    filters: Filters;
+    setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
 const ProductSkeleton = () => (
@@ -34,9 +37,11 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 
-export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }: SearchDrawerProps) => {
+export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, filters, setFilters }: SearchDrawerProps) => {
     const { state } = useAppState();
-    const wishlistCount = state.wishlist.length;
+    const { wishlist: wishlistItems, theme } = state;
+    const addToast = useToast();
+    const wishlistCount = wishlistItems.length;
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [results, setResults] = useState<Product[]>([]);
@@ -102,6 +107,21 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
         try { localStorage.removeItem('vinetaSearchHistory'); } catch (e) { console.error('Failed to clear search history', e); }
     };
     
+    const clearFilters = () => {
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        addToast('تم مسح جميع الفلاتر.', 'success');
+    };
+    
+    const hasActiveFilters = useMemo(() => {
+        return filters.brands.length > 0 ||
+               filters.colors.length > 0 ||
+               filters.sizes.length > 0 ||
+               filters.priceRange.max < 1000 ||
+               filters.rating > 0 ||
+               filters.onSale ||
+               filters.materials.length > 0;
+    }, [filters]);
+
     const getAiSearchResults = async (term: string) => {
         setIsAiSearching(true);
         try {
@@ -109,7 +129,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
             const searchableData = [...new Set(allProducts.flatMap(p => [p.name, ...p.tags, p.category, p.brand].filter(Boolean)))].join(', ');
             const availableProducts = allProducts.map(p => p.name).join(', ');
 
-            const prompt = `أنت مساعد بحث خبير لمتجر أزياء Vineta. يقوم مستخدم بالبحث عن "${term}".
+            const prompt = `أنت مساعد بحث خبير لمتجر أزياء ${theme.siteName}. يقوم مستخدم بالبحث عن "${term}".
 
 1. قدم ما يصل إلى 4 اقتراحات بحث قصيرة وذات صلة بناءً على البيانات القابلة للبحث.
 2. أوصِ بـ 3 منتجات ذات صلة عالية من قائمة المنتجات المتاحة.
@@ -288,7 +308,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     <form onSubmit={handleFormSubmit} className="relative mb-8">
                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light pointer-events-none"><SearchIcon size="md"/></div>
-                        <input type="search" placeholder="بحث في Vineta..." className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-48 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-white" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
+                        <input type="search" placeholder={`بحث في ${theme.siteName}...`} className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-48 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-white" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
                         <div className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center gap-2">
                             <button
                                 type="button"
@@ -332,6 +352,12 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }
                                         <div>
                                             <div className="flex justify-between items-center mb-2"><h3 className="font-bold text-brand-dark flex items-center gap-2"><HistoryIcon size="sm"/> عمليات البحث الأخيرة</h3><button onClick={clearHistory} className="text-xs font-semibold text-brand-text-light hover:text-brand-dark">مسح</button></div>
                                             <div className="flex flex-col items-start gap-1">{searchHistory.map(term => (<button key={term} onClick={() => performSearch(term)} className="px-3 py-1.5 text-sm font-semibold hover:text-brand-primary rounded-md">{term}</button>))}</div>
+                                        </div>
+                                    )}
+                                     {hasActiveFilters && (
+                                        <div>
+                                            <h3 className="font-bold text-brand-dark flex items-center gap-2">الفلاتر النشطة</h3>
+                                            <button onClick={clearFilters} className="text-sm font-semibold text-red-600 hover:underline mt-2">مسح كل الفلاتر</button>
                                         </div>
                                     )}
                                     <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CategoryIcon size="sm"/> اكتشف</h3><div className="flex flex-wrap gap-2">{popularCategories.map(cat => (<button key={cat} onClick={() => performSearch(cat)} className="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold hover:bg-gray-200">{cat}</button>))}</div></div>

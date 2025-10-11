@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Product } from '../../types';
+import { Product, Filters } from '../../types';
 import { CloseIcon, SearchIcon, SparklesIcon, FireIcon, TagIcon, CategoryIcon, HistoryIcon, CameraIcon, ChatBubbleOvalLeftEllipsisIcon, ArrowUpTrayIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { GoogleGenAI, Type } from "@google/genai";
 import Spinner from '../ui/Spinner';
+import { useAppState } from '../../state/AppState';
+import { useToast } from '../../hooks/useToast';
+
 
 interface SearchOverlayProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     navigateTo: (pageName: string, data?: any) => void;
     setIsChatbotOpen: (isOpen: boolean) => void;
+    filters: Filters;
+    setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -24,7 +29,9 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
     });
 };
 
-export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen }: SearchOverlayProps) => {
+export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, filters, setFilters }: SearchOverlayProps) => {
+    const { state: { theme } } = useAppState();
+    const addToast = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [results, setResults] = useState<Product[]>([]);
@@ -77,6 +84,21 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
         }
         return () => { stopCamera(); };
     }, [isOpen]);
+    
+    const clearFilters = () => {
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        addToast('تم مسح جميع الفلاتر.', 'success');
+    };
+    
+    const hasActiveFilters = useMemo(() => {
+        return filters.brands.length > 0 ||
+               filters.colors.length > 0 ||
+               filters.sizes.length > 0 ||
+               filters.priceRange.max < 1000 ||
+               filters.rating > 0 ||
+               filters.onSale ||
+               filters.materials.length > 0;
+    }, [filters]);
 
     const addToHistory = (query: string) => {
         const newHistory = [query, ...searchHistory.filter(item => item !== query && item.trim() !== '')].slice(0, 5);
@@ -100,7 +122,7 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
             const searchableData = [...new Set(allProducts.flatMap(p => [p.name, ...p.tags, p.category, p.brand].filter(Boolean)))].join(', ');
             const availableProducts = allProducts.map(p => p.name).join(', ');
 
-            const prompt = `أنت مساعد بحث خبير لمتجر أزياء Vineta. يقوم مستخدم بالبحث عن "${term}".
+            const prompt = `أنت مساعد بحث خبير لمتجر أزياء ${theme.siteName}. يقوم مستخدم بالبحث عن "${term}".
 
 1. قدم ما يصل إلى 4 اقتراحات بحث قصيرة وذات صلة بناءً على البيانات القابلة للبحث.
 2. أوصِ بـ 4 منتجات ذات صلة عالية من قائمة المنتجات المتاحة.
@@ -314,6 +336,12 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen 
                                         <button onClick={clearHistory} className="text-xs font-semibold text-brand-text-light hover:text-brand-dark">مسح</button>
                                     </div>
                                     <div className="flex gap-2 flex-wrap">{searchHistory.map(term => (<button key={term} onClick={() => performSearch(term)} className="px-4 py-1.5 bg-white border rounded-full text-sm font-semibold hover:bg-brand-border">{term}</button>))}</div>
+                                </div>
+                            )}
+                             {hasActiveFilters && (
+                                <div>
+                                    <h3 className="font-bold text-brand-dark flex items-center gap-2">الفلاتر النشطة</h3>
+                                    <button onClick={clearFilters} className="text-sm font-semibold text-red-600 hover:underline mt-2">مسح كل الفلاتر</button>
                                 </div>
                             )}
                              <div>

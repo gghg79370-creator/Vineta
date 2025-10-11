@@ -1,8 +1,6 @@
-
-
 import React from 'react';
 import { Product } from '../../types';
-import { EyeIcon, HeartIcon, ShoppingBagIcon, StarIcon, CompareIcon } from '../icons';
+import { EyeIcon, HeartIcon, ShoppingBagIcon, StarIcon, CompareIcon, FireIcon } from '../icons';
 
 interface ProductCardProps {
     product: Product;
@@ -28,6 +26,8 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
     const isInWishlist = wishlistItems.includes(product.id);
     const isInCompare = compareList.includes(product.id);
     const alternativeImage = product.images?.find(img => img !== product.image);
+    const stock = product.itemsLeft !== undefined ? product.itemsLeft : (product.variants ? product.variants.reduce((acc, v) => acc + v.stock, 0) : 11);
+
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -74,6 +74,21 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
                         </div>
                     ))}
                 </div>
+
+                 {/* Urgency Badges */}
+                <div className="absolute top-3 start-3 flex flex-col items-start gap-y-2 z-10">
+                    {product.soldIn24h && product.soldIn24h > 50 && (
+                         <div className="bg-red-100 text-red-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1">
+                            <FireIcon size="sm" />
+                            <span>بيع سريع</span>
+                        </div>
+                    )}
+                    {stock <= 10 && stock > 0 && (
+                        <div className="bg-amber-100 text-amber-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                           مخزون منخفض
+                        </div>
+                    )}
+                </div>
                 
                 {/* Mobile Hover Actions */}
                 <div className="md:hidden absolute bottom-0 right-0 left-0">
@@ -101,6 +116,11 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Desktop Hover Actions */}
                 <div className="hidden md:block absolute bottom-3 right-0 left-0 px-3 product-actions-container">
+                    {product.description && (
+                        <div className="bg-black/70 backdrop-blur-sm text-white text-xs rounded-lg p-2 mb-2 shadow-lg">
+                            <p className="line-clamp-2">{product.description}</p>
+                        </div>
+                    )}
                     <div className="flex items-center justify-center gap-1 bg-white rounded-full shadow-lg p-1.5">
                          <button onClick={handleAddToCompare} className={`flex-1 p-2 hover:bg-brand-subtle rounded-full transition-all active:scale-90 ${isInCompare ? 'text-brand-primary' : 'text-brand-dark hover:text-brand-primary'}`} aria-label="Compare"><CompareIcon size="sm" /></button>
                          <button onClick={handleOpenQuickView} className="flex-1 p-2 hover:bg-brand-subtle rounded-full border-x text-brand-dark hover:text-brand-primary transition-transform active:scale-90" aria-label="Quick view"><EyeIcon size="sm" /></button>

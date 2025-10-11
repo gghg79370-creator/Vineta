@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { CartItem, Product } from '../types';
 import { CloseIcon, MinusIcon, PlusIcon, CouponIcon, HeartIcon, ShoppingBagIcon, GiftIcon, NoteIcon, PencilIcon, LockClosedIcon } from '../components/icons';
@@ -129,8 +127,12 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                             <p className="font-bold text-brand-dark">{item.name}</p>
                                             <p className="text-sm text-brand-text-light">{item.selectedSize} / {item.selectedColor}</p>
                                             <div className="flex items-center gap-2 mt-2 text-xs">
-                                                <button onClick={() => handleMoveToWishlist(item)} className="flex items-center gap-1 hover:text-brand-primary"><HeartIcon size="sm" /> <span>انقل إلى قائمة الرغبات</span></button>
-                                                <span className="text-gray-300">|</span>
+                                                {!state.wishlist.some(wishlistItem => wishlistItem.id === item.id) && (
+                                                    <>
+                                                        <button onClick={() => handleMoveToWishlist(item)} className="flex items-center gap-1 hover:text-brand-primary"><HeartIcon size="sm" /> <span>انقل إلى قائمة الرغبات</span></button>
+                                                        <span className="text-gray-300">|</span>
+                                                    </>
+                                                )}
                                                 <button onClick={() => handleRemoveItem(item.id, item.selectedSize, item.selectedColor)} className="flex items-center gap-1 hover:text-brand-sale"><CloseIcon size="sm" /> <span>إزالة</span></button>
                                             </div>
                                         </div>
@@ -148,13 +150,13 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                             ))}
                         </div>
                         <div className="lg:col-span-1">
-                            <div className="bg-white p-6 rounded-lg shadow-sm border lg:sticky top-28 space-y-4">
+                            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border lg:sticky top-28 space-y-4">
                                 <h2 className="text-xl font-bold mb-4">ملخص الطلب</h2>
                                 
                                 <form onSubmit={handleApplyCoupon} className="flex gap-2">
                                     <div className="relative flex-grow">
                                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light"><CouponIcon size="sm" /></div>
-                                        <input type="text" placeholder="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-3 pr-11 pl-4" />
+                                        <input type="text" placeholder="رمز الكوبون" aria-label="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-3 pr-11 pl-4" />
                                     </div>
                                     <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-6 rounded-full text-sm">تطبيق</button>
                                 </form>
@@ -201,7 +203,7 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                     </div>
                                 </div>
 
-                                <button onClick={() => navigateTo('checkout')} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 mt-4 flex items-center justify-center gap-2">
+                                <button onClick={() => navigateTo('checkout')} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 mt-4 flex items-center justify-center gap-2 transition-transform active:scale-98">
                                     <LockClosedIcon size="sm"/>
                                     <span>الانتقال إلى الدفع</span>
                                 </button>

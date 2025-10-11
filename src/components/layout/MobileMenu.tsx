@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon, CloseIcon, HeartIcon, UserIcon, SparklesIcon } from '../icons';
+import { ChevronDownIcon, CloseIcon, HeartIcon, UserIcon, SparklesIcon, SearchIcon } from '../icons';
 import { allProducts } from '../../data/products';
 import { User } from '../../types';
+import { useAppState } from '../../state/AppState';
 
 interface MobileMenuProps {
     isOpen: boolean;
@@ -11,15 +12,17 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: MobileMenuProps) => {
+    const { state: { theme } } = useAppState();
+
      const SubMenu = ({ title, children }: {title: string, children?: React.ReactNode}) => {
         const [isSubOpen, setIsSubOpen] = useState(false);
         return (
-            <div>
-                <button onClick={() => setIsSubOpen(!isSubOpen)} className="w-full flex justify-between items-center py-3 font-bold text-lg">
+            <div className="border-b">
+                <button onClick={() => setIsSubOpen(!isSubOpen)} className="w-full flex justify-between items-center py-4 font-bold text-lg">
                     <span>{title}</span>
-                    <span className={`transform transition-transform ${isSubOpen ? 'rotate-180' : ''}`}><ChevronDownIcon /></span>
+                    <span className={`transform transition-transform text-gray-400 ${isSubOpen ? 'rotate-180' : ''}`}><ChevronDownIcon size="sm" /></span>
                 </button>
-                {isSubOpen && <div className="pr-4 space-y-2 text-brand-text-light">{children}</div>}
+                {isSubOpen && <div className="pr-4 pb-2 space-y-3 text-gray-600 animate-fade-in">{children}</div>}
             </div>
         )
     }
@@ -31,32 +34,43 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
 
     return (
         <>
-            <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
-            <div className={`fixed top-0 left-0 h-full w-[90vw] max-w-sm bg-white shadow-lg z-[60] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                 <div className="flex flex-col h-full">
-                     <div className="p-6 flex justify-end items-center border-b">
-                        <button onClick={() => setIsOpen(false)} aria-label="إغلاق القائمة"><CloseIcon /></button>
+            <div className={`fixed inset-0 bg-black/60 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
+            <div className={`fixed top-0 right-0 h-full w-[90vw] max-w-sm bg-white shadow-lg z-[60] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                 <div className="flex flex-col h-full text-brand-dark">
+                     <div className="p-5 text-center border-b relative">
+                        <h2 className="font-serif text-4xl font-bold text-brand-dark">{theme.siteName}</h2>
+                        <button onClick={() => setIsOpen(false)} aria-label="إغلاق القائمة" className="absolute top-1/2 -translate-y-1/2 left-4 p-2 rounded-full hover:bg-gray-100"><CloseIcon /></button>
                     </div>
+
                     <div className="flex-1 overflow-y-auto p-6 divide-y">
-                        <SubMenu title="الرئيسية"><button onClick={() => handleNavigate('home')} className="block py-1">الرئيسية 1</button></SubMenu>
-                        <SubMenu title="المتجر"><button onClick={() => handleNavigate('shop')} className="block py-1">قائمة المنتجات</button></SubMenu>
-                        <SubMenu title="المنتجات"><button onClick={() => handleNavigate('product', allProducts[0])} className="block py-1">منتج بسيط</button></SubMenu>
-                        <button onClick={() => handleNavigate('blog')} className="w-full text-right block py-3 font-bold text-lg">المدونة</button>
-                        <button onClick={() => handleNavigate('style-me')} className="w-full flex justify-between items-center py-3 font-bold text-lg text-brand-primary">
+                        <SubMenu title="الرئيسية"><button onClick={() => handleNavigate('home')} className="block py-1 hover:text-brand-primary">الرئيسية 1</button></SubMenu>
+                        <SubMenu title="المتجر"><button onClick={() => handleNavigate('shop')} className="block py-1 hover:text-brand-primary">قائمة المنتجات</button></SubMenu>
+                        <SubMenu title="المنتجات"><button onClick={() => handleNavigate('product', allProducts[0])} className="block py-1 hover:text-brand-primary">منتج بسيط</button></SubMenu>
+                        <button onClick={() => handleNavigate('blog')} className="w-full text-right block py-4 font-bold text-lg hover:text-brand-primary">المدونة</button>
+                        <button onClick={() => handleNavigate('style-me')} className="w-full flex justify-between items-center py-4 font-bold text-lg text-brand-primary hover:text-opacity-80">
                             <span>المصمم الذكي</span>
                             <SparklesIcon />
                         </button>
-                        <SubMenu title="صفحات"><button onClick={() => handleNavigate('faq')} className="block py-1">الأسئلة الشائعة</button></SubMenu>
+                        <SubMenu title="صفحات"><button onClick={() => handleNavigate('faq')} className="block py-1 hover:text-brand-primary">الأسئلة الشائعة</button></SubMenu>
                     </div>
-                    <div className="p-6 border-t space-y-4">
-                         <div className="flex items-center gap-4">
-                            <button onClick={() => handleNavigate('wishlist')} className="flex-1 bg-brand-subtle py-2 rounded-md font-semibold flex items-center justify-center gap-2"><HeartIcon size="sm"/> قائمة الرغبات</button>
-                            <button onClick={() => handleNavigate(currentUser ? 'account' : 'login')} className="flex-1 bg-brand-subtle py-2 rounded-md font-semibold flex items-center justify-center gap-2"><UserIcon size="sm"/> {currentUser ? 'حسابي' : 'تسجيل الدخول'}</button>
-                         </div>
-                         <div className="text-sm text-brand-text-light">
-                             <p><strong>العنوان:</strong> 123 شارع ياران، بانشبول، 2196، أستراليا</p>
-                             <p><strong>البريد الإلكتروني:</strong> clientcare@ecom.com</p>
-                             <p><strong>الهاتف:</strong> 1.888.838.3022</p>
+                    <div className="p-6 border-t bg-gray-50 space-y-6">
+                         {currentUser ? (
+                            <div className="flex items-center gap-4">
+                                <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Avatar" className="w-14 h-14 rounded-full border-2 border-brand-primary"/>
+                                <div>
+                                    <p className="font-bold text-lg text-brand-dark">{currentUser.name}</p>
+                                    <button onClick={() => handleNavigate('account')} className="text-sm text-gray-500 hover:text-brand-dark">عرض الحساب</button>
+                                </div>
+                            </div>
+                         ) : (
+                            <button onClick={() => handleNavigate('login')} className="w-full bg-brand-primary text-white font-bold py-3 rounded-full hover:bg-opacity-90 transition-opacity">تسجيل الدخول / إنشاء حساب</button>
+                         )}
+
+                         <div className="flex justify-center gap-6 mt-4">
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="X"><i className="fa-brands fa-x-twitter text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Facebook"><i className="fa-brands fa-facebook-f text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Instagram"><i className="fa-brands fa-instagram text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Youtube"><i className="fa-brands fa-youtube text-lg"></i></a>
                          </div>
                     </div>
                  </div>

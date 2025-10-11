@@ -32,7 +32,7 @@ const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navig
         <div>
             <div className="flex justify-between items-center mb-3">
                 <p className="text-sm font-bold text-gray-600">
-                    <i className="fa-solid fa-check-circle text-green-500 ml-2"></i>
+                    <i className="fa-solid fa-check-circle text-green-500 ml-2" aria-hidden="true"></i>
                     مشتري معتمد - {testimonial.author}
                 </p>
                 <div className="flex text-yellow-400">
