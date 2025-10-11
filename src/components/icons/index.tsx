@@ -1,21 +1,49 @@
 
+
 import React from 'react';
 
 interface IconProps {
     className?: string;
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
     color?: string;
 }
 
 const sizeClasses = {
     sm: 'w-5 h-5',
     md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    lg: 'w-8 h-8',
+    xl: 'w-12 h-12'
 };
 
 const getClasses = ({ className, size = 'md', color }: IconProps): string => {
     return [sizeClasses[size], color, className].filter(Boolean).join(' ');
 };
+
+export const ShippingTruckIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 12V5a2 2 0 0 0-2-2H6v9h4" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 12h-4" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="m18 18 2 0 0 2 -2 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="m12 18-2 0 0 2 2 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h11v7" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 9h5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 9v3" />
+    </svg>
+);
+
+export const EditNoteIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+    </svg>
+);
+
+export const GiftWrapIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5a9 9 0 1018 0a9 9 0 00-18 0z" />
+    </svg>
+);
+
 
 export const SunIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true" focusable="false">
@@ -100,6 +128,12 @@ export const ChevronDownIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true" focusable="false">
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
     </svg>
+);
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.691V5.25a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+  </svg>
 );
 
 export const ReturnIcon: React.FC<IconProps> = (props) => (
@@ -275,6 +309,40 @@ export const GridViewIcon: React.FC<IconProps & { columns: number }> = ({ column
         </svg>
     );
 };
+
+export const GridView4Icon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
+        <rect x="1" y="2" width="2.5" height="16" rx="1" />
+        <rect x="5.5" y="2" width="2.5" height="16" rx="1" />
+        <rect x="10" y="2" width="2.5" height="16" rx="1" />
+        <rect x="14.5" y="2" width="2.5" height="16" rx="1" />
+    </svg>
+);
+export const GridView3Icon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
+        <rect x="1.5" y="2" width="4" height="16" rx="1" />
+        <rect x="8" y="2" width="4" height="16" rx="1" />
+        <rect x="14.5" y="2" width="4" height="16" rx="1" />
+    </svg>
+);
+export const GridView2Icon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
+        <rect x="2" y="2" width="7" height="16" rx="1" />
+        <rect x="11" y="2" width="7" height="16" rx="1" />
+    </svg>
+);
+export const ListLayoutIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
+        <rect x="2" y="5" width="16" height="4" rx="1.5" />
+        <rect x="2" y="11" width="16" height="4" rx="1.5" />
+    </svg>
+);
+export const FilterSlidersIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+    </svg>
+);
+
 
 export const FilterIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true" focusable="false">

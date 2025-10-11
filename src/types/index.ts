@@ -97,6 +97,7 @@ export interface Filters {
   rating: number;
   onSale: boolean;
   materials: string[];
+  categories: string[];
 }
 
 export interface OrderItem {

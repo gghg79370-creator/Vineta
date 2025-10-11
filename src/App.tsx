@@ -36,6 +36,7 @@ const serializeUrlParams = (filters: Filters, page: number) => {
     if (filters.rating > 0) params.set('rating', filters.rating.toString());
     if (filters.onSale) params.set('onSale', 'true');
     if (filters.materials.length > 0) params.set('materials', filters.materials.join(','));
+    if (filters.categories.length > 0) params.set('categories', filters.categories.join(','));
     if (page > 1) params.set('page', page.toString());
     return params.toString();
 };
@@ -53,6 +54,7 @@ const parseFilters = (queryString: string): Filters => {
         rating: params.has('rating') ? parseInt(params.get('rating')!, 10) : 0,
         onSale: params.get('onSale') === 'true',
         materials: params.get('materials')?.split(',').filter(Boolean) || [],
+        categories: params.get('categories')?.split(',').filter(Boolean) || [],
     };
 };
 
@@ -60,7 +62,7 @@ const getInitialStateFromUrl = () => {
     const hash = window.location.hash.slice(1);
     const [path, queryString] = hash.split('?');
     const page = path.startsWith('/') ? path.substring(1) : (path || 'home');
-    const filters = page === 'shop' ? parseFilters(queryString || '') : { brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] };
+    const filters = page === 'shop' ? parseFilters(queryString || '') : { brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] };
     const params = new URLSearchParams(queryString || '');
     const pageData: any = {};
     for (const [key, value] of params.entries()) {

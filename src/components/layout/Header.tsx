@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { SearchIcon, UserIcon, HeartIcon, ChevronDownIcon, ShoppingBagIcon, Bars3Icon, CompareIcon, SparklesIcon, MoonIcon, SunIcon } from '../icons';
 import { useAppState } from '../../state/AppState';
@@ -65,12 +66,11 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
     const badgeClasses = `absolute -top-1 -right-1 bg-brand-sale text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 ${badgeBorderClass}`;
     
     const navLinks = [
-        { label: 'الرئيسية', page: 'home', hasDropdown: true },
-        { label: 'المتجر', page: 'shop', hasDropdown: true },
-        { label: 'المنتجات', page: 'shop', hasDropdown: true },
-        { label: 'المدونة', page: 'blog', hasDropdown: true },
+        { label: 'الرئيسية', page: 'home' },
+        { label: 'المتجر', page: 'shop' },
+        { label: 'المدونة', page: 'blog' },
         { label: 'المصمم الذكي', page: 'style-me', isNew: true },
-        { label: 'الصفحات', page: 'faq', hasDropdown: true },
+        { label: 'اتصل بنا', page: 'contact' },
     ];
     
     const buyThemeButtonClasses = isOpaque
@@ -98,11 +98,10 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                            <button 
                                key={link.label} 
                                onClick={() => navigateTo(link.page)} 
-                               className={`font-semibold pb-1 flex items-center gap-1.5 nav-link transition-colors ${textColorClass}`}
+                               className={`font-semibold pb-1 flex items-center gap-1.5 nav-link transition-colors ${textColorClass} ${activePage === link.page ? 'active' : ''}`}
                             >
                                <span>{link.label}</span>
                                {link.isNew && <SparklesIcon className="w-4 h-4 text-yellow-400 animate-pulse"/>}
-                               {link.hasDropdown && <ChevronDownIcon size="sm" />}
                            </button>
                        ))}
                        <button onClick={() => navigateTo('home')} className={`font-bold py-2 px-5 rounded-full text-sm transition-colors duration-300 border ${buyThemeButtonClasses}`}>

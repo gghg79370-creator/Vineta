@@ -108,7 +108,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
     };
     
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
         addToast('تم مسح جميع الفلاتر.', 'success');
     };
     

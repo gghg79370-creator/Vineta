@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { CartItem, Product } from '../../types';
 import { CloseIcon, MinusIcon, PlusIcon, GiftIcon, NoteIcon, TruckIcon as ShippingIcon, ArrowLongRightIcon, ChevronDownIcon, SparklesIcon, CheckIcon, CouponIcon, ShoppingBagIcon, HeartIcon } from '../icons';
@@ -91,13 +92,28 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
     const cartItems = useMemo((): CartItem[] => {
         return state.cart.map(cartDetail => {
             const product = allProducts.find(p => p.id === cartDetail.id);
+            if (!product) return null;
+
+            let price = product.price;
+            let oldPrice = product.oldPrice;
+
+            if (product.variants && product.variants.length > 0) {
+                const variant = product.variants.find(v => v.size === cartDetail.selectedSize && v.color === cartDetail.selectedColor);
+                if (variant) {
+                    price = variant.price;
+                    oldPrice = variant.oldPrice;
+                }
+            }
+
             return {
-                ...(product as Product),
+                ...product,
+                price,
+                oldPrice,
                 quantity: cartDetail.quantity,
                 selectedSize: cartDetail.selectedSize,
                 selectedColor: cartDetail.selectedColor,
             };
-        }).filter(item => item.id);
+        }).filter((item): item is CartItem => item !== null);
     }, [state.cart]);
 
     const [lastAddedItemName, setLastAddedItemName] = useState<string | null>(null);

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { CloseIcon, PlusIcon, MinusIcon, StarIcon } from '../icons';
 import { allProducts } from '../../data/products';
@@ -55,7 +54,12 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
         const sizes = [...new Set(allProducts.flatMap(p => p.sizes))];
         const materialsList = ['كتان', 'قطن', 'دينيم', 'جلد', 'بوليستر'];
         const materials = [...new Set(allProducts.flatMap(p => p.tags.filter(tag => materialsList.includes(tag))))];
-        return { brands, colors, sizes, materials };
+        const categories = [
+            { id: 'women', name: 'ملابس نسائية' },
+            { id: 'men', name: 'ملابس رجالية' },
+            { id: 'accessories', name: 'إكسسوارات' }
+        ];
+        return { brands, colors, sizes, materials, categories };
     }, []);
 
     const handleBrandChange = (brand: string) => {
@@ -103,6 +107,13 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
         setFilters(prev => ({ ...prev, materials: newMaterials }));
     };
 
+    const handleCategoryChange = (category: string) => {
+        const newCategories = filters.categories.includes(category)
+            ? filters.categories.filter(c => c !== category)
+            : [...filters.categories, category];
+        setFilters(prev => ({ ...prev, categories: newCategories }));
+    };
+
     const clearFilters = () => {
         setFilters({
             brands: [],
@@ -111,7 +122,8 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
             priceRange: { min: 0, max: 1000 },
             rating: 0,
             onSale: false,
-            materials: []
+            materials: [],
+            categories: []
         });
     };
 
@@ -122,8 +134,9 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
     const hasSaleFilter = filters.onSale;
     const hasRatingFilter = filters.rating > 0;
     const hasMaterialFilter = filters.materials.length > 0;
+    const hasCategoryFilter = filters.categories.length > 0;
     
-    const appliedFiltersCount = [hasBrandFilter, hasPriceFilter, hasColorFilter, hasSizeFilter, hasSaleFilter, hasRatingFilter, hasMaterialFilter].filter(Boolean).length;
+    const appliedFiltersCount = [hasBrandFilter, hasPriceFilter, hasColorFilter, hasSizeFilter, hasSaleFilter, hasRatingFilter, hasMaterialFilter, hasCategoryFilter].filter(Boolean).length;
 
     if (!isOpen && !isAnimatingOut) return null;
 
@@ -155,6 +168,21 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                                 <input type="checkbox" className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark border-brand-border" checked={filters.onSale} onChange={handleOnSaleChange} />
                                 <span>في التخفيضات</span>
                             </label>
+                        </div>
+                    </AccordionItem>
+                     <AccordionItem title="الفئة" defaultOpen hasActiveFilter={hasCategoryFilter}>
+                        <div className="space-y-2 pr-2">
+                            {filterOptions.categories.map(category => (
+                                <label key={category.id} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark border-brand-border"
+                                        checked={filters.categories.includes(category.id)}
+                                        onChange={() => handleCategoryChange(category.id)}
+                                    />
+                                    <span>{category.name}</span>
+                                </label>
+                            ))}
                         </div>
                     </AccordionItem>
                     <AccordionItem title="التقييم" defaultOpen hasActiveFilter={hasRatingFilter}>

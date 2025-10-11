@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
 import { CollectionProductCard } from '../components/product/CollectionProductCard';
 import { CollectionProductListCard } from '../components/product/CollectionProductListCard';
-import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon, PlusIcon, MinusIcon, StarIcon } from '../components/icons';
+import { GridView4Icon, GridView3Icon, GridView2Icon, ListLayoutIcon, FilterSlidersIcon, ChevronDownIcon, PlusIcon, MinusIcon, StarIcon } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
 import { useToast } from '../hooks/useToast';
@@ -44,7 +43,12 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
         const sizes = [...new Set(allProducts.flatMap(p => p.sizes))];
         const materialsList = ['كتان', 'قطن', 'دينيم', 'جلد', 'بوليستر'];
         const materials = [...new Set(allProducts.flatMap(p => p.tags.filter(tag => materialsList.includes(tag))))];
-        return { brands, colors, sizes, materials };
+        const categories = [
+            { id: 'women', name: 'ملابس نسائية' },
+            { id: 'men', name: 'ملابس رجالية' },
+            { id: 'accessories', name: 'إكسسوارات' }
+        ];
+        return { brands, colors, sizes, materials, categories };
     }, []);
     
     const [priceInputs, setPriceInputs] = useState({ min: filters.priceRange.min, max: filters.priceRange.max });
@@ -90,8 +94,15 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
         setFilters(prev => ({ ...prev, materials: newMaterials }));
     };
 
+    const handleCategoryChange = (category: string) => {
+        const newCategories = filters.categories.includes(category)
+            ? filters.categories.filter(c => c !== category)
+            : [...filters.categories, category];
+        setFilters(prev => ({ ...prev, categories: newCategories }));
+    };
+
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
     };
 
     return (
@@ -100,6 +111,16 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
                 <h3 className="font-bold text-xl">الفلاتر</h3>
                 <button onClick={clearFilters} className="text-sm font-semibold text-brand-primary hover:underline">مسح الكل</button>
             </div>
+            <AccordionItem title="الفئة" defaultOpen hasActiveFilter={filters.categories.length > 0}>
+                <div className="space-y-2 pr-2">
+                    {filterOptions.categories.map(category => (
+                        <label key={category.id} className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" className="w-4 h-4 rounded text-brand-dark focus:ring-brand-dark border-brand-border" checked={filters.categories.includes(category.id)} onChange={() => handleCategoryChange(category.id)} />
+                            <span>{category.name}</span>
+                        </label>
+                    ))}
+                </div>
+            </AccordionItem>
             <AccordionItem title="الحالة" defaultOpen hasActiveFilter={filters.onSale}>
                 <div className="space-y-2 pr-2">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -217,12 +238,12 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [gridCols, setGridCols] = useState(3);
+    const [gridCols, setGridCols] = useState(4);
     const [sortBy, setSortBy] = useState('best-selling');
     const productsPerPage = 12;
 
     const appliedFiltersCount = useMemo(() => {
-        const { brands, colors, sizes, priceRange, rating, onSale, materials } = filters;
+        const { brands, colors, sizes, priceRange, rating, onSale, materials, categories } = filters;
         const hasBrandFilter = brands.length > 0;
         const hasPriceFilter = priceRange.min > 0 || priceRange.max < 1000;
         const hasColorFilter = colors.length > 0;
@@ -230,7 +251,8 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
         const hasSaleFilter = onSale;
         const hasRatingFilter = rating > 0;
         const hasMaterialFilter = materials.length > 0;
-        return [hasBrandFilter, hasPriceFilter, hasColorFilter, hasSizeFilter, hasSaleFilter, hasRatingFilter, hasMaterialFilter].filter(Boolean).length;
+        const hasCategoryFilter = categories.length > 0;
+        return [hasBrandFilter, hasPriceFilter, hasColorFilter, hasSizeFilter, hasSaleFilter, hasRatingFilter, hasMaterialFilter, hasCategoryFilter].filter(Boolean).length;
     }, [filters]);
 
     const filteredAndSortedProducts = useMemo(() => {
@@ -242,7 +264,13 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
              const saleMatch = !filters.onSale || !!p.oldPrice;
              const ratingMatch = !filters.rating || (p.rating && p.rating >= filters.rating);
              const materialMatch = filters.materials.length === 0 || filters.materials.some(m => p.tags.includes(m));
-             return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch;
+             const categoryMatch = filters.categories.length === 0 || filters.categories.some(cat => {
+                if (cat === 'accessories') {
+                    return p.tags.includes('إكسسوارات');
+                }
+                return p.category === cat;
+             });
+             return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch && categoryMatch;
         });
 
         switch (sortBy) {
@@ -338,25 +366,46 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                 </aside>
 
                 <main className="w-full lg:w-3/4">
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-4 bg-white rounded-lg shadow-sm border">
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                            <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold">
-                                <FilterIcon/>
-                                <span>فلتر</span>
-                                {appliedFiltersCount > 0 && <span className="bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">{appliedFiltersCount}</span>}
+                    <div className="flex justify-between items-center mb-6 gap-4 p-2 bg-white rounded-xl shadow-sm border">
+                        <div className="flex items-center gap-1">
+                            <button 
+                                onClick={() => { setViewMode('grid'); setGridCols(4); }} 
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' && gridCols === 4 ? 'text-brand-dark' : 'text-gray-400 hover:text-brand-dark'}`}
+                                aria-label="4 Column Grid View"
+                            >
+                                <GridView4Icon className="w-5 h-5" />
                             </button>
-                             <p className="hidden md:block text-sm text-brand-text-light whitespace-nowrap">
-                                عرض {isLoading ? '...' : currentProducts.length} من {filteredAndSortedProducts.length} منتجًا
-                            </p>
+                            <button 
+                                onClick={() => { setViewMode('grid'); setGridCols(3); }} 
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' && gridCols === 3 ? 'text-brand-dark' : 'text-gray-400 hover:text-brand-dark'}`}
+                                aria-label="3 Column Grid View"
+                            >
+                                <GridView3Icon className="w-5 h-5" />
+                            </button>
+                            <button 
+                                onClick={() => { setViewMode('grid'); setGridCols(2); }} 
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' && gridCols === 2 ? 'text-brand-dark' : 'text-gray-400 hover:text-brand-dark'}`}
+                                aria-label="2 Column Grid View"
+                            >
+                                <GridView2Icon className="w-5 h-5" />
+                            </button>
+                             <button 
+                                onClick={() => setViewMode('list')} 
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'text-brand-dark' : 'text-gray-400 hover:text-brand-dark'}`}
+                                aria-label="List View"
+                            >
+                                <ListLayoutIcon className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="flex items-center gap-2 w-full md:w-auto">
+
+                        <div className="flex items-center gap-2 md:gap-4">
                             <div className="relative">
                                 <select 
                                     value={sortBy}
                                     onChange={handleSortByChange}
-                                    className="appearance-none bg-white border border-brand-border rounded-full pl-4 pr-10 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
+                                    className="appearance-none bg-white border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark/50 cursor-pointer"
                                 >
-                                    <option value="best-selling">الأكثر مبيعًا</option>
+                                    <option value="best-selling">ترتيب حسب (الأكثر مبيعًا)</option>
                                     <option value="newest">الأحدث</option>
                                     <option value="price-asc">السعر: من الأقل إلى الأعلى</option>
                                     <option value="price-desc">السعر: من الأعلى إلى الأقل</option>
@@ -366,22 +415,12 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                                     <ChevronDownIcon size="sm"/>
                                 </div>
                             </div>
-                            <div className="hidden md:flex items-center gap-1 border border-brand-border rounded-full p-1 bg-white">
-                                {[2,3,4].map(cols => (
-                                    <button 
-                                        key={cols}
-                                        onClick={() => { setViewMode('grid'); setGridCols(cols); }} 
-                                        className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' && gridCols === cols ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} 
-                                        aria-label={`${cols} Column Grid View`}
-                                    >
-                                        <GridViewIcon columns={cols} className="w-5 h-5" />
-                                    </button>
-                                ))}
-                                <div className="w-px h-5 bg-gray-200 mx-1"></div>
-                                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-full transition-colors ${viewMode === 'list' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="List View">
-                                    <Bars3Icon size="sm" />
-                                </button>
-                            </div>
+
+                            <button onClick={() => setIsFilterOpen(true)} className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:bg-gray-50">
+                                <span>تصفية</span>
+                                <FilterSlidersIcon className="w-5 h-5"/>
+                                 {appliedFiltersCount > 0 && <span className="bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">{appliedFiltersCount}</span>}
+                            </button>
                         </div>
                     </div>
                     

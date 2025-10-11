@@ -1,50 +1,39 @@
 import React from 'react';
-import { TruckIcon, GiftIcon, ReturnIcon, SupportIcon } from '../icons';
+import { ShippingTruckIcon, EditNoteIcon, GiftWrapIcon } from '../icons';
 
-// FIX: Correctly type FeatureCard as a React Functional Component to allow for the `key` prop.
-const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description: string }> = ({ icon, title, description }) => (
-    <div className="group bg-brand-subtle p-6 rounded-2xl text-center transition-all duration-300 ease-in-out hover:shadow-xl hover:bg-white hover:-translate-y-2">
-        <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mx-auto mb-5 transition-transform duration-300 group-hover:scale-110">
+const FeatureCard: React.FC<{ icon: React.ReactNode, title: string }> = ({ icon, title }) => (
+    <div className="text-center">
+        <div className="flex justify-center mb-4 text-gray-500">
             {icon}
         </div>
-        <h3 className="font-extrabold text-lg text-brand-dark mb-2">{title}</h3> 
-        <p className="text-sm text-brand-text-light leading-relaxed">{description}</p>
+        <h3 className="font-semibold text-lg text-brand-text">{title}</h3>
     </div>
 );
 
 export const FeaturesBar = () => {
     const features = [
         {
-            icon: <TruckIcon className="text-brand-primary" size="lg"/>,
-            title: 'شحن مجاني',
-            description: 'استمتع بشحن مجاني على جميع الطلبات'
+            icon: <ShippingTruckIcon size="xl" />,
+            title: 'الشحن'
         },
         {
-            icon: <GiftIcon className="text-brand-primary" size="lg"/>,
-            title: 'تغليف هدايا',
-            description: 'تغليف مثالي للهدايا لجميع المناسبات'
+            icon: <EditNoteIcon size="xl" />,
+            title: 'ملاحظة'
         },
         {
-            icon: <ReturnIcon className="text-brand-primary" size="lg"/>,
-            title: 'إرجاع مجاني',
-            description: 'لديك 14 يومًا لإرجاع مشترياتك بسهولة'
-        },
-        {
-            icon: <SupportIcon className="text-brand-primary" size="lg"/>,
-            title: 'دعم أونلاين',
-            description: 'نحن هنا لمساعدتك على مدار الساعة'
+            icon: <GiftWrapIcon size="xl" />,
+            title: 'تغليف هدية'
         }
     ];
 
     return (
-        <div id="features" className="bg-white py-16">
-            <div className="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div id="features" className="bg-brand-subtle py-12 border-y">
+            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
                 {features.map((feature, index) => (
                     <FeatureCard 
                         key={index}
                         icon={feature.icon}
                         title={feature.title}
-                        description={feature.description}
                     />
                 ))}
             </div>

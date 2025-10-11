@@ -1,4 +1,3 @@
-
 import React, { createContext, useReducer, useContext, useMemo } from 'react';
 import { User, Product, Toast, TodoItem, WishlistItem, Address, Coupon } from '../types';
 import { cartItemsData } from '../data/cart';
@@ -314,7 +313,16 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return state.cart.reduce((sum, cartDetail) => {
             const product = allProducts.find(p => p.id === cartDetail.id);
             if (!product) return sum;
-            return sum + parseFloat(product.price) * cartDetail.quantity;
+
+            let price = product.price;
+            if (product.variants && product.variants.length > 0) {
+                const variant = product.variants.find(v => v.size === cartDetail.selectedSize && v.color === cartDetail.selectedColor);
+                if (variant) {
+                    price = variant.price;
+                }
+            }
+            
+            return sum + parseFloat(price) * cartDetail.quantity;
         }, 0);
     }, [state.cart]);
 

@@ -86,7 +86,7 @@ export const SearchOverlay = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen,
     }, [isOpen]);
     
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
         addToast('تم مسح جميع الفلاتر.', 'success');
     };
     

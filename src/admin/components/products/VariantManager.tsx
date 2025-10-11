@@ -13,7 +13,27 @@ interface Option {
 }
 
 const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }) => {
-    const [options, setOptions] = useState<Option[]>([{ name: 'المقاس', values: ['S', 'M', 'L'] }]);
+    const [options, setOptions] = useState<Option[]>(() => {
+        if (variants && variants.length > 0) {
+            const optionMap: { [key: string]: Set<string> } = {};
+            const optionOrder: string[] = []; // Preserve option order
+            variants.forEach(variant => {
+                Object.entries(variant.options).forEach(([key, value]) => {
+                    if (!optionMap[key]) {
+                        optionMap[key] = new Set();
+                        optionOrder.push(key);
+                    }
+                    // FIX: Cast `value` from `Object.entries` to `string` to resolve TypeScript error where it's inferred as `unknown`.
+                    optionMap[key].add(value as string);
+                });
+            });
+            return optionOrder.map(name => ({
+                name,
+                values: Array.from(optionMap[name])
+            }));
+        }
+        return [{ name: 'المقاس', values: ['S', 'M', 'L'] }];
+    });
 
     const addOption = () => {
         if (options.length < 3) {
@@ -38,33 +58,55 @@ const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }
     };
 
     useEffect(() => {
+        // This effect runs when options UI is changed by the user.
+        // It regenerates the variants list, preserving data from existing variants.
         if (options.length === 0 || options.some(o => !o.name.trim() || o.values.length === 0)) {
-            setVariants([]);
+            setVariants(prev => prev.length > 0 ? [] : prev); // Clear variants if options are incomplete, prevent re-render if already empty
             return;
         }
     
         const cartesian = (...a: string[][]): string[][] => a.reduce((acc, val) => acc.flatMap(d => val.map(e => [...d, e])), [[]] as any);
     
-        const newVariantsData: AdminVariant[] = cartesian(...options.map(o => o.values)).map((combo, index) => {
-            const optionMap: { [key: string]: string } = {};
-            options.forEach((opt, i) => {
-                 if (opt.name.trim()) {
-                    optionMap[opt.name.trim()] = combo[i];
-                }
+        const newCombinations = cartesian(...options.map(o => o.values));
+    
+        setVariants(prevVariants => {
+            const newVariantsData = newCombinations.map(combo => {
+                const optionMap: { [key: string]: string } = {};
+                options.forEach((opt, i) => {
+                    if (opt.name.trim()) {
+                        optionMap[opt.name.trim()] = combo[i];
+                    }
+                });
+    
+                // Find existing variant in the previous state to preserve its data
+                const existingVariant = prevVariants.find(v => {
+                    // Match based on values, ignoring keys and order.
+                    if (Object.values(v.options).length !== combo.length) return false;
+                    
+                    const sortedExistingValues = Object.values(v.options).sort();
+                    const sortedNewValues = [...combo].sort();
+                    
+                    return JSON.stringify(sortedExistingValues) === JSON.stringify(sortedNewValues);
+                });
+        
+                return {
+                    id: existingVariant?.id || Date.now() + Math.random(),
+                    options: optionMap,
+                    sku: existingVariant?.sku || '',
+                    price: existingVariant?.price || '',
+                    stock: existingVariant?.stock ?? 0,
+                    inventoryHistory: existingVariant?.inventoryHistory || [],
+                };
             });
-    
-            // When options change, variants are regenerated with default values for stability.
-            return {
-                id: index, // Use index for a stable key within this component's lifecycle
-                options: optionMap,
-                sku: '',
-                price: '',
-                stock: 0,
-                inventoryHistory: [],
-            };
+            
+            // Prevent re-render if nothing has structurally changed
+            if (prevVariants.length === newVariantsData.length && 
+                prevVariants.every((v, i) => JSON.stringify(v.options) === JSON.stringify(newVariantsData[i].options))) {
+                return prevVariants;
+            }
+
+            return newVariantsData;
         });
-    
-        setVariants(newVariantsData);
     }, [options, setVariants]);
 
     const updateVariant = (index: number, field: keyof Omit<AdminVariant, 'id' | 'options' | 'inventoryHistory'>, value: string | number) => {
