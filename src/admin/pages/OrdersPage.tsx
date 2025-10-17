@@ -148,7 +148,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ navigate, orders, onStatusChang
                 </div>
 
                  {selectedOrders.length > 0 && (
-                    <div className="bg-admin-accent/10 p-3 rounded-lg flex items-center justify-between animate-fade-in">
+                    <div className="bg-admin-accent/10 p-3 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
                         <p className="font-semibold text-sm text-admin-accent">{selectedOrders.length} طلبات محددة</p>
                         <div className="flex items-center gap-2">
                             <label className="text-sm font-semibold text-admin-accent">تغيير الحالة إلى:</label>

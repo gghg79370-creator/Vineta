@@ -1,9 +1,8 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
 import { CollectionProductCard } from '../components/product/CollectionProductCard';
-import { GridViewIcon, FilterIcon, Bars3Icon, ChevronDownIcon, ChevronRightIcon } from '../components/icons';
+import { FilterSlidersIcon, ChevronRightIcon } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { useQuery } from '../hooks/useQuery';
 import { ProductCardSkeleton } from '../components/ui/ProductCardSkeleton';
@@ -14,9 +13,11 @@ interface SearchPageProps {
     addToCart: (product: Product) => void;
     openQuickView: (product: Product) => void;
     setIsFilterOpen: (isOpen: boolean) => void;
+    filters: Filters;
+    setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
-const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: SearchPageProps) => {
+const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filters }: SearchPageProps) => {
     const { state, dispatch } = useAppState();
     const { compareList, wishlist, currentUser } = state;
     const addToast = useToast();
@@ -25,19 +26,47 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: S
     const searchTerm = query.get('q') || '';
 
     const [isLoading, setIsLoading] = useState(true);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [sortBy, setSortBy] = useState('relevance');
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 12;
 
+    const appliedFiltersCount = useMemo(() => {
+        const { brands, colors, sizes, priceRange, rating, onSale, materials, categories } = filters;
+        return [
+            brands.length > 0,
+            colors.length > 0,
+            sizes.length > 0,
+            priceRange.min > 0 || priceRange.max < 1000,
+            rating > 0,
+            onSale,
+            materials.length > 0,
+            categories.length > 0
+        ].filter(Boolean).length;
+    }, [filters]);
+
     const filteredAndSortedProducts = useMemo(() => {
         if (!searchTerm) return [];
 
-        let products = allProducts.filter(p => 
-            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            p.brand?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        let products = allProducts.filter(p => {
+            const searchTermMatch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                p.brand?.toLowerCase().includes(searchTerm.toLowerCase());
+            if (!searchTermMatch) return false;
+
+            // Apply global filters
+            const brandMatch = filters.brands.length === 0 || (p.brand && filters.brands.includes(p.brand));
+            const colorMatch = filters.colors.length === 0 || p.colors.some(c => filters.colors.includes(c));
+            const sizeMatch = filters.sizes.length === 0 || p.sizes.some(s => filters.sizes.includes(s));
+            const priceMatch = parseFloat(p.price) >= filters.priceRange.min && parseFloat(p.price) <= filters.priceRange.max;
+            const saleMatch = !filters.onSale || !!p.oldPrice;
+            const ratingMatch = !filters.rating || (p.rating && p.rating >= filters.rating);
+            const materialMatch = filters.materials.length === 0 || filters.materials.some(m => p.tags.includes(m));
+            const categoryMatch = filters.categories.length === 0 || filters.categories.some(cat => {
+                if (cat === 'accessories') return p.tags.includes('إكسسوارات');
+                return p.category === cat;
+            });
+             return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch && categoryMatch;
+        });
 
         switch (sortBy) {
             case 'price-asc':
@@ -63,13 +92,13 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: S
         }
 
         return products;
-    }, [searchTerm, sortBy]);
+    }, [searchTerm, sortBy, filters]);
     
     useEffect(() => {
         setIsLoading(true);
         const timer = setTimeout(() => setIsLoading(false), 500);
         return () => clearTimeout(timer);
-    }, [searchTerm]);
+    }, [searchTerm, filters]);
 
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -113,6 +142,11 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen }: S
                         تم العثور على {filteredAndSortedProducts.length} منتج
                     </p>
                     <div className="flex items-center gap-2 w-full md:w-auto">
+                        <button onClick={() => setIsFilterOpen(true)} className="relative flex items-center gap-2 bg-white border border-brand-border rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:bg-gray-50">
+                            <span>تصفية</span>
+                            <FilterSlidersIcon className="w-5 h-5"/>
+                            {appliedFiltersCount > 0 && <span className="absolute -top-2 -right-2 bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">{appliedFiltersCount}</span>}
+                        </button>
                         <select 
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}

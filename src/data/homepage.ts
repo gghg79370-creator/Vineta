@@ -1,5 +1,3 @@
-
-
 import { HeroSlide } from '../types';
 
 export const heroSlidesData: HeroSlide[] = [

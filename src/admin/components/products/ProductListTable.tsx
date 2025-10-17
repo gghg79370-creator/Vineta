@@ -1,6 +1,6 @@
 import React from 'react';
 import { AdminProduct } from '../../data/adminData';
-import { PencilIcon, TrashIcon, FireIcon } from '../../../components/icons';
+import { PencilIcon, TrashIcon, FireIcon, DocumentDuplicateIcon } from '../../../components/icons';
 
 interface ProductListTableProps {
     products: AdminProduct[];
@@ -9,9 +9,10 @@ interface ProductListTableProps {
     onSelectOne: (productId: number) => void;
     onEdit: (product: AdminProduct) => void;
     onDelete: (product: AdminProduct) => void;
+    onDuplicate: (product: AdminProduct) => void;
 }
 
-export const ProductListTable: React.FC<ProductListTableProps> = ({ products, selectedProducts, onSelectAll, onSelectOne, onEdit, onDelete }) => {
+export const ProductListTable: React.FC<ProductListTableProps> = ({ products, selectedProducts, onSelectAll, onSelectOne, onEdit, onDelete, onDuplicate }) => {
 
     const getStatusClasses = (status: string) => {
         switch (status) {
@@ -80,6 +81,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    <button onClick={() => onDuplicate(product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Duplicate ${product.name}`}><DocumentDuplicateIcon size="sm"/></button>
                                     <button onClick={() => onEdit(product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}><PencilIcon size="sm"/></button>
                                     <button onClick={() => onDelete(product)} className="text-gray-400 hover:text-red-500 p-1" aria-label={`Delete ${product.name}`}><TrashIcon size="sm"/></button>
                                 </div>
@@ -92,7 +94,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto -mx-5">
                 <table className="w-full text-sm text-right">
-                    <thead className="bg-gray-50 text-gray-500">
+                    <thead className="bg-gray-50 text-admin-text-secondary">
                         <tr>
                             <th className="p-4 w-4">
                                 <input 
@@ -110,11 +112,11 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                             <th className="p-4 font-semibold text-right">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200/80">
+                    <tbody className="divide-y divide-admin-border">
                         {products.map(product => {
                             const { totalStock, statusText, statusClass } = getStockInfo(product);
                             return (
-                                <tr key={product.id} className={`hover:bg-gray-50 ${selectedProducts.includes(product.id) ? 'bg-admin-accent/5' : ''}`}>
+                                <tr key={product.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800/20 ${selectedProducts.includes(product.id) ? 'bg-admin-accent/5' : ''}`}>
                                     <td className="p-4">
                                         <input 
                                             type="checkbox" 
@@ -127,23 +129,23 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                         <div className="flex items-center gap-3">
                                             <img src={product.image} alt={product.name} className="w-12 h-14 object-cover rounded-md"/>
                                             <div>
-                                                <span className="font-semibold text-gray-800">{product.name}</span>
-                                                <p className="text-xs text-gray-500">{product.price} ج.م</p>
+                                                <span className="font-semibold text-admin-text-primary">{product.name}</span>
+                                                <p className="text-xs text-admin-text-secondary">{product.price} ج.م</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-gray-500">{product.sku}</td>
+                                    <td className="p-4 text-admin-text-secondary">{product.sku}</td>
                                     <td className="p-4">
                                         <div className="flex flex-col items-start gap-1">
-                                            <span className="font-bold text-gray-800">{totalStock} <span className="font-normal text-gray-500">في المخزن</span></span>
+                                            <span className="font-bold text-admin-text-primary">{totalStock} <span className="font-normal text-admin-text-secondary">في المخزن</span></span>
                                             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusClass}`}>
                                                 {statusText}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-gray-500">
+                                    <td className="p-4 text-admin-text-secondary">
                                         {product.unitsSold ? (
-                                            <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                            <div className="flex items-center gap-1.5 font-semibold text-admin-text-primary">
                                                 {product.unitsSold > 100 && <FireIcon size="sm" className="text-orange-500" />}
                                                 <span>{product.unitsSold}</span>
                                             </div>
@@ -158,6 +160,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
+                                            <button onClick={() => onDuplicate(product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Duplicate ${product.name}`}><DocumentDuplicateIcon size="sm"/></button>
                                             <button onClick={() => onEdit(product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}><PencilIcon size="sm"/></button>
                                             <button onClick={() => onDelete(product)} className="text-gray-400 hover:text-red-500 p-1" aria-label={`Delete ${product.name}`}><TrashIcon size="sm"/></button>
                                         </div>

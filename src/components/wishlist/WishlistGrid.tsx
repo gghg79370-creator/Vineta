@@ -93,15 +93,23 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
 
 
     const handleBulkAddToCart = () => {
-        selectedIds.forEach(id => {
-            const product = wishlistItems.find(p => p.id === id);
-            if (product) {
+        const productsToAdd = selectedIds.map(id => wishlistItems.find(p => p.id === id)).filter((p): p is Product => !!p);
+        const simpleProducts = productsToAdd.filter(p => !p.variants || p.variants.length === 0);
+        const variantProducts = productsToAdd.filter(p => p.variants && p.variants.length > 0);
+    
+        if (simpleProducts.length > 0) {
+            simpleProducts.forEach(product => {
                 dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedSize: product.sizes[0], selectedColor: product.colors[0] } });
-                dispatch({ type: 'TOGGLE_WISHLIST', payload: id });
-            }
-        });
-        addToast(`${selectedIds.length} ${selectedIds.length > 1 ? 'منتجات' : 'منتج'} تم نقلها إلى السلة.`, 'success');
-        setSelectedIds([]);
+                dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id });
+            });
+            addToast(`${simpleProducts.length} ${simpleProducts.length > 1 ? 'منتجات' : 'منتج'} تم نقلها إلى السلة.`, 'success');
+        }
+    
+        if (variantProducts.length > 0) {
+            addToast(`يرجى الانتقال لصفحة المنتج لاختيار الخيارات لـ ${variantProducts.length} ${variantProducts.length > 1 ? 'منتجات' : 'منتج'}.`, 'info');
+        }
+    
+        setSelectedIds(prev => prev.filter(id => !simpleProducts.some(p => p.id === id)));
     };
     
     const handleBulkAddToCompare = () => {
@@ -128,8 +136,12 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
     };
 
     const handleAddToCart = (product: Product) => {
-        dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedSize: product.sizes[0], selectedColor: product.colors[0] } });
-        addToast(`${product.name} أضيف إلى السلة!`, 'success');
+        if (product.variants && product.variants.length > 0) {
+            navigateTo('product', product);
+        } else {
+            dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedSize: product.sizes[0], selectedColor: product.colors[0] } });
+            addToast(`${product.name} أضيف إلى السلة!`, 'success');
+        }
     };
 
     return (

@@ -234,7 +234,7 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
 
     const OrdersContent = () => {
         const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-        const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+        const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
     
         const toggleOrder = (orderId: string) => {
             setExpandedOrderId(prevId => (prevId === orderId ? null : orderId));
@@ -254,21 +254,9 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
                     </div>
                 </div>
                 {ordersData.length > 0 ? (
-                    viewMode === 'list' ? (
-                        <div className="space-y-4">
-                            {ordersData.map(order => (
-                                <OrderCard 
-                                    key={order.id}
-                                    order={order} 
-                                    isExpanded={expandedOrderId === order.id}
-                                    onToggle={() => toggleOrder(order.id)}
-                                    navigateTo={navigateTo}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {ordersData.map(order => (
+                    <>
+                        <div className="space-y-4 md:hidden">
+                             {ordersData.map(order => (
                                 <OrderGridCard 
                                     key={order.id}
                                     order={order}
@@ -277,7 +265,33 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
                                 />
                             ))}
                         </div>
-                    )
+                        <div className="hidden md:block">
+                            {viewMode === 'list' ? (
+                                <div className="space-y-4">
+                                    {ordersData.map(order => (
+                                        <OrderCard 
+                                            key={order.id}
+                                            order={order} 
+                                            isExpanded={expandedOrderId === order.id}
+                                            onToggle={() => toggleOrder(order.id)}
+                                            navigateTo={navigateTo}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {ordersData.map(order => (
+                                        <OrderGridCard 
+                                            key={order.id}
+                                            order={order}
+                                            isExpanded={expandedOrderId === order.id}
+                                            onToggle={() => toggleOrder(order.id)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <div className="text-center py-16 bg-brand-subtle rounded-lg">
                         <ShoppingBagIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />

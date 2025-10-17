@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { CartItem, Product, Address, Order } from '../types';
-import { CheckIcon, CouponIcon, MapPinIcon } from '../components/icons';
+import { CheckIcon, CouponIcon, MapPinIcon, PlusIcon, CheckCircleIcon, LockClosedIcon } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { allProducts } from '../data/products';
 import Spinner from '../components/ui/Spinner';
@@ -185,23 +185,28 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
     };
 
     const AddressSelector: React.FC<{ addresses: Address[], selectedId: number | 'new', onSelect: (id: number | 'new') => void }> = ({ addresses, selectedId, onSelect }) => (
-        <div className="space-y-3">
-            {addresses.map(address => (
-                 <div key={address.id} onClick={() => onSelect(address.id)} className={`border p-4 rounded-lg cursor-pointer transition-all ${selectedId === address.id ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`}>
-                    <label className="font-semibold flex items-center gap-3 cursor-pointer">
-                        <input type="radio" name="shippingAddress" value={address.id} checked={selectedId === address.id} onChange={() => onSelect(address.id)} className="h-4 w-4 text-brand-primary focus:ring-brand-primary"/> 
-                         <div className="flex-1">
-                             <p className="font-bold">{address.name} <span className="text-xs font-normal text-gray-500">({address.recipientName})</span></p>
-                             <p className="text-sm text-gray-600 mt-1">{`${address.street}, ${address.city}`}</p>
-                         </div>
-                    </label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {addresses.map(address => {
+                const isSelected = selectedId === address.id;
+                return (
+                     <div key={address.id} onClick={() => onSelect(address.id)} className={`relative border p-4 rounded-lg cursor-pointer transition-all ${isSelected ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`}>
+                        {address.isDefault && <div className="absolute top-2 left-2 text-xs bg-brand-primary text-white font-semibold px-2 py-0.5 rounded-full">افتراضي</div>}
+                        {isSelected && <div className="absolute top-2 right-2 text-brand-primary"><CheckCircleIcon /></div>}
+                        <div className="flex items-start gap-3">
+                            <MapPinIcon className="w-6 h-6 text-gray-400 mt-1"/>
+                            <div className="flex-1">
+                                <p className="font-bold">{address.name} <span className="text-xs font-normal text-gray-500">({address.recipientName})</span></p>
+                                <p className="text-sm text-gray-600 mt-1">{`${address.street}, ${address.city}`}</p>
+                            </div>
+                        </div>
+                    </div>
+                )
+            })}
+            <div onClick={() => onSelect('new')} className={`border-2 border-dashed p-4 rounded-lg cursor-pointer transition-all flex items-center justify-center text-gray-500 hover:border-brand-primary hover:text-brand-primary ${selectedId === 'new' ? 'border-brand-primary text-brand-primary ring-2 ring-brand-primary/50' : 'border-gray-300'}`}>
+                <div className="text-center">
+                    <PlusIcon className="w-8 h-8 mx-auto"/>
+                    <p className="font-semibold mt-2">إضافة عنوان جديد</p>
                 </div>
-            ))}
-             <div onClick={() => onSelect('new')} className={`border p-4 rounded-lg cursor-pointer transition-all ${selectedId === 'new' ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`}>
-                <label className="font-semibold flex items-center gap-3 cursor-pointer">
-                    <input type="radio" name="shippingAddress" value="new" checked={selectedId === 'new'} onChange={() => onSelect('new')} className="h-4 w-4 text-brand-primary focus:ring-brand-primary"/> 
-                    استخدام عنوان جديد
-                </label>
             </div>
         </div>
     );

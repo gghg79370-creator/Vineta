@@ -4,9 +4,10 @@ import { TrashIcon } from '../../../components/icons';
 
 interface MessageDetailViewProps {
     message: AdminMessage | null;
+    onDelete: (messageId: number) => void;
 }
 
-const MessageDetailView: React.FC<MessageDetailViewProps> = ({ message }) => {
+const MessageDetailView: React.FC<MessageDetailViewProps> = ({ message, onDelete }) => {
     if (!message) {
         return (
             <div className="h-full flex items-center justify-center text-gray-500 p-6">
@@ -32,7 +33,7 @@ const MessageDetailView: React.FC<MessageDetailViewProps> = ({ message }) => {
                 </div>
                 <div className="text-right flex-shrink-0">
                      <p className="text-sm text-gray-500">{message.date}</p>
-                     <button className="text-gray-400 hover:text-red-500 mt-2"><TrashIcon size="sm"/></button>
+                     <button onClick={() => onDelete(message.id)} className="text-gray-400 hover:text-red-500 mt-2"><TrashIcon size="sm"/></button>
                 </div>
             </div>
             <div className="py-6 text-gray-700 leading-relaxed whitespace-pre-wrap">

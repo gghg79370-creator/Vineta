@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Product, Review, Variant } from '../types';
-import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, FireIcon, LockClosedIcon, TruckIcon, PackageIcon, CloseIcon, ChevronLeftIcon } from '../components/icons';
-import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
-import { allProducts } from '../data/products';
-import { SizeGuideModal } from '../components/modals/SizeGuideModal';
-import { useAppState } from '../state/AppState';
-import { useToast } from '../hooks/useToast';
-import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
-import { WriteReviewModal } from '../components/modals/WriteReviewModal';
-import { useCountdown } from '../hooks/useCountdown';
-import { FrequentlyBoughtTogether } from '../components/product/FrequentlyBoughtTogether';
-import { ReviewsSection } from '../components/product/ReviewsSection';
-import { ImageGallery } from '../components/product/ImageGallery';
+import { Product, Review, Variant } from '../../types';
+import { StarIcon, MinusIcon, PlusIcon, HeartIcon, CompareIcon, QuestionIcon, ShareIcon, ChevronDownIcon, FireIcon, LockClosedIcon, TruckIcon, PackageIcon, CloseIcon, ChevronLeftIcon } from '../icons';
+import { TrendingProductsSection } from '../product/TrendingProductsSection';
+import { allProducts } from '../../data/products';
+import { SizeGuideModal } from '../modals/SizeGuideModal';
+import { useAppState } from '../../state/AppState';
+import { useToast } from '../../hooks/useToast';
+import { RecentlyViewedSection } from '../product/RecentlyViewedSection';
+import { WriteReviewModal } from '../modals/WriteReviewModal';
+import { useCountdown } from '../../hooks/useCountdown';
+import { FrequentlyBoughtTogether } from '../product/FrequentlyBoughtTogether';
+import { ReviewsSection } from '../product/ReviewsSection';
+import { ImageGallery } from '../product/ImageGallery';
 
 interface ProductDetailPageProps {
     product: Product;
@@ -48,7 +48,7 @@ const AccordionItem: React.FC<{ title: string; children: React.ReactNode; defaul
 
 
 // Sticky Add to Cart for Mobile
-const StickyActions = ({ product, selectedVariant, quantity, onAddToCart, onQuantityChange, onVariantChange, isVisible, disabled }: { product: Product, selectedVariant: Variant | null, quantity: number, onAddToCart: () => void, onQuantityChange: (newQuantity: number) => void, onVariantChange: (variantId: number) => void, isVisible: boolean, disabled: boolean }) => {
+const StickyActions = ({ product, selectedVariant, quantity, onAddToCart, onQuantityChange, onVariantChange, isVisible }: { product: Product, selectedVariant: Variant | null, quantity: number, onAddToCart: () => void, onQuantityChange: (newQuantity: number) => void, onVariantChange: (variantId: number) => void, isVisible: boolean }) => {
     if (!isVisible) return null;
     
     const allVariants = useMemo(() => product.variants || [], [product.variants]);
@@ -76,7 +76,7 @@ const StickyActions = ({ product, selectedVariant, quantity, onAddToCart, onQuan
                     <span className="font-bold px-1 text-sm">{quantity}</span>
                     <button onClick={() => onQuantityChange(quantity + 1)} className="p-3 text-brand-text-light"><PlusIcon size="sm"/></button>
                 </div>
-                <button onClick={onAddToCart} disabled={disabled} className="flex-1 bg-brand-dark text-white font-bold py-3 px-4 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <button onClick={onAddToCart} className="flex-1 bg-brand-dark text-white font-bold py-3 px-4 rounded-full text-sm">
                     أضف للسلة
                 </button>
             </div>
@@ -262,26 +262,14 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         <div className="flex items-center gap-4 mb-5"><span className="text-4xl font-extrabold text-brand-primary">{displayPrice} ج.م</span>{displayOldPrice && <><span className="text-2xl text-brand-text-light line-through">{displayOldPrice} ج.م</span><span className="text-sm font-bold bg-brand-sale text-white px-3 py-1 rounded-md">{discountPercent}% OFF</span></>}</div>
                         
                         <div className="my-6 space-y-2 border-t pt-6">
-                            {stockCount !== undefined && stockCount === 0 ? (
-                                <p className="font-bold text-brand-sale">هذا الخيار غير متوفر في المخزون حاليًا.</p>
-                            ) : (
-                                <div className="flex items-center gap-3 text-sm">
-                                    <span className={`px-2.5 py-1 rounded-md font-bold text-sm bg-green-100 text-green-700`}>متوفر</span>
-                                    {product.soldIn24h && (
-                                        <span className="flex items-center gap-1.5 text-brand-text-light font-semibold">
-                                            <FireIcon size="sm" className="text-orange-500"/> {product.soldIn24h} بيعت في آخر 24 ساعة
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                            {stockCount !== undefined && stockCount > 0 && stockCount <= 10 && (
-                                <>
-                                    <p className="text-sm font-bold text-brand-sale pt-2">سارع! تبقى فقط {stockCount} قطع!</p>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div className="bg-gradient-to-r from-orange-400 to-red-500 h-2 rounded-full" style={{width: `${stockProgress}%`}}></div>
-                                    </div>
-                                </>
-                            )}
+                            <div className="flex items-center gap-3 text-sm">
+                                <span className={`px-2.5 py-1 rounded-md font-bold text-sm ${stockCount && stockCount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{stockCount && stockCount > 0 ? 'متوفر' : 'نفد المخزون'}</span>
+                                {product.soldIn24h && <span className="flex items-center gap-1.5 text-brand-text-light font-semibold"><FireIcon size="sm" className="text-orange-500"/> {product.soldIn24h} بيعت في آخر 24 ساعة</span>}
+                            </div>
+                            {stockCount !== undefined && stockCount > 0 && stockCount <= 10 && <>
+                                <p className="text-sm font-bold text-brand-sale pt-2">سارع! تبقى فقط {stockCount} قطع!</p>
+                                <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-gradient-to-r from-orange-400 to-red-500 h-2 rounded-full" style={{width: `${stockProgress}%`}}></div></div>
+                            </>}
                         </div>
 
                         <div className="mb-5"><label className="font-bold text-brand-dark mb-3 block">اللون: <span className="font-normal text-brand-text-light">{selectedColor}</span></label><div className="flex items-center gap-3">{product.colors.map(color => (<button key={color} onClick={() => handleSelectColor(color)} className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent hover:border-gray-300'}`}><span className="w-8 h-8 rounded-full border border-black/10" style={{backgroundColor: color}}></span></button>))}</div></div>
@@ -313,7 +301,7 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
             
             <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} product={product} />
             <WriteReviewModal isOpen={isReviewModalOpen} onClose={() => setIsReviewModalOpen(false)} productName={product.name} />
-            <StickyActions isVisible={isStickyBarVisible} product={product} selectedVariant={selectedVariant} quantity={quantity} onAddToCart={handleAddToCart} onQuantityChange={(q) => setQuantity(Math.max(1, q))} onVariantChange={handleStickyVariantChange} disabled={stockCount === 0} />
+            <StickyActions isVisible={isStickyBarVisible} product={product} selectedVariant={selectedVariant} quantity={quantity} onAddToCart={handleAddToCart} onQuantityChange={(q) => setQuantity(Math.max(1, q))} onVariantChange={handleStickyVariantChange}/>
         </div>
     );
 };

@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { Product } from '../../types';
 import { ProductCard } from './ProductCard';
@@ -19,8 +20,6 @@ export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = (prop
     const { title } = props;
     const { state } = useAppState();
     const { recentlyViewed, compareList, wishlist } = state;
-    // FIX: The 'wishlistItems' prop expects an array of numbers (product IDs), not an array of WishlistItem objects.
-    // We map the wishlist state to an array of IDs.
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
 
     const recentlyViewedProducts = useMemo(() => {

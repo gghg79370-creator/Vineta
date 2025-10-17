@@ -23,6 +23,7 @@ import ReviewsPage from './pages/ReviewsPage';
 import ThemeSettingsPage from './pages/ThemeSettingsPage';
 import SaleCampaignsPage from './pages/SaleCampaignsPage';
 import AddSaleCampaignPage from './pages/AddSaleCampaignPage';
+import SubscribersPage from './pages/SubscribersPage';
 
 import { 
     allAdminProducts, 
@@ -38,7 +39,8 @@ import {
     AdminDiscount,
     AdminBlogPost,
     AdminCategory,
-    AdminVariant
+    AdminVariant,
+    allAdminSubscribers,
 } from './data/adminData';
 
 
@@ -56,13 +58,29 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
     const [activePage, setActivePage] = useState('dashboard');
     const [pageData, setPageData] = useState<any>(null);
     
+    // Sidebar State
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For mobile
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // For desktop
+
     const [products, setProducts] = useState(allAdminProducts);
     const [orders, setOrders] = useState(allAdminOrders);
     const [customers, setCustomers] = useState(allAdminCustomers);
     const [discounts, setDiscounts] = useState(allAdminDiscounts);
     const [blogPosts, setBlogPosts] = useState(allAdminBlogPosts);
     const [categories, setCategories] = useState(allAdminCategories);
+    const [subscribers, setSubscribers] = useState(allAdminSubscribers);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+
+    const [setupTasks, setSetupTasks] = useState([
+        { id: 'addProduct', text: 'أضف منتجك الأول', completed: false, link: 'addProduct' },
+        { id: 'customizeTheme', text: 'تخصيص مظهر متجرك', completed: false, link: 'theme' },
+        { id: 'addDiscount', text: 'إنشاء خصم', completed: false, link: 'addDiscount' },
+        { id: 'setupPayment', text: 'إعداد طرق الدفع', completed: false, link: 'settings' },
+    ]);
+    
+    const handleToggleSetupTask = (taskId: string, isCompleted: boolean) => {
+        setSetupTasks(prev => prev.map(task => task.id === taskId ? { ...task, completed: isCompleted } : task));
+    };
 
     // Simulate real-time events for notifications
     useEffect(() => {
@@ -167,8 +185,22 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
         ));
     };
     
+    const handleDuplicateProduct = (productToDuplicate: AdminProduct) => {
+        const newProduct = {
+            ...productToDuplicate,
+            id: Date.now(), // new unique ID
+            name: `نسخة من ${productToDuplicate.name}`,
+            status: 'Draft' as 'Draft',
+        };
+        setProducts(prev => [newProduct, ...prev]);
+    };
+
     const handleStatusChange = (orderId: string, newStatus: AdminOrder['status']) => {
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    };
+
+    const handleSaveOrderNote = (orderId: string, note: string) => {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, notes: note } : o));
     };
     
     const handleSaveCustomer = (customer: AdminCustomer) => {
@@ -259,10 +291,10 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
     const renderPage = () => {
         switch (activePage) {
             // Dashboard
-            case 'dashboard': return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} />;
+            case 'dashboard': return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
             
             // Catalog
-            case 'products': return <ProductsPage navigate={navigate} products={products} onDeleteProducts={handleDeleteProducts} onPublishProducts={handlePublishProducts} />;
+            case 'products': return <ProductsPage navigate={navigate} products={products} onDeleteProducts={handleDeleteProducts} onPublishProducts={handlePublishProducts} onDuplicateProduct={handleDuplicateProduct} />;
             case 'addProduct': return <AddProductPage navigate={navigate} onSave={handleSaveProduct} />;
             case 'editProduct': return <AddProductPage navigate={navigate} onSave={handleSaveProduct} productToEdit={pageData} />;
             case 'categories': return <CategoriesPage navigate={navigate} categories={categories} products={products} onDeleteCategory={handleDeleteCategory} onSaveCategory={handleSaveCategory} />;
@@ -273,7 +305,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
 
             // Sales
             case 'orders': return <OrdersPage navigate={navigate} orders={orders} onStatusChange={handleStatusChange} />;
-            case 'orderDetail': return <OrderDetailPage navigate={navigate} order={pageData} customers={customers} onStatusChange={handleStatusChange} products={products} />;
+            case 'orderDetail': return <OrderDetailPage navigate={navigate} order={pageData} customers={customers} onStatusChange={handleStatusChange} products={products} onNoteSave={handleSaveOrderNote} />;
             case 'discounts': return <DiscountsPage discounts={discounts} navigate={navigate} onDeleteDiscounts={handleDeleteDiscounts} />;
             case 'addDiscount': return <AddDiscountPage navigate={navigate} onSave={handleSaveDiscount} />;
             case 'editDiscount': return <AddDiscountPage navigate={navigate} onSave={handleSaveDiscount} discountToEdit={pageData} />;
@@ -299,7 +331,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
             case 'saleCampaigns': return <SaleCampaignsPage navigate={navigate} campaigns={saleCampaigns} onDelete={handleDeleteSaleCampaign} />;
             case 'addSaleCampaign': return <AddSaleCampaignPage navigate={navigate} onSave={handleSaveSaleCampaign} />;
             case 'editSaleCampaign': return <AddSaleCampaignPage navigate={navigate} onSave={handleSaveSaleCampaign} campaignToEdit={pageData} />;
-
+            case 'subscribers': return <SubscribersPage subscribers={subscribers} />;
             
             // Online Store
             case 'theme': return <ThemeSettingsPage heroSlides={heroSlides} setHeroSlides={setHeroSlides} announcements={appAnnouncements} onAnnouncementsUpdate={setAppAnnouncements} />;
@@ -312,7 +344,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
             case 'messages': return <ContactMessagesPage />;
             case 'settings': return <SettingsPage />;
 
-            default: return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser}/>;
+            default: return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
         }
     };
 
@@ -325,6 +357,10 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
             onMarkAsRead={handleMarkAsRead}
             onMarkAllAsRead={handleMarkAllAsRead}
             onClearAll={handleClearAll}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+            isSidebarCollapsed={isSidebarCollapsed}
+            setIsSidebarCollapsed={setIsSidebarCollapsed}
         >
             {renderPage()}
         </AdminLayout>

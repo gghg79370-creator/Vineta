@@ -1,6 +1,4 @@
-
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { User, Notification } from '../../../types';
 import { Sidebar } from './Sidebar';
 import { AdminHeader } from './AdminHeader';
@@ -53,10 +51,17 @@ interface AdminLayoutProps {
     onMarkAsRead: (id: number) => void;
     onMarkAllAsRead: () => void;
     onClearAll: () => void;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (isOpen: boolean) => void;
+    isSidebarCollapsed: boolean;
+    setIsSidebarCollapsed: (isCollapsed: boolean | ((prevState: boolean) => boolean)) => void;
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentUser, activePage, setActivePage, notifications, onMarkAsRead, onMarkAllAsRead, onClearAll }) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export const AdminLayout: React.FC<AdminLayoutProps> = ({ 
+    children, currentUser, activePage, setActivePage, 
+    notifications, onMarkAsRead, onMarkAllAsRead, onClearAll,
+    isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed
+}) => {
 
     const breadcrumbs = useMemo(() => {
       const trail: { page: string; label: string }[] = [];
@@ -74,8 +79,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentUser,
       return trail;
     }, [activePage]);
     
-    const currentPageLabel = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : '';
-
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey || e.metaKey) { // Meta for Mac
@@ -114,14 +117,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentUser,
             <Sidebar 
                 isOpen={isSidebarOpen}
                 setIsOpen={setIsSidebarOpen}
+                isCollapsed={isSidebarCollapsed}
+                setIsCollapsed={setIsSidebarCollapsed}
                 activePage={activePage}
                 setActivePage={setActivePage}
             />
-            <div className={`flex-1 flex flex-col transition-all duration-300 md:mr-64`}>
+            <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'md:mr-20' : 'md:mr-64'}`}>
                 <AdminHeader 
                     currentUser={currentUser} 
                     toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
-                    currentPageLabel={currentPageLabel}
                     notifications={notifications}
                     onMarkAsRead={onMarkAsRead}
                     onMarkAllAsRead={onMarkAllAsRead}

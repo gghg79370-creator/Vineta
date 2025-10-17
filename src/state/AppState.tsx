@@ -1,6 +1,5 @@
-import React, { createContext, useReducer, useContext, useMemo } from 'react';
-import { User, Product, Toast, TodoItem, WishlistItem, Address, Coupon } from '../types';
-import { cartItemsData } from '../data/cart';
+import React, { createContext, useReducer, useContext, useMemo, useEffect } from 'react';
+import { User, Product, Toast, TodoItem, WishlistItem, Address, Coupon, ThemeState } from '../types';
 import { allProducts } from '../data/products';
 
 // Types
@@ -9,13 +8,6 @@ interface CartDetail {
     quantity: number;
     selectedSize: string;
     selectedColor: string;
-}
-
-interface ThemeState {
-    primaryColor: string;
-    fontFamily: string;
-    logoUrl: string | null;
-    siteName: string;
 }
 
 interface State {
@@ -30,7 +22,7 @@ interface State {
     giftWrap: boolean;
     orderNote: string;
     theme: ThemeState;
-    themeMode: 'light' | 'dark';
+    themeMode: 'light' | 'dark' | 'system';
 }
 
 type Action =
@@ -61,7 +53,7 @@ type Action =
     | { type: 'SET_GIFT_WRAP'; payload: boolean }
     | { type: 'SET_ORDER_NOTE'; payload: string }
     | { type: 'SET_THEME'; payload: ThemeState }
-    | { type: 'SET_THEME_MODE'; payload: 'light' | 'dark' };
+    | { type: 'SET_THEME_MODE'; payload: 'light' | 'dark' | 'system' };
 
 
 // Reducer
@@ -230,29 +222,34 @@ const appReducer = (state: State, action: Action): State => {
     }
 };
 
-const getInitialThemeMode = (): 'light' | 'dark' => {
+const getInitialThemeMode = (): 'light' | 'dark' | 'system' => {
     try {
         const storedTheme = localStorage.getItem('themeMode');
-        if (storedTheme === 'light' || storedTheme === 'dark') {
-            return storedTheme;
-        }
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
+        if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+            return storedTheme as 'light' | 'dark' | 'system';
         }
     } catch (e) {
-        // Can fail in SSR or restricted environments
+        console.error("Could not load theme from localStorage", e);
     }
-    return 'light';
+    return 'system';
 };
 
 
 // Initial State
-const initialCartDetails = cartItemsData.map(item => ({
-    id: item.id,
-    quantity: item.quantity,
-    selectedSize: item.selectedSize,
-    selectedColor: item.selectedColor,
-}));
+const getInitialCart = (): CartDetail[] => {
+    try {
+        const savedCart = localStorage.getItem('vinetaCart');
+        if (savedCart) {
+            const parsedCart = JSON.parse(savedCart);
+            if (Array.isArray(parsedCart)) {
+                return parsedCart;
+            }
+        }
+    } catch (error) {
+        console.error("Could not load cart from localStorage", error);
+    }
+    return [];
+};
 
 const initialState: State = {
     currentUser: { 
@@ -267,7 +264,7 @@ const initialState: State = {
             { id: 2, type: 'الفوترة', name: 'العمل', recipientName: 'فينيتا فام', street: '456 شارع رئيسي', city: 'الجيزة', postalCode: '12511', country: 'مصر', isDefault: false },
         ]
     },
-    cart: initialCartDetails,
+    cart: getInitialCart(),
     wishlist: [
         { id: allProducts[2].id, note: 'هدية عيد ميلاد' },
         { id: allProducts[5].id, note: '' }
@@ -288,6 +285,7 @@ const initialState: State = {
         fontFamily: "'Poppins', 'Tajawal', sans-serif",
         logoUrl: null,
         siteName: 'Vineta',
+        chatbotWelcomeMessage: 'أهلاً بك في {siteName}! أنا Vinnie، مساعدك الشخصي في عالم الموضة. كيف يمكنني المساعدة؟',
     },
     themeMode: getInitialThemeMode(),
 };
@@ -304,6 +302,14 @@ const AppStateContext = createContext<{
 
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialState);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('vinetaCart', JSON.stringify(state.cart));
+        } catch (error) {
+            console.error("Could not save cart to localStorage", error);
+        }
+    }, [state.cart]);
 
     const cartCount = useMemo(() => {
         return state.cart.reduce((acc, item) => acc + item.quantity, 0);

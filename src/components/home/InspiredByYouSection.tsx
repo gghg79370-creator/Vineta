@@ -44,16 +44,16 @@ const InspiredProductCard: React.FC<{ product: Product, navigateTo: (pageName: s
     return (
         <div className="relative w-full h-full rounded-2xl overflow-hidden group snap-center cursor-pointer" onClick={() => navigateTo('product', product)}>
             <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            <div className="absolute bottom-4 left-4 right-4 bg-white/20 backdrop-blur-md p-3 rounded-xl flex items-center gap-3">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute bottom-4 left-4 right-4 bg-white/40 backdrop-blur-lg p-3 rounded-xl flex items-center gap-3">
                 <button className="bg-white/80 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center hover:bg-white transition-all shadow-md">
                     <EyeIcon size="sm" className="text-brand-dark"/>
                 </button>
                 <div className="text-right flex-1 min-w-0">
-                    <p className="font-bold text-sm text-white truncate">{product.name}</p>
+                    <p className="font-bold text-sm text-white text-shadow truncate">{product.name}</p>
                     <div className="flex items-baseline gap-2 justify-end">
-                        <p className="font-bold text-white text-sm">{product.price} ج.م</p>
-                        {product.oldPrice && <p className="text-gray-300 line-through text-xs">{product.oldPrice} ج.م</p>}
+                        <p className="font-bold text-white text-shadow text-sm">{product.price} ج.م</p>
+                        {product.oldPrice && <p className="text-gray-200 text-shadow line-through text-xs">{product.oldPrice} ج.م</p>}
                     </div>
                 </div>
                 <img src={productThumbnails[product.id]} className="w-12 h-12 rounded-lg object-contain bg-white/80 p-1" alt={product.name} />

@@ -16,6 +16,7 @@ import { AiRecommendationsSection } from '../components/home/AiRecommendationsSe
 import { useToast } from '../hooks/useToast';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
+import { BrandPromiseSection } from '../components/home/BrandPromiseSection';
 
 
 interface HomePageProps {
@@ -99,18 +100,27 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
                 />
             </div>
             
-            <TrendingProductsSection
-                title="المنتجات الرائجة"
-                products={trendingProducts}
-                navigateTo={navigateTo}
-                addToCart={addToCart}
-                openQuickView={openQuickView}
-                addToCompare={addToCompare}
-                toggleWishlist={toggleWishlist}
-            />
+            <div className="bg-white">
+                <TrendingProductsSection
+                    title="المنتجات الرائجة"
+                    products={trendingProducts}
+                    navigateTo={navigateTo}
+                    addToCart={addToCart}
+                    openQuickView={openQuickView}
+                    addToCompare={addToCompare}
+                    toggleWishlist={toggleWishlist}
+                />
+                 <div className="text-center pb-16">
+                    <button onClick={() => navigateTo('shop')} className="bg-white border border-brand-border text-brand-dark font-bold py-3 px-8 rounded-full hover:bg-brand-subtle transition-colors">
+                        عرض كل المنتجات الرائجة
+                    </button>
+                </div>
+            </div>
+
 
             <InspiredByYouSection navigateTo={navigateTo} />
             <TestimonialsSection navigateTo={navigateTo} />
+            <BrandPromiseSection />
             <RecentlyViewedSection
                 title="المنتجات التي تمت مشاهدتها مؤخرًا"
                 navigateTo={navigateTo}

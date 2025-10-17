@@ -72,11 +72,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo, isOpen, setIsOpen, active
                 const productList = allProducts.map(p => `- ${p.name} (ID: ${p.id}, الفئة: ${p.category}, السعر: ${p.price} ج.م, الوسوم: [${p.tags.join(', ')}])`).join('\n');
                 
                 let initialUserMessage = "مرحباً";
-                let welcomeMessage = `أهلاً بك في ${theme.siteName}! أنا Vinnie، مساعدك الشخصي في عالم الموضة. كيف يمكنني أن أجعلك تتألق اليوم؟ ✨`;
+                let welcomeMessage = theme.chatbotWelcomeMessage.replace('{siteName}', theme.siteName);
 
                 if (productContext) {
                     initialUserMessage = `أنا حالياً أنظر إلى منتج: ${productContext.name}.`;
-                    welcomeMessage = `أرى أنك مهتم بـ ${productContext.name}! قطعة رائعة. هل لديك أي أسئلة حولها، أو تود بعض النصائح لتنسيقها؟ styling tips or sizing questions? 😊`;
+                    welcomeMessage = `${welcomeMessage}\n\nأرى أنك مهتم بـ ${productContext.name}! قطعة رائعة. هل لديك أي أسئلة حولها، أو تود بعض النصائح لتنسيقها؟ 😊`;
                 }
 
                 const systemInstruction = `أنت Vinnie، مساعد أزياء ذكي وودود لمتجر إلكتروني يسمى ${theme.siteName}. مهمتك هي مساعدة المستخدمين في العثور على المنتجات، وتقديم نصائح حول الأناقة، والإجابة على الأسئلة. كن دائمًا مهذبًا ومتعاونًا ومختصرًا.
@@ -108,7 +108,7 @@ ${productList}
         if (isOpen && !chat) {
             initializeChat();
         }
-    }, [isOpen, chat, productContext, theme.siteName]);
+    }, [isOpen, chat, productContext, theme.siteName, theme.chatbotWelcomeMessage]);
 
     const handleAiResponse = (responseText: string) => {
         const productRegex = /\*\*(.*?)\*\*/g;
@@ -181,7 +181,7 @@ ${productList}
                             <div key={index} className={`flex items-end gap-2.5 animate-chat-bubble-in ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 {msg.sender === 'ai' && (<div className="w-8 h-8 rounded-full bg-brand-dark flex items-center justify-center flex-shrink-0"><SparklesIcon size="sm" className="text-white"/></div>)}
                                 <div className={`w-full max-w-[85%] rounded-2xl p-3 text-sm shadow-sm ${msg.sender === 'user' ? 'bg-gradient-to-br from-red-400 to-brand-primary text-white rounded-br-none' : 'bg-white text-brand-dark rounded-bl-none'}`}>
-                                    {msg.text && <p className="leading-relaxed">{msg.text}</p>}
+                                    {msg.text && <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
                                     {msg.products && msg.products.map(product => (
                                         <ProductCardInChat 
                                             key={product.id}

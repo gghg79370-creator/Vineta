@@ -65,6 +65,7 @@ export interface Product {
     careInstructions?: string[];
     weight?: number;
     weightUnit?: 'kg' | 'g';
+    viewCount?: number;
 }
 
 export interface SaleCampaign {
@@ -183,4 +184,12 @@ export interface Notification {
   isRead: boolean;
   link?: string;
   data?: any;
+}
+
+export interface ThemeState {
+    primaryColor: string;
+    fontFamily: string;
+    logoUrl: string | null;
+    siteName: string;
+    chatbotWelcomeMessage: string;
 }

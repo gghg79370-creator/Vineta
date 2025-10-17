@@ -1,12 +1,70 @@
-
-
-import React from 'react';
+import React, { useState } from 'react';
 import { KpiCard } from '../components/ui/KpiCard';
 import { AdminOrder, AdminProduct, AdminCustomer } from '../data/adminData';
 import { Card } from '../components/ui/Card';
 import SalesChart from '../components/analytics/SalesChart';
-import { ShoppingBagIcon, StarIcon, CurrencyDollarIcon, UsersIcon, PencilIcon } from '../../components/icons';
+import { ShoppingBagIcon, StarIcon, CurrencyDollarIcon, UsersIcon, PencilIcon, ChevronDownIcon } from '../../components/icons';
 import { User } from '../../types';
+
+interface SetupTask {
+    id: string;
+    text: string;
+    completed: boolean;
+    link: string;
+}
+
+interface SetupGuideProps {
+    tasks: SetupTask[];
+    onToggleTask: (taskId: string, isCompleted: boolean) => void;
+    navigate: (page: string) => void;
+}
+
+const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }) => {
+    const [isOpen, setIsOpen] = useState(true);
+    const completedCount = tasks.filter(t => t.completed).length;
+    const progress = (completedCount / tasks.length) * 100;
+
+    return (
+        <Card title="">
+            <div className="p-0">
+                <div className="flex justify-between items-center cursor-pointer p-5" onClick={() => setIsOpen(!isOpen)}>
+                    <div>
+                        <h3 className="font-bold text-lg">دليل إعداد متجرك</h3>
+                        <p className="text-sm text-admin-text-secondary">{completedCount} من {tasks.length} مهام مكتملة</p>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2 max-w-xs">
+                            <div className="bg-admin-accent h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+                    <ChevronDownIcon className={`w-6 h-6 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </div>
+                {isOpen && (
+                    <div className="px-5 pb-5 animate-fade-in">
+                        {tasks.map(task => (
+                            <div key={task.id} className="flex items-center gap-4 py-3 border-b last:border-b-0">
+                                <input
+                                    type="checkbox"
+                                    id={`task-${task.id}`}
+                                    className="sr-only task-input"
+                                    checked={task.completed}
+                                    onChange={(e) => onToggleTask(task.id, e.target.checked)}
+                                />
+                                <label htmlFor={`task-${task.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-admin-border bg-white flex-shrink-0">
+                                    <svg className="task-checkbox-svg w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline className="task-checkbox-path" points="20 6 9 17 4 12"></polyline></svg>
+                                </label>
+                                <div className="flex-1">
+                                    <button onClick={() => navigate(task.link)} className={`font-semibold text-right w-full ${task.completed ? 'task-text-completed' : 'text-admin-text-primary hover:text-admin-accent'}`}>
+                                        {task.text}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
+
 
 interface DashboardPageProps {
     navigate: (page: string, data?: any) => void;
@@ -15,6 +73,8 @@ interface DashboardPageProps {
     orders: AdminOrder[];
     customers: AdminCustomer[];
     currentUser: User | null;
+    setupTasks: SetupTask[];
+    onToggleTask: (taskId: string, isCompleted: boolean) => void;
 }
 
 const ActivityFeed = () => {
@@ -41,7 +101,7 @@ const ActivityFeed = () => {
     )
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, lowStockProducts, orders, customers, currentUser }) => {
+const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, lowStockProducts, orders, customers, currentUser, setupTasks, onToggleTask }) => {
 
     const statusClasses: { [key: string]: string } = {
         'Delivered': 'bg-green-100 text-green-800',
@@ -60,6 +120,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
 
     return (
         <div className="space-y-6 md:space-y-8 animate-fade-in-up">
+            <SetupGuide tasks={setupTasks} onToggleTask={onToggleTask} navigate={navigate} />
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {userRole === 'Administrator' && (

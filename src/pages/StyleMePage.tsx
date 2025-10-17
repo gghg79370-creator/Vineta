@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -121,6 +122,15 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
             setIsLoading(false);
         }
     };
+    
+    const handleAddToCart = (p: Product) => {
+        if (p.variants && p.variants.length > 0) {
+            navigateTo('product', p);
+        } else {
+            addToCart(p);
+            addToast(`${p.name} أضيف إلى السلة!`, 'success');
+        }
+    };
 
     return (
         <div className="bg-gray-50">
@@ -193,7 +203,7 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                                             <div className="p-3 text-center flex flex-col flex-grow">
                                                 <p className="font-semibold text-sm flex-grow">{p.name}</p>
                                                 <p className="font-bold text-brand-primary my-2">{p.price} ج.م</p>
-                                                <button onClick={() => {addToCart(p); addToast(`${p.name} أضيف إلى السلة!`, 'success');}} className="w-full bg-brand-dark text-white font-bold py-2 rounded-full text-xs flex items-center justify-center gap-1.5 hover:bg-opacity-90">
+                                                <button onClick={() => handleAddToCart(p)} className="w-full bg-brand-dark text-white font-bold py-2 rounded-full text-xs flex items-center justify-center gap-1.5 hover:bg-opacity-90">
                                                     <ShoppingBagIcon size="sm"/>
                                                     أضف للسلة
                                                 </button>

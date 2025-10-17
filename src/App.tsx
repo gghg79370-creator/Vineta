@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Product, Filters, User, Review, HeroSlide, SaleCampaign, AdminAnnouncement } from './types';
 import { allProducts } from './data/products';
@@ -23,9 +25,7 @@ import { GoToTopButton } from './components/ui/GoToTopButton';
 import { FloatingCartBubble } from './components/cart/FloatingCartBubble';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import Chatbot from './components/chatbot/Chatbot';
-import { SearchDrawer } from './components/search/SearchDrawer';
 import { WriteReviewModal } from './components/modals/WriteReviewModal';
-import { SizeGuideModal } from './components/modals/SizeGuideModal';
 
 const serializeUrlParams = (filters: Filters, page: number) => {
     const params = new URLSearchParams();
@@ -62,7 +62,8 @@ const getInitialStateFromUrl = () => {
     const hash = window.location.hash.slice(1);
     const [path, queryString] = hash.split('?');
     const page = path.startsWith('/') ? path.substring(1) : (path || 'home');
-    const filters = page === 'shop' ? parseFilters(queryString || '') : { brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] };
+    const initialFilters = { brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] };
+    const filters = page === 'shop' || page === 'search' ? parseFilters(queryString || '') : initialFilters;
     const params = new URLSearchParams(queryString || '');
     const pageData: any = {};
     for (const [key, value] of params.entries()) {
@@ -76,8 +77,10 @@ const AppContent = () => {
     const { state, dispatch } = useAppState();
     const { currentUser, cart, wishlist, compareList, theme, themeMode } = state;
 
-    const [activePage, setActivePage] = useState(getInitialStateFromUrl().page);
-    const [pageData, setPageData] = useState<any>(getInitialStateFromUrl().pageData);
+    const [activePage, setActivePage] = useState('home');
+    const [pageData, setPageData] = useState<any>({});
+    const [filters, setFilters] = useState<Filters>({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
+    const [shopPage, setShopPage] = useState<number>(1);
     
     // Dynamic Homepage Content State
     const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(heroSlidesData);
@@ -85,7 +88,6 @@ const AppContent = () => {
     const [saleCampaigns, setSaleCampaigns] = useState<SaleCampaign[]>(saleCampaignsData);
     
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isCartMinimized, setIsCartMinimized] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -94,40 +96,80 @@ const AppContent = () => {
     const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
     const [isAskQuestionOpen, setIsAskQuestionOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
     const [modalProductContext, setModalProductContext] = useState<Product | null>(null);
 
     
     const [isCompareOpen, setIsCompareOpen] = useState(false);
-
-    const [filters, setFilters] = useState<Filters>(getInitialStateFromUrl().filters);
-    const [shopPage, setShopPage] = useState<number>(getInitialStateFromUrl().shopPage);
+    
     const isInitialMount = useRef(true);
+    // Ref to store complex product data that doesn't fit in the URL
+    const productDataRef = useRef<any>(null);
+
+    const [_, setForceUpdate] = useState(0);
+    const handleProductView = () => setForceUpdate(c => c + 1);
+
+    const handleUrlChange = useCallback(() => {
+        const { page, filters, pageData: urlPageData, shopPage } = getInitialStateFromUrl();
+
+        if (page === 'product') {
+            let productData = null;
+            // Check if ref is valid for the current URL
+            if (productDataRef.current && productDataRef.current.id == urlPageData.id) {
+                productData = productDataRef.current;
+            } 
+            // If not, try to load from allProducts using URL id
+            else if (urlPageData.id) {
+                const productId = parseInt(urlPageData.id, 10);
+                productData = allProducts.find(p => p.id === productId) || null;
+            }
+            
+            if (productData) {
+                productDataRef.current = productData; // update ref if loaded from URL
+                setPageData(productData);
+                setActivePage(page);
+                setFilters(filters);
+                setShopPage(shopPage);
+            } else {
+                // Product not found, navigate to home.
+                // This will trigger another hashchange, which is fine.
+                window.location.hash = 'home';
+            }
+        } else {
+            productDataRef.current = null; // Clear product ref
+            setActivePage(page);
+            setFilters(filters);
+            setShopPage(shopPage);
+            setPageData(urlPageData);
+        }
+    }, []);
 
     const navigateTo = useCallback((pageName: string, data?: any) => {
         let newHash = `/${pageName}`;
-        if (data) {
-            if (pageName === 'product') {
-                setPageData(data); // Pass complex object via state
-            } else {
-                 const params = new URLSearchParams(data);
-                 newHash += `?${params.toString()}`;
+        
+        if (pageName === 'product') {
+            // Store complex product object in ref, and use ID in URL for bookmarking
+            productDataRef.current = data;
+            if (data && data.id) {
+                newHash += `?id=${data.id}`;
             }
+        } else if (data) {
+            const params = new URLSearchParams(data);
+            newHash += `?${params.toString()}`;
         }
         
-        try {
-            history.pushState(null, '', `#${newHash.substring(1)}`);
-        } catch (e) {
-            if (!(e instanceof DOMException && e.name === 'SecurityError')) {
-                console.error("Failed to push state:", e);
-            }
-        }
-        setActivePage(pageName);
-        if(pageName !== 'product') {
-            setPageData(data || {});
-        }
+        // Setting hash will trigger the 'hashchange' event listener
+        window.location.hash = newHash.substring(1);
+
         window.scrollTo(0, 0);
     }, []);
+    
+    // Sync URL to state on initial load and browser navigation (back/forward)
+    useEffect(() => {
+        handleUrlChange(); // Initial load
+        window.addEventListener('hashchange', handleUrlChange);
+        return () => window.removeEventListener('hashchange', handleUrlChange);
+    }, [handleUrlChange]);
+
 
     // Apply body class for admin dashboard
     useEffect(() => {
@@ -143,9 +185,33 @@ const AppContent = () => {
         document.title = `${theme.siteName} - متجر أزياء عصري`;
     }, [theme.siteName]);
 
-    // Apply dark/light theme
+    const [effectiveThemeMode, setEffectiveThemeMode] = useState<'light' | 'dark'>('light');
+
+    // Apply dark/light theme and listen for system changes
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', themeMode);
+        const applyTheme = (mode: 'light' | 'dark') => {
+            document.documentElement.setAttribute('data-theme', mode);
+            setEffectiveThemeMode(mode);
+        };
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+            if (themeMode === 'system') {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        };
+
+        if (themeMode === 'system') {
+            applyTheme(mediaQuery.matches ? 'dark' : 'light');
+            mediaQuery.addEventListener('change', handleSystemThemeChange);
+        } else {
+            applyTheme(themeMode);
+        }
+
+        return () => {
+            mediaQuery.removeEventListener('change', handleSystemThemeChange);
+        };
     }, [themeMode]);
 
     // Apply theme styles dynamically
@@ -174,35 +240,27 @@ const AppContent = () => {
         `;
     }, [theme]);
     
-    useEffect(() => {
-        const handleScroll = () => {
-            if (isCartOpen) {
-                if (window.scrollY > 150) {
-                    setIsCartMinimized(true);
-                } else {
-                    setIsCartMinimized(false);
-                }
-            } else if (isCartMinimized) {
-                setIsCartMinimized(false);
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [isCartOpen, isCartMinimized]);
-
     // Sync state to URL when filters or shop page change
     useEffect(() => {
-        if (activePage === 'shop') {
+        if (activePage === 'shop' || activePage === 'search') {
             const queryString = serializeUrlParams(filters, shopPage);
-            const path = `/${activePage}`;
-            const newHash = `${path}${queryString ? `?${queryString}` : ''}`;
-            try {
-                history.replaceState(null, '', `#${newHash.substring(1)}`);
-            } catch (e) {
-                 if (!(e instanceof DOMException && e.name === 'SecurityError')) {
-                    console.error("Failed to replace state:", e);
-                 }
+            const currentHash = window.location.hash.slice(1);
+            const currentPath = currentHash.split('?')[0];
+
+            let newHash = currentPath;
+            if (queryString) {
+                newHash += `?${queryString}`;
+            }
+
+            // Only update history if the query string part has changed
+            if (currentHash !== newHash) {
+                try {
+                    history.replaceState(null, '', `#${newHash}`);
+                } catch (e) {
+                     if (!(e instanceof DOMException && e.name === 'SecurityError')) {
+                        console.error("Failed to replace state:", e);
+                     }
+                }
             }
         }
     }, [filters, shopPage, activePage]);
@@ -216,22 +274,7 @@ const AppContent = () => {
                 setShopPage(1);
             }
         }
-    }, [filters]);
-
-
-    // Sync URL to state on browser navigation (back/forward)
-    useEffect(() => {
-        const handlePopState = () => {
-            const { page, filters: urlFilters, pageData: urlPageData, shopPage: urlShopPage } = getInitialStateFromUrl();
-            setActivePage(page);
-            setFilters(urlFilters);
-            setPageData(urlPageData);
-            setShopPage(urlShopPage);
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, []);
+    }, [filters, activePage]);
 
 
     useEffect(() => {
@@ -243,7 +286,7 @@ const AppContent = () => {
     
         const sanitizedWishlist = wishlist.filter(wishlistItem => allProducts.some(p => p.id === wishlistItem.id));
         if (sanitizedWishlist.length !== wishlist.length) {
-            dispatch({ type: 'SET_WISHLIST', payload: sanitizedWishlist });
+            dispatch({ type: 'SET_WISHLIST', payload: sanitizedWishlist.map(p => ({ id: p.id, note: '' })) });
         }
     }, []); // Run only on mount
 
@@ -277,7 +320,7 @@ const AppContent = () => {
         setQuickViewProduct(null);
     }
 
-    const setThemeMode = (mode: 'light' | 'dark') => {
+    const setThemeMode = (mode: 'light' | 'dark' | 'system') => {
         dispatch({ type: 'SET_THEME_MODE', payload: mode });
     };
 
@@ -302,17 +345,14 @@ const AppContent = () => {
                 setIsCartOpen={setIsCartOpen}
                 setIsMenuOpen={setIsMenuOpen}
                 setIsSearchOpen={setIsSearchOpen}
-                setIsCompareOpen={setIsCompareOpen}
                 setThemeMode={setThemeMode}
                 themeMode={themeMode}
+                effectiveThemeMode={effectiveThemeMode}
                 activePage={activePage}
             />
-            <FloatingCartBubble 
-                isVisible={isCartOpen && isCartMinimized}
-                onBubbleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            />
-            <main>
+            <main className="animate-fade-in">
                 <Router
+                    key={activePage}
                     activePage={activePage}
                     pageData={pageData}
                     currentUser={currentUser}
@@ -327,9 +367,9 @@ const AppContent = () => {
                     shopPage={shopPage}
                     setShopPage={setShopPage}
                     setIsAskQuestionOpen={setIsAskQuestionOpen}
-                    setIsCompareOpen={setIsCompareOpen}
                     onLogout={handleLogout}
                     onLogin={handleLogin}
+                    onProductView={handleProductView}
                 />
             </main>
             <Footer navigateTo={navigateTo} />
@@ -343,7 +383,6 @@ const AppContent = () => {
                 isOpen={isCartOpen}
                 setIsOpen={setIsCartOpen}
                 navigateTo={navigateTo}
-                isMinimized={isCartMinimized}
             />
             <QuickViewModal 
                 isOpen={!!quickViewProduct}
@@ -352,23 +391,10 @@ const AppContent = () => {
                 addToCart={addToCart}
                 navigateTo={navigateTo}
             />
-            {/* FIX: Pass missing 'filters' and 'setFilters' props to SearchOverlay */}
-             <SearchOverlay
+            <SearchOverlay
                 isOpen={isSearchOpen}
                 setIsOpen={setIsSearchOpen}
                 navigateTo={navigateTo}
-                setIsChatbotOpen={setIsChatbotOpen}
-                filters={filters}
-                setFilters={setFilters}
-            />
-            {/* FIX: Pass missing 'filters' and 'setFilters' props to SearchDrawer */}
-            <SearchDrawer
-                isOpen={isSearchOpen}
-                setIsOpen={setIsSearchOpen}
-                navigateTo={navigateTo}
-                setIsChatbotOpen={setIsChatbotOpen}
-                filters={filters}
-                setFilters={setFilters}
             />
             <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} navigateTo={navigateTo} currentUser={currentUser} />
             <FilterDrawer isOpen={isFilterOpen} setIsOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />
@@ -379,6 +405,7 @@ const AppContent = () => {
                 navigateTo={navigateTo}
             />
             <GoToTopButton />
+            <FloatingCartBubble onClick={() => setIsCartOpen(true)} />
             <Chatbot 
                 navigateTo={navigateTo} 
                 isOpen={isChatbotOpen} 

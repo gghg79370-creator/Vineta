@@ -4,9 +4,10 @@ import { PlusIcon } from '../../../components/icons';
 
 interface TeamSettingsProps {
     teamMembers: AdminTeamMember[];
+    onInvite: () => void;
 }
 
-const TeamSettings: React.FC<TeamSettingsProps> = ({ teamMembers }) => {
+const TeamSettings: React.FC<TeamSettingsProps> = ({ teamMembers, onInvite }) => {
 
     const getStatusClasses = (status: AdminTeamMember['status']) => {
         return status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
@@ -21,7 +22,7 @@ const TeamSettings: React.FC<TeamSettingsProps> = ({ teamMembers }) => {
                  <p className="text-gray-500 mt-1 text-sm">إدارة أعضاء الفريق والأذونات الخاصة بهم.</p>
             </div>
             <div className="flex justify-end">
-                <button className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover">
+                <button onClick={onInvite} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover">
                     <PlusIcon />
                     <span>دعوة عضو</span>
                 </button>

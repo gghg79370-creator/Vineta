@@ -1,5 +1,4 @@
 
-
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { CartItem, Product } from '../../types';
 import { CloseIcon, MinusIcon, PlusIcon, GiftIcon, NoteIcon, TruckIcon as ShippingIcon, ArrowLongRightIcon, ChevronDownIcon, SparklesIcon, CheckIcon, CouponIcon, ShoppingBagIcon, HeartIcon } from '../icons';
@@ -15,7 +14,6 @@ interface CartDrawerProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
     navigateTo: (pageName: string, data?: any) => void;
-    isMinimized: boolean;
 }
 
 interface BottomModalProps {
@@ -57,7 +55,7 @@ const RecommendationSkeleton = () => (
 );
 
 
-export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartDrawerProps) => {
+export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) => {
     const { state, dispatch, cartSubtotal, discountAmount, finalTotal, cartCount } = useAppState();
     const { currentUser, theme } = state;
     const addToast = useToast();
@@ -70,7 +68,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
 
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [hasBeenOpened, setHasBeenOpened] = useState(false);
-    const shouldBeVisible = isOpen && !isMinimized;
+    const shouldBeVisible = isOpen;
     const [isSubtotalAnimating, setIsSubtotalAnimating] = useState(false);
     const prevSubtotalRef = useRef(cartSubtotal);
     const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null);
@@ -155,9 +153,9 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
 
     const getAnimationClass = () => {
         if (!hasBeenOpened && !shouldBeVisible) {
-            return 'translate-x-full';
+            return '-translate-x-full';
         }
-        return shouldBeVisible ? 'animate-slide-in-right' : 'animate-slide-out-right';
+        return shouldBeVisible ? 'animate-slide-in-left' : 'animate-slide-out-left';
     };
 
     const shippingThreshold = 230;
@@ -196,7 +194,13 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
     }, [cartItems]);
 
     const addToCartHandler = (product: Product) => {
-        dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedColor: product.colors[0], selectedSize: product.sizes[0] } });
+        // For products with variants, navigate to the product page for option selection
+        if (product.variants && product.variants.length > 0) {
+            navigateTo('product', product);
+            setIsOpen(false); // Close the cart drawer
+        } else {
+            dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1, selectedColor: product.colors[0], selectedSize: product.sizes[0] } });
+        }
     };
 
     const getAiRecommendations = async () => {
@@ -347,7 +351,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
         <>
             <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${shouldBeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
             <div 
-                className={`fixed top-0 right-0 h-full w-[90vw] max-w-md bg-white shadow-lg z-[60] ${getAnimationClass()}`}
+                className={`fixed top-0 left-0 h-full w-[90vw] max-w-md bg-white shadow-lg z-[60] ${getAnimationClass()}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="cart-drawer-title"
@@ -399,8 +403,8 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo, isMinimized }: CartD
 
                         {cartItems.length > 0 ? (
                             <div className="divide-y divide-gray-200">
-                                {cartItems.map((item) => (
-                                     <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex items-start gap-4 p-5">
+                                {cartItems.map((item, index) => (
+                                     <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex items-start gap-4 p-5 animate-quick-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
                                         <img src={item.image} alt={item.name} className="w-20 h-24 flex-shrink-0 rounded-lg object-cover border border-gray-200"/>
                                         <div className="flex flex-1 flex-col self-stretch">
                                             <div>

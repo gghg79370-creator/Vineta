@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Product, Filters, User, HeroSlide, SaleCampaign } from './types';
 import { allProducts } from './data/products';
@@ -8,7 +7,6 @@ import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
-// FIX: Changed to named import as ProductDetailPage is not a default export.
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import AccountPage from './pages/AccountPage';
 import FaqPage from './pages/FaqPage';
@@ -42,9 +40,9 @@ interface RouterProps {
     shopPage: number;
     setShopPage: React.Dispatch<React.SetStateAction<number>>;
     setIsAskQuestionOpen: (isOpen: boolean) => void;
-    setIsCompareOpen: (isOpen: boolean) => void;
     onLogout: () => void;
     onLogin: (user: User) => void;
+    onProductView: () => void;
 }
 
 export const Router: React.FC<RouterProps> = ({
@@ -62,16 +60,16 @@ export const Router: React.FC<RouterProps> = ({
     shopPage,
     setShopPage,
     setIsAskQuestionOpen,
-    setIsCompareOpen,
     onLogout,
     onLogin,
+    onProductView,
 }) => {
     const commonProps = { navigateTo, addToCart, openQuickView };
 
     const pageComponents: { [key: string]: React.ReactNode } = {
         home: <HomePage {...commonProps} heroSlides={heroSlides} saleCampaigns={saleCampaigns} />,
         shop: <ShopPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} currentPage={shopPage} setCurrentPage={setShopPage} />,
-        product: <ProductDetailPage {...commonProps} product={pageData || allProducts[0]} setIsAskQuestionOpen={setIsAskQuestionOpen} setIsCompareOpen={setIsCompareOpen} />,
+        product: <ProductDetailPage {...commonProps} product={pageData || allProducts[0]} setIsAskQuestionOpen={setIsAskQuestionOpen} onProductView={onProductView} />,
         cart: <CartPage navigateTo={navigateTo} />,
         wishlist: <WishlistPage navigateTo={navigateTo} />,
         account: <AccountPage navigateTo={navigateTo} onLogout={onLogout} />,
@@ -85,18 +83,22 @@ export const Router: React.FC<RouterProps> = ({
         forgotPassword: <ForgotPasswordPage navigateTo={navigateTo} />,
         resetPassword: <ResetPasswordPage navigateTo={navigateTo} />,
         emailVerification: <EmailVerificationPage navigateTo={navigateTo} />,
-        search: <SearchPage {...commonProps} setIsFilterOpen={setIsFilterOpen} />,
+        search: <SearchPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />,
         blog: <BlogListPage navigateTo={navigateTo} />,
         blogPost: <BlogPostPage navigateTo={navigateTo} />,
         'style-me': <StyleMePage navigateTo={navigateTo} addToCart={(product) => addToCart(product)} />,
     };
 
     const protectedPages = ['account', 'wishlist'];
-    if (protectedPages.includes(activePage) && !currentUser) {
-        // Use a side effect to navigate, but return the login page immediately.
-        React.useEffect(() => {
+    const isProtectedRoute = protectedPages.includes(activePage) && !currentUser;
+
+    React.useEffect(() => {
+        if (isProtectedRoute) {
             navigateTo('login');
-        }, [activePage, currentUser, navigateTo]);
+        }
+    }, [isProtectedRoute, navigateTo]);
+
+    if (isProtectedRoute) {
         return <>{pageComponents.login}</>;
     }
     

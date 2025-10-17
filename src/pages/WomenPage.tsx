@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -184,8 +185,6 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
 const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filters, setFilters, currentPage, setCurrentPage }: ShopPageProps) => {
     const { state, dispatch } = useAppState();
     const { compareList, wishlist } = state;
-    // FIX: The 'wishlistItems' prop expects an array of numbers (product IDs), not an array of WishlistItem objects.
-    // We map the wishlist state to an array of IDs.
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
     
     const [isLoading, setIsLoading] = useState(true);
@@ -200,7 +199,6 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
              const colorMatch = filters.colors.length === 0 || p.colors.some(c => filters.colors.includes(c));
              const sizeMatch = filters.sizes.length === 0 || p.sizes.some(s => filters.sizes.includes(s));
              const priceMatch = parseFloat(p.price) >= filters.priceRange.min && parseFloat(p.price) <= filters.priceRange.max;
-             // FIX: Property 'onSale' does not exist on type 'Product'. A product is considered on sale if it has an 'oldPrice'.
              const saleMatch = !filters.onSale || !!p.oldPrice;
              const ratingMatch = !filters.rating || (p.rating && p.rating >= filters.rating);
              const materialMatch = filters.materials.length === 0 || filters.materials.some(m => p.tags.includes(m));

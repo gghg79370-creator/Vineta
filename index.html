@@ -39,13 +39,13 @@
                 700: 'var(--secondary)',
             },
             admin: {
-                bg: 'var(--surface-2)',
-                sidebar: 'var(--dark-2)',
-                sidebarHover: 'var(--dark-3)',
-                accent: 'var(--secondary)',
-                accentHover: 'var(--secondary-2)',
-                textMuted: 'var(--text-3)',
-                border: 'var(--line)',
+                bg: 'var(--admin-bg)',
+                sidebar: 'var(--admin-sidebar-bg)',
+                sidebarHover: 'var(--admin-sidebar-hover-bg)',
+                accent: 'var(--admin-accent)',
+                accentHover: 'var(--admin-accent-hover)',
+                textMuted: 'var(--admin-text-secondary)',
+                border: 'var(--admin-border)',
             }
           },
           backgroundImage: {
@@ -64,6 +64,10 @@
             'quick-fade-in': {
               '0%': { opacity: '0.7' },
               '100%': { opacity: '1' },
+            },
+            'quick-fade-in-up': {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
             },
             'fade-in-up': {
               '0%': { opacity: '0', transform: 'translateY(40px)' },
@@ -165,6 +169,7 @@
           animation: {
             'fade-in': 'fade-in 0.5s ease-out forwards',
             'quick-fade-in': 'quick-fade-in 0.3s ease-out forwards',
+            'quick-fade-in-up': 'quick-fade-in-up 0.4s ease-out forwards',
             'fade-in-up': 'fade-in-up 0.8s ease-out forwards',
             'slide-in-right': 'slide-in-right 0.3s ease-in-out forwards',
             'slide-out-right': 'slide-out-right 0.3s ease-in-out forwards',
@@ -172,7 +177,7 @@
             'slide-out-left': 'slide-out-left 0.3s ease-in-out forwards',
             'slide-in-up': 'slide-in-up 0.4s ease-out forwards',
             'slide-out-down': 'slide-out-down 0.4s ease-out forwards',
-            'marquee': 'marquee 20s linear infinite',
+            'marquee': 'marquee 40s linear infinite',
             'ken-burns': 'ken-burns 30s ease-out forwards',
             'progress-fill-width': 'progress-fill-width linear forwards',
             'announcement-progress': 'announcement-progress 5s linear forwards',
@@ -217,19 +222,19 @@
         --success-3: rgba(49, 208, 170, 0.5);
         --success-4: rgba(49, 208, 170, 0.1);
         --light-green: #00ba00;
-        --text: #545454;
-        --text-2: #393939;
-        --text-3: #667085;
-        --text-4: #757575;
-        --line: #ebebeb;
-        --line-2: #f2f4f7;
-        --line-3: #c9c9c9;
-        --line-4: #e4e7ec;
+        --text: #374151; /* Was 545454 */
+        --text-2: #111827; /* Was 393939 */
+        --text-3: #6b7280; /* Was 667085 */
+        --text-4: #9ca3af; /* Was 757575 */
+        --line: #e5e7eb; /* Was EBEBEB */
+        --line-2: #f3f4f6; /* Was F2F4F7 */
+        --line-3: #d1d5db; /* Was C9C9C9 */
+        --line-4: #e5e7eb; /* Was E4E7EC */
         --line-5: rgba(126, 126, 126, 0.2);
-        --surface: #f5f5f5;
-        --surface-2: #f7f7f7;
+        --surface: #f9fafb; /* Was F5F5F5 */
+        --surface-2: #f3f4f6; /* Was F7F7F7 */
         --surface-3: #f3f3f3;
-        --shadow-1: 0px 4px 20px 0px #0000001a;
+        --shadow-1: 0px 8px 24px rgba(0, 0, 0, 0.08);
         --gradient-1: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff);
         --gradient-2: linear-gradient(180deg, rgba(231, 236, 210, 0), #e7ecd2);
         --backdrop: rgba(0, 0, 0, 0.4);
@@ -243,40 +248,70 @@
         --yellow-2: #ff9a00;
         --brown: #8f5252;
         --red: #e21b1b;
+        
+        /* Admin Theme Variables */
+        --admin-bg: #f9fafb;
+        --admin-sidebar-bg: #111827;
+        --admin-sidebar-hover-bg: #1f2937;
+        --admin-card-bg: #ffffff;
+        --admin-border: #e5e7eb;
+        --admin-accent: #4f46e5;
+        --admin-accent-hover: #4338ca;
+        --admin-accent-light: #eef2ff;
+        --admin-text-primary: #111827;
+        --admin-text-secondary: #6b7280;
+        --admin-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --admin-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
     html[data-theme="dark"] {
-        --primary: #ff6f61;
+        --primary: #ff7f73; /* Slightly brighter */
         --primary-4: #331714;
-        --secondary: #4b4ded;
+        --secondary: #6366f1; /* More vibrant blue */
         --secondary-4: #1e1b4b;
         --dark: #f9fafb;
         --dark-2: #f3f4f6;
         --dark-3: #e5e7eb;
         --dark-4: #d1d5db;
-        --white: #101828;
+        --white: #111827; /* Dark navy instead of near black */
         --white-2: #1f2937;
         --purple-2: #2d164d;
         --success-4: rgba(49, 208, 170, 0.2);
-        --text: #d1d5db;
+        --text: #d1d5db; /* Lighter text */
         --text-2: #f9fafb;
         --text-3: #9ca3af;
         --text-4: #6b7280;
-        --line: #374151;
+        --line: #374151; /* Softer border */
         --line-2: #4b5563;
         --line-3: #4b5563;
         --line-4: #4b5563;
         --line-5: rgba(126, 126, 126, 0.4);
-        --surface: #1f2937;
-        --surface-2: #111827;
+        --surface: #1f2937; /* Card background */
+        --surface-2: #1f2937; /* Subtle background */
         --surface-3: #0f172a;
-        --shadow-1: 0px 4px 20px 0px rgba(0, 0, 0, 0.7);
-        --gradient-1: linear-gradient(180deg, rgba(16, 24, 40, 0), #101828);
+        --shadow-1: 0px 8px 24px rgba(0, 0, 0, 0.4);
+        --gradient-1: linear-gradient(180deg, rgba(17, 24, 39, 0), #111827);
         --backdrop: rgba(0, 0, 0, 0.7);
         --bg-scrollbar-track: #1f2937;
         --bg-scrollbar-thumb: #4b5563;
+        --rgba-white: rgba(17, 24, 39, 0.8);
+
+        /* Admin Dark Theme Variables */
+        --admin-bg: #111827;
+        --admin-sidebar-bg: #111827;
+        --admin-sidebar-hover-bg: #1f2937;
+        --admin-card-bg: #1f2937;
+        --admin-border: #374151;
+        --admin-accent: #818cf8;
+        --admin-accent-hover: #6366f1;
+        --admin-accent-light: rgba(99, 102, 241, 0.1);
+        --admin-text-primary: #f9fafb;
+        --admin-text-secondary: #9ca3af;
     }
-    body, button, a {
-        transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    button, a, [role="button"], [class*="group"] {
+        transition: all 0.25s ease-in-out;
+    }
+    button, a, [role="button"] {
+       -webkit-tap-highlight-color: transparent;
     }
     html {
         scroll-behavior: smooth;
@@ -284,7 +319,9 @@
     body {
         font-family: 'Poppins', 'Tajawal', sans-serif;
         background-color: var(--white);
+        background-image: radial-gradient(circle at top, var(--surface-2), var(--white) 50%);
         color: var(--text);
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
     .product-actions-container {
         opacity: 0;
@@ -320,10 +357,10 @@
         scrollbar-width: none;
     }
     .testimonial-card {
-        background: linear-gradient(135deg, #FFF8F0 0%, #F6F6FF 100%);
+        background: var(--white);
     }
     html[data-theme="dark"] .testimonial-card {
-        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        background: var(--surface);
     }
     .prose {
         text-align: right;
@@ -363,12 +400,40 @@
       -webkit-line-clamp: 3;
     }
 
-    /* Admin custom styles */
-    .admin-body {
-        background-color: var(--surface-2);
+    /* Mega Menu */
+    .mega-menu-wrapper {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        padding-top: 0.5rem;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+        z-index: 40;
     }
-    html[data-theme="dark"] .admin-body {
-        background-color: #0f172a;
+    .group:hover .mega-menu-wrapper {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    /* Header scroll effect */
+    .header-scrolled {
+        background-color: var(--rgba-white);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+    }
+    html[data-theme="dark"] .header-scrolled {
+        background-color: var(--rgba-white);
+    }
+
+
+    /* Admin Redesign Styles */
+    .admin-body {
+        background-color: var(--admin-bg);
+        color: var(--admin-text-primary);
     }
     .admin-sidebar-scrollbar::-webkit-scrollbar {
         width: 4px;
@@ -377,18 +442,35 @@
         background: transparent;
     }
     .admin-sidebar-scrollbar::-webkit-scrollbar-thumb {
-        background: #374151;
+        background: var(--admin-sidebar-hover-bg);
+        border-radius: 4px;
     }
     .admin-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #4B5563;
+        background: #4b5563;
     }
-    
-    /* Custom form styles for admin */
     .admin-form-input {
-      @apply w-full border-admin-border rounded-lg shadow-sm focus:border-admin-accent focus:ring-2 focus:ring-admin-accent/20 transition-colors duration-200;
+      background-color: var(--admin-card-bg);
+      border: 1px solid var(--admin-border);
+      border-radius: 0.5rem;
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+      color: var(--admin-text-primary);
+      transition: all 0.2s ease;
+    }
+    .admin-form-input:focus {
+      outline: none;
+      border-color: var(--admin-accent);
+      box-shadow: 0 0 0 3px var(--admin-accent-light);
+    }
+    html[data-theme="dark"] .admin-form-input {
+       background-color: #374151;
     }
     .admin-form-label {
-      @apply block text-sm font-bold text-gray-700 mb-1.5;
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--admin-text-primary);
+      margin-bottom: 0.5rem;
     }
     
     /* Task list animation styles */
@@ -419,7 +501,7 @@
         transition: all 0.3s ease;
     }
     .text-shadow {
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
     }
     .logo-glow {
         text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 111, 97, 0.4);
@@ -520,6 +602,28 @@
     }
     .topbar-dropdown-item:hover {
         background-color: var(--dark-3);
+    }
+
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-invoice, #printable-invoice * {
+            visibility: visible;
+        }
+        #printable-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 2rem;
+            font-family: 'Tajawal', sans-serif;
+            color: #000;
+        }
+        @page {
+            size: A4;
+            margin: 0;
+        }
     }
 
   </style>

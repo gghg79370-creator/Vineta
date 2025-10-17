@@ -58,7 +58,7 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
                         key={index} 
                         className="relative flex-shrink-0 w-full md:w-auto h-[70vh] md:h-[85vh] snap-center group/card overflow-hidden"
                     >
-                        <img src={category.image} alt={category.name} className={`w-full h-full object-cover object-center transition-transform duration-700 ease-out ${activeIndex === index ? 'scale-110' : 'scale-100'} md:scale-100 md:group-hover/card:scale-110`} />
+                        <img src={category.image} alt={category.name} className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${activeIndex === index ? 'scale-110' : 'scale-100'} md:scale-100 md:group-hover/card:scale-110`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent"></div>
                         <div className={`absolute bottom-12 w-full flex justify-center transition-all duration-500 ease-out ${activeIndex === index ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-8'} md:opacity-100 md:translate-y-0`}>
                             <button 

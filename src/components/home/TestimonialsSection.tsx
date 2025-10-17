@@ -28,7 +28,7 @@ interface TestimonialsSectionProps {
 }
 
 const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navigateTo: (pageName: string, data?: any) => void }> = ({ testimonial, navigateTo }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm h-full flex flex-col justify-between border border-brand-border/50">
+    <div className="testimonial-card p-6 rounded-2xl shadow-sm h-full flex flex-col justify-between border border-brand-border/50">
         <div>
             <div className="flex justify-between items-center mb-3">
                 <p className="text-sm font-bold text-gray-600">
@@ -42,10 +42,10 @@ const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navig
             <p className="text-brand-text-light leading-relaxed mb-4">"{testimonial.quote}"</p>
         </div>
         <div className="mt-auto pt-4 border-t border-brand-border/50">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('product', testimonial.product)}>
+            <div className="flex items-center gap-3 cursor-pointer group/product" onClick={() => navigateTo('product', testimonial.product)}>
                 <img src={testimonial.product.image} alt={testimonial.product.name} className="w-14 h-14 object-cover rounded-lg"/>
                 <div className="flex-1">
-                    <p className="font-bold text-sm text-brand-dark">{testimonial.product.name}</p>
+                    <p className="font-bold text-sm text-brand-dark group-hover/product:text-brand-primary transition-colors">{testimonial.product.name}</p>
                     <p className="text-sm text-brand-text-light">تم شراء هذا المنتج</p>
                 </div>
                 <p className="font-bold text-brand-dark">{testimonial.product.price} ج.م</p>

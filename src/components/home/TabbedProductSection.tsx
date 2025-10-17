@@ -50,28 +50,31 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
     }, [activeTab, products]);
 
     return (
-        <section id="shop-preview" className="py-16 bg-white">
+        <section id="shop-preview" className="py-16 bg-brand-subtle">
             <div className="container mx-auto px-4">
+                 <div className="text-center mb-12">
+                    <h2 className="text-4xl font-extrabold text-brand-dark">أحدث مجموعاتنا</h2>
+                    <p className="text-brand-text-light mt-2 max-w-2xl mx-auto">تحقق مما هو جديد، وما هو رائج، وما هو معروض للبيع.</p>
+                </div>
                 <div className="flex justify-center items-center mb-10">
-                    <div className="flex justify-center items-center gap-6 md:gap-8">
+                    <div className="bg-white p-2 rounded-full flex justify-center items-center gap-2 shadow-sm">
                         {tabs.map(tab => (
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`text-xl md:text-3xl font-bold pb-2 relative transition-all duration-300 focus:outline-none active:scale-95
+                                className={`text-base md:text-lg font-bold py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 focus:outline-none
                                     ${activeTab === tab.id 
-                                        ? 'text-brand-primary' 
+                                        ? 'bg-brand-primary/10 text-brand-primary' 
                                         : 'text-brand-text-light hover:text-brand-dark'}`
                                 }
                             >
                                 {tab.name}
-                                <span className={`absolute bottom-[-2px] right-0 h-1 bg-brand-primary transition-all duration-300 ${activeTab === tab.id ? 'w-full' : 'w-0'}`}></span>
                             </button>
                         ))}
                     </div>
                 </div>
                 
-                 <div key={activeTab} className="motion-safe:animate-fade-in">
+                 <div key={activeTab} className="animate-quick-fade-in">
                     {isLoading ? (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
                             {Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}

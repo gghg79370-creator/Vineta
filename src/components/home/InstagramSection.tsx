@@ -16,7 +16,8 @@ const InstagramImage = ({ src }: { src: string }) => (
 export const InstagramSection = () => (
     <section className="py-12 md:py-20 bg-brand-subtle">
         <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark mb-8">Shop by @Gram</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark mb-2">Shop Our Instagram</h2>
+            <p className="text-lg text-brand-primary font-semibold mb-8">@vinetafashion</p>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 <InstagramImage src="https://images.unsplash.com/photo-1581404917852-2e5356230887?q=80&w=1964&auto.format&fit=crop" />
@@ -24,6 +25,13 @@ export const InstagramSection = () => (
                 <InstagramImage src="https://images.unsplash.com/photo-1603217041433-415594d45544?q=80&w=1965&auto.format&fit=crop" />
                 <InstagramImage src="https://images.unsplash.com/photo-1520006436768-61845c47a61a?q=80&w=1974&auto.format&fit=crop" />
                 <InstagramImage src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2124&auto.format&fit=crop" />
+            </div>
+
+            <div className="mt-12">
+                <a href="#" className="bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all active:scale-95 inline-flex items-center gap-2">
+                    <i className="fa-brands fa-instagram"></i>
+                    تابعنا على انستغرام
+                </a>
             </div>
         </div>
     </section>

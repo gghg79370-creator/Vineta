@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../../types';
 import { CloseIcon, ChevronRightIcon, PlusIcon, MinusIcon } from '../icons';
+import { SizeGuideModal } from './SizeGuideModal';
 
 interface QuickViewModalProps {
     isOpen: boolean;
@@ -15,6 +16,7 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
     const [quantity, setQuantity] = useState(1);
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
     useEffect(() => {
         if (product) {
@@ -31,10 +33,11 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
         }
     }, [product]);
 
-    if (!isOpen || !product) return null;
+    if (!product) return null;
 
     const images = product.images ?? [product.image];
     const activeImage = images[currentImageIndex];
+    const isOutOfStock = product.variants ? product.variants.every(v => v.stock === 0) : product.itemsLeft === 0;
 
     const handleNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const handlePrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
@@ -75,8 +78,9 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     }
 
     return (
-        <div className={`fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
-            <div className={`bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-all duration-300 ease-in-out ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`} onClick={e => e.stopPropagation()}>
+        <>
+        <div className={`fixed inset-0 bg-black/60 z-[70] flex items-end md:items-center md:justify-center p-0 md:p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
+            <div className={`bg-white w-full max-h-[90vh] md:max-w-4xl rounded-t-2xl md:rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
                 <div className="md:w-1/2 relative flex-shrink-0">
                      <img src={activeImage} alt={product.name} className="w-full h-64 md:h-full object-cover rounded-t-2xl md:rounded-r-2xl md:rounded-tl-none" />
                      <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
@@ -106,12 +110,23 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                     </div>
 
                     <div className="mb-4">
-                        <p className="font-bold text-brand-dark mb-2">المقاس:</p>
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="font-bold text-brand-dark">المقاس:</p>
+                            <button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-brand-text-light underline hover:text-brand-dark">دليل المقاسات</button>
+                        </div>
                          <div className="flex gap-2 flex-wrap">
                             {product.sizes.map(size => {
-                                const isAvailable = product.variants?.some(v => v.color === selectedColor && v.size === size && v.stock > 0) ?? true;
+                                const isAvailable = product.variants?.some(v => v.color === selectedColor && v.size === size && v.stock > 0) ?? !isOutOfStock;
                                 return (
-                                    <button key={size} onClick={() => setSelectedSize(size)} disabled={!isAvailable} className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border hover:border-brand-dark'} ${!isAvailable ? 'opacity-25 cursor-not-allowed line-through' : ''}`}>{size}</button>
+                                    <button 
+                                        key={size} 
+                                        onClick={() => setSelectedSize(size)} 
+                                        disabled={!isAvailable} 
+                                        className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors relative ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border hover:border-brand-dark'} ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {size}
+                                        {!isAvailable && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-gray-400 transform rotate-[-20deg]"></span>}
+                                    </button>
                                 )
                             })}
                         </div>
@@ -134,5 +149,7 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                 </div>
             </div>
         </div>
+        {product && <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} product={product} />}
+        </>
     );
 };

@@ -54,35 +54,41 @@ const SalesChart: React.FC<SalesChartProps> = ({ orders, dateRange }) => {
     }).join(' ');
 
     const areaPath = `M0,${chartHeight} ${points} 100,${chartHeight} Z`;
+    
+    const minWidth = dateRange === 'ytd' ? chartData.length * 60 : chartData.length * 40;
+
 
     return (
-        <div className="h-80 w-full relative">
-            <svg width="100%" height="100%" viewBox="0 0 100 320" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgba(59, 130, 246, 0.4)" />
-                        <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
-                    </linearGradient>
-                </defs>
-                <path d={areaPath} fill="url(#areaGradient)" />
-                <polyline
-                    fill="none"
-                    stroke="#3B82F6"
-                    strokeWidth="2"
-                    points={points}
-                />
-            </svg>
-            <div className="absolute inset-0 flex justify-between">
-                 {chartData.map(([label, value], index) => (
-                    <div key={index} className="flex-1 group relative flex flex-col justify-end items-center">
-                         <div className="absolute bottom-full mb-2 w-max bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            <p className="font-bold">{value.toFixed(2)} ج.م</p>
-                            <p className="text-gray-300">{label}</p>
+        <div className="h-80 w-full overflow-x-auto">
+            <div className="relative h-full" style={{ minWidth: `${minWidth}px` }}>
+                <svg width="100%" height="100%" viewBox="0 0 100 320" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--admin-accent)" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="var(--admin-accent)" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d={areaPath} fill="url(#areaGradient)" />
+                    <polyline
+                        fill="none"
+                        stroke="var(--admin-accent)"
+                        strokeWidth="2"
+                        points={points}
+                        vectorEffect="non-scaling-stroke"
+                    />
+                </svg>
+                <div className="absolute inset-0 flex justify-between">
+                     {chartData.map(([label, value], index) => (
+                        <div key={index} className="flex-1 group relative flex flex-col justify-end items-center">
+                             <div className="absolute bottom-full mb-2 w-max bg-admin-sidebar text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                <p className="font-bold">{value.toFixed(2)} ج.م</p>
+                                <p className="text-gray-300">{label}</p>
+                            </div>
+                            <div className="w-px h-full bg-admin-border group-hover:bg-admin-accent"></div>
+                            <div className="text-xs text-admin-text-secondary mt-2 whitespace-nowrap">{label}</div>
                         </div>
-                        <div className="w-px h-full bg-gray-200/50 group-hover:bg-admin-accent"></div>
-                        <div className="text-xs text-gray-500 mt-2">{label}</div>
-                    </div>
-                 ))}
+                     ))}
+                </div>
             </div>
         </div>
     );

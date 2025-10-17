@@ -16,6 +16,50 @@ interface SearchDrawerProps {
     setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
+const levenshtein = (a: string, b: string): number => {
+    const an = a ? a.length : 0;
+    const bn = b ? b.length : 0;
+    if (an === 0) return bn;
+    if (bn === 0) return an;
+    const matrix = new Array(bn + 1);
+    for (let i = 0; i <= bn; ++i) {
+        matrix[i] = new Array(an + 1);
+    }
+    for (let i = 0; i <= bn; ++i) {
+        matrix[i][0] = i;
+    }
+    for (let j = 0; j <= an; ++j) {
+        matrix[0][j] = j;
+    }
+    for (let i = 1; i <= bn; ++i) {
+        for (let j = 1; j <= an; ++j) {
+            const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1, // deletion
+                matrix[i][j - 1] + 1, // insertion
+                matrix[i - 1][j - 1] + cost, // substitution
+            );
+        }
+    }
+    return matrix[bn][an];
+};
+
+const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
+    if (!query) return <>{text}</>;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return (
+        <span>
+            {parts.map((part, i) =>
+                part.toLowerCase() === query.toLowerCase() ? (
+                    <strong key={i}>{part}</strong>
+                ) : (
+                    part
+                )
+            )}
+        </span>
+    );
+};
+
 const ProductSkeleton = () => (
     <div className="animate-skeleton-pulse">
         <div className="bg-gray-200 rounded-lg aspect-[4/5]"></div>
@@ -43,6 +87,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
     const addToast = useToast();
     const wishlistCount = wishlistItems.length;
     const [searchTerm, setSearchTerm] = useState('');
+    const [instantSuggestions, setInstantSuggestions] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [results, setResults] = useState<Product[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -62,6 +107,16 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
+    const searchableTerms = useMemo(() => {
+        const terms = new Set<string>();
+        allProducts.forEach(p => {
+            terms.add(p.name);
+            p.tags.forEach(t => terms.add(t));
+            if (p.brand) terms.add(p.brand);
+            terms.add(p.category === 'men' ? 'رجال' : 'نساء');
+        });
+        return Array.from(terms);
+    }, []);
 
     const popularCategories = useMemo(() => {
         const mainCategories = ['ملابس', 'إكسسوارات', 'أحذية', 'حقائب', 'ملابس رياضية', 'صيف', 'شتاء', 'كاجوال'];
@@ -183,15 +238,51 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
             setResults([]);
             setAllResultsCount(0);
             setSuggestions([]);
+            setInstantSuggestions([]);
             setAiRecommendations([]);
             setAiSummary('');
             return;
         }
         setIsSearching(true);
+        setInstantSuggestions(searchableTerms.filter(t => t.toLowerCase().includes(term.toLowerCase())).slice(0, 4));
 
         const searchHandler = setTimeout(() => {
             const lowerCaseTerm = term.toLowerCase();
-            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(lowerCaseTerm) || p.tags.some(t => t.toLowerCase().includes(lowerCaseTerm)) || p.brand?.toLowerCase().includes(lowerCaseTerm));
+            
+            const scoredProducts = allProducts.map(product => {
+                const name = product.name.toLowerCase();
+                const tags = product.tags.map(t => t.toLowerCase());
+                const brand = product.brand?.toLowerCase() || '';
+    
+                let score = Infinity;
+    
+                if (name.includes(lowerCaseTerm)) {
+                    score = Math.min(score, 1);
+                    if (name === lowerCaseTerm) {
+                        score = Math.min(score, 0);
+                    }
+                } else {
+                    const distance = levenshtein(lowerCaseTerm, name);
+                    if (distance / name.length < 0.4) {
+                        score = Math.min(score, 2 + distance);
+                    }
+                }
+                
+                if (tags.some(t => t.includes(lowerCaseTerm))) {
+                    score = Math.min(score, 10);
+                }
+    
+                if (brand.includes(lowerCaseTerm)) {
+                    score = Math.min(score, 12);
+                }
+    
+                return { product, score };
+            }).filter(({ score }) => score !== Infinity);
+    
+            scoredProducts.sort((a, b) => a.score - b.score);
+            
+            const filtered = scoredProducts.map(item => item.product);
+
             setAllResultsCount(filtered.length);
             setResults(filtered.slice(0, 3));
             setIsSearching(false);
@@ -208,7 +299,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
             clearTimeout(searchHandler);
             clearTimeout(aiSearchHandler);
         };
-    }, [searchTerm]);
+    }, [searchTerm, searchableTerms]);
 
     const analyzeImage = async (imageBlob: Blob) => {
         setSearchTerm(''); setResults([]); setSuggestions([]);
@@ -303,8 +394,8 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                     </div>
                 </div>
             )}
-            <div className={`hidden md:block fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
-            <div className={`hidden md:block fixed top-0 right-0 left-0 bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-full'}`}>
+            <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
+            <div className={`fixed top-0 right-0 left-0 bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     <form onSubmit={handleFormSubmit} className="relative mb-8">
                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light pointer-events-none"><SearchIcon size="md"/></div>
@@ -365,8 +456,18 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                 </div>
                             ) : (
                                 <div className="space-y-6 animate-fade-in">
+                                    {instantSuggestions.length > 0 && (
+                                        <div>
+                                            <h3 className="font-bold text-brand-dark flex items-center gap-2 mb-2"><SearchIcon size="sm" /> اقتراحات</h3>
+                                            {instantSuggestions.map(suggestion => (
+                                                <button key={suggestion} onClick={() => performSearch(suggestion)} className="w-full text-right p-2 font-semibold text-gray-700 hover:bg-gray-100 rounded-md">
+                                                    <HighlightMatch text={suggestion} query={searchTerm} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                      {(isAiSearching || suggestions.length > 0) && (
-                                        <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm" /> اقتراحات</h3>{isAiSearching ? <div className="flex justify-start p-4"><Spinner size="md" color="text-brand-dark" /></div> : (<div className="flex flex-col items-start gap-1">{suggestions.map((term, index) => (<button key={index} onClick={() => performSearch(term)} className="px-3 py-1.5 text-sm font-semibold hover:text-brand-primary rounded-md text-right">{term}</button>))}</div>)}</div>
+                                        <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm" /> هل تقصد...</h3>{isAiSearching ? <div className="flex justify-start p-4"><Spinner size="md" color="text-brand-dark" /></div> : (<div className="flex flex-col items-start gap-1">{suggestions.map((term, index) => (<button key={index} onClick={() => performSearch(term)} className="px-3 py-1.5 text-sm font-semibold hover:text-brand-primary rounded-md text-right">{term}</button>))}</div>)}</div>
                                     )}
                                 </div>
                            )}
@@ -393,8 +494,8 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                         </div>
                                     ) : (isAiSearching || results.length > 0 || aiRecommendations.length > 0) ? (
                                         <div className="space-y-6">
-                                            { (isAiSearching || aiRecommendations.length > 0) && <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm"/> توصيات AI لك</h3>{isAiSearching ? <div className="grid grid-cols-3 gap-4"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div> : <div className="grid grid-cols-3 gap-4">{aiRecommendations.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate">{product.name}</p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>}</div>}
-                                            {results.length > 0 && <div><h3 className="font-bold mb-3 text-brand-dark">نتائج مباشرة</h3><div className="grid grid-cols-3 gap-4">{results.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate">{product.name}</p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>{allResultsCount > results.length && (<button onClick={() => performSearch(searchTerm)} className="w-full mt-6 bg-brand-subtle text-brand-dark font-bold py-3 rounded-lg text-base hover:bg-brand-border">عرض كل النتائج ({allResultsCount})</button>)}</div>}
+                                            { (isAiSearching || aiRecommendations.length > 0) && <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><SparklesIcon size="sm"/> توصيات AI لك</h3>{isAiSearching ? <div className="grid grid-cols-3 gap-4"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div> : <div className="grid grid-cols-3 gap-4">{aiRecommendations.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate"><HighlightMatch text={product.name} query={searchTerm} /></p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>}</div>}
+                                            {results.length > 0 && <div><h3 className="font-bold mb-3 text-brand-dark">نتائج مباشرة</h3><div className="grid grid-cols-3 gap-4">{results.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate"><HighlightMatch text={product.name} query={searchTerm} /></p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>{allResultsCount > results.length && (<button onClick={() => performSearch(searchTerm)} className="w-full mt-6 bg-brand-subtle text-brand-dark font-bold py-3 rounded-lg text-base hover:bg-brand-border">عرض كل النتائج ({allResultsCount})</button>)}</div>}
                                         </div>
                                     ) : (
                                         <div className="text-center py-8"><p className="font-bold text-brand-dark">لم نجد أي تطابق لـ "{searchTerm}".</p><p className="text-brand-text-light mt-2">جرّب البحث عن شيء آخر أو تحقق من منتجاتنا الرائجة.</p><div className="mt-8 p-6 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200"><h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4><p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p><button onClick={startCamera} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90"><CameraIcon size="sm" /> البحث بالكاميرا</button></div></div>

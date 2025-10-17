@@ -12,6 +12,14 @@ const ContactMessagesPage: React.FC = () => {
         setMessages(prev => prev.map(m => m.id === message.id ? { ...m, isRead: true } : m));
     };
 
+    const handleDeleteMessage = (messageId: number) => {
+        const remainingMessages = messages.filter(m => m.id !== messageId);
+        setMessages(remainingMessages);
+        if (selectedMessage?.id === messageId) {
+            setSelectedMessage(remainingMessages.length > 0 ? remainingMessages[0] : null);
+        }
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-sm border h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 overflow-hidden">
@@ -30,7 +38,7 @@ const ContactMessagesPage: React.FC = () => {
                     />
                 </div>
                 <div className="md:col-span-2 overflow-y-auto">
-                    <MessageDetailView message={selectedMessage} />
+                    <MessageDetailView message={selectedMessage} onDelete={handleDeleteMessage} />
                 </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Product } from '../../types';
 import { StarIcon, ShoppingBagIcon, CompareIcon, HeartIcon, EyeIcon } from '../icons';
@@ -40,12 +41,20 @@ export const CollectionProductListCard: React.FC<CollectionProductListCardProps>
             <div className="md:w-3/4 flex flex-col">
                 <p className="text-sm text-brand-text-light">{product.brand}</p>
                 <h3 className="font-bold text-lg text-brand-dark mb-2 hover:text-brand-primary cursor-pointer transition-colors" onClick={() => navigateTo('product', product)}>{product.name}</h3>
-                {product.rating && (
-                    <div className="flex items-center gap-1.5 mb-2">
-                        {renderStars(product.rating)}
-                        <span className="text-xs text-brand-text-light">({product.reviewCount} تقييمًا)</span>
-                    </div>
-                )}
+                <div className="flex items-center gap-4 mb-2">
+                    {product.rating && (
+                        <div className="flex items-center gap-1.5">
+                            {renderStars(product.rating)}
+                            <span className="text-xs text-brand-text-light">({product.reviewCount} تقييمًا)</span>
+                        </div>
+                    )}
+                    {product.viewCount && product.viewCount > 100 && (
+                        <div className="text-xs text-brand-text-light flex items-center gap-1">
+                            <EyeIcon size="sm" />
+                            <span>{product.viewCount}</span>
+                        </div>
+                    )}
+                </div>
                 <p className="text-sm text-brand-text-light leading-relaxed mb-4 line-clamp-2">{product.description}</p>
                 <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-baseline gap-2">

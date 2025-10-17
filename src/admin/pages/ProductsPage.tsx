@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminProduct } from '../data/adminData';
 import { ProductListTable } from '../components/products/ProductListTable';
 import { Pagination } from '../components/ui/Pagination';
-import { TrashIcon, CheckCircleIcon, XCircleIcon } from '../../components/icons';
+import { TrashIcon, CheckCircleIcon, XCircleIcon, PlusIcon } from '../../components/icons';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import { Card } from '../components/ui/Card';
 import Fab from '../components/ui/Fab';
@@ -13,9 +13,10 @@ interface ProductsPageProps {
     products: AdminProduct[];
     onDeleteProducts: (productIds: number[]) => void;
     onPublishProducts: (productIds: number[], publish: boolean) => void;
+    onDuplicateProduct: (product: AdminProduct) => void;
 }
 
-const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDeleteProducts, onPublishProducts }) => {
+const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDeleteProducts, onPublishProducts, onDuplicateProduct }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -110,6 +111,15 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
 
     return (
         <div className="space-y-6">
+             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                 <h1 className="text-2xl font-bold text-admin-text-primary hidden md:block">المنتجات</h1>
+                 <button 
+                    onClick={() => navigate('addProduct')}
+                    className="bg-admin-accent text-white font-bold py-2.5 px-5 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
+                    <PlusIcon />
+                    <span>إضافة منتج</span>
+                </button>
+            </div>
             <Card title="جميع المنتجات">
                 <div className="space-y-4">
                     <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -165,6 +175,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
                                 onSelectOne={handleSelectOne}
                                 onEdit={(product) => navigate('editProduct', product)}
                                 onDelete={(product) => handleDeleteClick([product])}
+                                onDuplicate={onDuplicateProduct}
                             />
                             <Pagination
                                 currentPage={currentPage}

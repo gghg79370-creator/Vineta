@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card';
 import { ImageUpload } from '../components/products/ImageUpload';
 import { AdminProduct, AdminVariant } from '../data/adminData';
 import VariantManager from '../components/products/VariantManager';
-import { SparklesIcon, TrashIcon } from '../../components/icons';
+import { SparklesIcon, TrashIcon, CubeIcon, TagIcon, TruckIcon, CurrencyDollarIcon, InformationCircleIcon, PencilIcon } from '../../components/icons';
 import { GoogleGenAI } from "@google/genai";
 import Spinner from '../../components/ui/Spinner';
 import StickyMobileActions from '../components/ui/StickyMobileActions';
@@ -33,6 +33,8 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
         seoDescription: productToEdit?.seoDescription || '',
         weight: productToEdit?.weight || 0,
         weightUnit: productToEdit?.weightUnit || 'kg',
+        governorate: 'القاهرة', // New field
+        shippingCost: '50.00', // New field
     });
     const [images, setImages] = useState<any[]>(productToEdit?.images || []);
     const [variants, setVariants] = useState<AdminVariant[]>(productToEdit?.variants || []);
@@ -132,7 +134,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
 
     return (
         <div className="space-y-6">
-             <div className="sticky top-20 -mt-8 -mx-8 md:mb-6 p-4 bg-white/80 backdrop-blur-lg border-b z-10 hidden md:flex justify-between items-center">
+             <div className="sticky top-[80px] -mt-8 -mx-8 md:mb-6 p-4 bg-white/80 backdrop-blur-lg border-b z-10 hidden md:flex justify-between items-center">
                 <h2 className="text-xl font-bold">{isEditMode ? `تعديل: ${productToEdit.name}` : 'إضافة منتج جديد'}</h2>
                 <div className="flex items-center gap-3">
                     <button 
@@ -148,7 +150,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20 md:pb-0">
                 <div className="lg:col-span-2 space-y-6">
-                    <Card title="معلومات المنتج">
+                    <Card title="معلومات المنتج" icon={<PencilIcon size="sm"/>}>
                         <div className="space-y-4">
                             <div>
                                 <label className="admin-form-label">عنوان المنتج</label>
@@ -162,16 +164,16 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                         <span>إنشاء باستخدام AI</span>
                                     </button>
                                 </div>
-                                <textarea name="description" rows={8} value={product.description} onChange={handleChange} className="admin-form-input"></textarea>
+                                <textarea name="description" rows={12} value={product.description} onChange={handleChange} className="admin-form-input leading-relaxed" placeholder="اكتب وصفًا جذابًا لمنتجك هنا..."></textarea>
                             </div>
                         </div>
                     </Card>
 
-                    <Card title="الصور">
+                    <Card title="الصور" icon={<CubeIcon size="sm" />}>
                         <ImageUpload initialImages={productToEdit?.images} onImagesChange={setImages} />
                     </Card>
                     
-                    <Card title="التسعير والمخزون">
+                    <Card title="التسعير والمخزون" icon={<CurrencyDollarIcon size="sm"/>}>
                         <label className="flex items-center gap-2 border-b pb-4 mb-4">
                             <input type="checkbox" checked={hasVariants} onChange={e => setHasVariants(e.target.checked)} className="rounded text-admin-accent focus:ring-admin-accent/50"/>
                             <span>هذا المنتج له متغيرات (مثل المقاس أو اللون)</span>
@@ -228,7 +230,8 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                         )}
                     </Card>
 
-                    <Card title="تحسين محركات البحث">
+                    <Card title="تحسين محركات البحث (SEO)" icon={<TagIcon size="sm"/>}>
+                        <p className="text-sm text-admin-text-secondary mb-4">هكذا سيظهر منتجك في نتائج بحث جوجل.</p>
                         <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between items-center mb-1">
@@ -255,7 +258,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
 
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                    <Card title="تنظيم المنتج">
+                    <Card title="تنظيم المنتج" icon={<CubeIcon size="sm"/>}>
                         <div className="space-y-4">
                              <div>
                                 <label className="admin-form-label">حالة المنتج</label>
@@ -277,7 +280,6 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                 <input type="text" name="tags" value={product.tags} onChange={handleChange} className="admin-form-input" placeholder="صيف, كاجوال, #SummerStyle"/>
                                 <p className="text-xs text-gray-500 mt-1">افصل بين الوسوم بفاصلة.</p>
                             </div>
-                             {/* Badges Section */}
                             <div className="pt-4 border-t">
                                 <label className="admin-form-label">الشارات (Badges)</label>
                                 <div className="space-y-2 mb-3">
@@ -293,44 +295,19 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                 <div className="flex items-end gap-2">
                                     <div className="flex-1">
                                         <label className="text-xs font-medium text-gray-600">نص الشارة</label>
-                                        <input 
-                                            type="text"
-                                            placeholder="جديد"
-                                            value={newBadge.text}
-                                            onChange={(e) => setNewBadge(prev => ({ ...prev, text: e.target.value }))}
-                                            className="admin-form-input mt-1"
-                                        />
-                                    </div>
-                                    <div className="flex-1">
-                                        <label className="text-xs font-medium text-gray-600">نوع الشارة</label>
-                                        <select 
-                                            value={newBadge.type}
-                                            onChange={(e) => setNewBadge(prev => ({ ...prev, type: e.target.value }))}
-                                            className="admin-form-input mt-1"
-                                        >
-                                            <option value="custom">مخصص</option>
-                                            <option value="new">جديد</option>
-                                            <option value="sale">تخفيض</option>
-                                            <option value="trending">رائج</option>
-                                        </select>
+                                        <input type="text" placeholder="جديد" value={newBadge.text} onChange={(e) => setNewBadge(prev => ({ ...prev, text: e.target.value }))} className="admin-form-input mt-1"/>
                                     </div>
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            if (newBadge.text.trim()) {
-                                                setBadges([...badges, newBadge]);
-                                                setNewBadge({ text: '', type: 'custom' });
-                                            }
-                                        }}
-                                        className="bg-gray-200 text-gray-700 font-bold py-2 px-3 rounded-lg hover:bg-gray-300 h-10"
-                                    >
+                                        onClick={() => { if (newBadge.text.trim()) { setBadges([...badges, newBadge]); setNewBadge({ text: '', type: 'custom' }); } }}
+                                        className="bg-gray-200 text-gray-700 font-bold py-2 px-3 rounded-lg hover:bg-gray-300 h-10">
                                         إضافة
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </Card>
-                    <Card title="الشحن">
+                     <Card title="الشحن" icon={<TruckIcon size="sm"/>}>
                         <div className="space-y-4">
                             <div>
                                 <label className="admin-form-label">الوزن</label>
@@ -341,6 +318,33 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                         <option value="g">جم</option>
                                     </select>
                                 </div>
+                            </div>
+                             <div>
+                                <label className="admin-form-label">المحافظة</label>
+                                <select name="governorate" value={product.governorate} onChange={handleChange} className="admin-form-input">
+                                    <option value="القاهرة">القاهرة</option>
+                                    <option value="الجيزة">الجيزة</option>
+                                    <option value="الإسكندرية">الإسكندرية</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="admin-form-label">قيمة الشحن</label>
+                                <input type="text" name="shippingCost" value={product.shippingCost} onChange={handleChange} className="admin-form-input"/>
+                            </div>
+                        </div>
+                    </Card>
+                     <Card title="الهامش والعروض" icon={<InformationCircleIcon size="sm"/>}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="admin-form-label">الهامش (Margin)</label>
+                                <input type="text" readOnly value="-- %" className="admin-form-input bg-gray-100 cursor-not-allowed" />
+                            </div>
+                            <div>
+                                <label className="admin-form-label">العروض</label>
+                                <select className="admin-form-input">
+                                    <option>لا يوجد عرض</option>
+                                    <option>عرض الصيف (SUMMER25)</option>
+                                </select>
                             </div>
                         </div>
                     </Card>

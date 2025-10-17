@@ -1,14 +1,11 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Notification } from '../../../types';
-import { SearchIcon, BellIcon, ChevronDownIcon, Bars3Icon } from '../../../components/icons';
+import { SearchIcon, BellIcon, Bars3Icon } from '../../../components/icons';
 import NotificationPanel from '../notifications/NotificationPanel';
 
 interface AdminHeaderProps {
     currentUser: User | null;
     toggleSidebar: () => void;
-    currentPageLabel: string;
     notifications: Notification[];
     onMarkAsRead: (id: number) => void;
     onMarkAllAsRead: () => void;
@@ -16,10 +13,17 @@ interface AdminHeaderProps {
     onNavigate: (page: string, data?: any) => void;
 }
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSidebar, currentPageLabel, notifications, onMarkAsRead, onMarkAllAsRead, onClearAll, onNavigate }) => {
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSidebar, notifications, onMarkAsRead, onMarkAllAsRead, onClearAll, onNavigate }) => {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const unreadCount = notifications.filter(n => !n.isRead).length;
     const panelRef = useRef<HTMLDivElement>(null);
+
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'صباح الخير';
+        if (hour < 18) return 'مساء الخير';
+        return 'مساء الخير';
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -46,24 +50,27 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
                     <button onClick={toggleSidebar} className="p-2 -mr-2 rounded-full text-gray-500 hover:bg-gray-100 md:hidden">
                         <Bars3Icon />
                     </button>
-                    <h1 className="text-lg font-bold text-gray-800 md:hidden">{currentPageLabel}</h1>
+                    <div className="hidden md:block">
+                        <h1 className="text-xl font-bold text-gray-800">
+                            {getGreeting()}, {currentUser?.name?.split(' ')[0]} 👋
+                        </h1>
+                    </div>
                 </div>
 
                 {/* Right side: Actions & Profile */}
                 <div className="flex items-center gap-2 md:gap-4">
-                     <div className="relative hidden md:block">
+                     <div className="relative">
                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                             <SearchIcon size="sm" className="text-gray-400" />
                         </div>
-                        <input type="search" placeholder="بحث..." className="bg-gray-100 border-none rounded-lg py-2.5 pr-10 pl-4 text-sm w-48 lg:w-64 focus:ring-2 focus:ring-admin-accent focus:bg-white transition-all" />
+                        <input type="search" placeholder="بحث..." className="bg-gray-100 border-none rounded-lg py-2.5 pr-10 pl-4 text-sm w-40 sm:w-48 lg:w-64 focus:ring-2 focus:ring-admin-accent focus:bg-white transition-all" />
                     </div>
                     
                     <div className="relative" ref={panelRef}>
                         <button onClick={() => setIsPanelOpen(prev => !prev)} className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900">
                             <BellIcon />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-white">
                                 </span>
                             )}
                         </button>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AdminVariant } from '../../data/adminData';
 import { PlusIcon, TrashIcon } from '../../../components/icons';
@@ -23,7 +24,6 @@ const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }
                         optionMap[key] = new Set();
                         optionOrder.push(key);
                     }
-                    // FIX: Cast `value` from `Object.entries` to `string` to resolve TypeScript error where it's inferred as `unknown`.
                     optionMap[key].add(value as string);
                 });
             });

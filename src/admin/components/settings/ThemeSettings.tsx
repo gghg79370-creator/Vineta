@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppState } from '../../../state/AppState';
 import { useToast } from '../../../hooks/useToast';
 import { Card } from '../ui/Card';
-import { ArrowUpTrayIcon } from '../../../components/icons';
+import { ArrowUpTrayIcon, ChatBubbleOvalLeftEllipsisIcon } from '../../../components/icons';
 
 const ThemeSettings: React.FC = () => {
     const { state, dispatch } = useAppState();
@@ -12,7 +12,7 @@ const ThemeSettings: React.FC = () => {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(state.theme.logoUrl);
 
-    const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setTheme(prev => ({ ...prev, [name]: value }));
     };
@@ -31,18 +31,21 @@ const ThemeSettings: React.FC = () => {
     };
 
     const handleSaveChanges = () => {
+        const saveTheme = (finalTheme: typeof theme) => {
+            dispatch({ type: 'SET_THEME', payload: finalTheme });
+            addToast('تم حفظ إعدادات المظهر بنجاح!', 'success');
+        };
+
         if (logoFile) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const newTheme = { ...theme, logoUrl: reader.result as string };
-                dispatch({ type: 'SET_THEME', payload: newTheme });
-                addToast('تم حفظ إعدادات المظهر بنجاح!', 'success');
+                saveTheme(newTheme);
             };
             reader.readAsDataURL(logoFile);
         } else {
             const newTheme = { ...theme, logoUrl: logoPreview }; // handles removal
-            dispatch({ type: 'SET_THEME', payload: newTheme });
-            addToast('تم حفظ إعدادات المظهر بنجاح!', 'success');
+            saveTheme(newTheme);
         }
     };
 
@@ -50,6 +53,12 @@ const ThemeSettings: React.FC = () => {
         { name: 'Poppins & Tajawal (Default)', value: "'Poppins', 'Tajawal', sans-serif" },
         { name: 'El Messiri (Serif)', value: "'El Messiri', 'serif'" },
         { name: 'Tajawal only', value: "'Tajawal', sans-serif" }
+    ];
+    
+    const chatbotTemplates = [
+        'أهلاً بك في {siteName}! كيف يمكنني مساعدتك في العثور على إطلالتك المثالية اليوم؟ ✨',
+        'مرحباً! أنا Vinnie، مساعدك في عالم الموضة. اسألني عن أي شيء!',
+        'يوم رائع للتسوق! أنا هنا للمساعدة في أي استفسارات لديك حول منتجاتنا أو طلباتك.'
     ];
 
     return (
@@ -119,6 +128,36 @@ const ThemeSettings: React.FC = () => {
                             <option key={font.value} value={font.value}>{font.name}</option>
                         ))}
                     </select>
+                </div>
+            </Card>
+
+            <Card title="رسالة ترحيب المساعد الذكي" icon={<ChatBubbleOvalLeftEllipsisIcon size="sm"/>}>
+                <div className="space-y-4">
+                    <div>
+                        <label className="admin-form-label">رسالة الترحيب المخصصة</label>
+                        <p className="text-xs text-gray-500 mb-2">هذه هي أول رسالة يراها المستخدم عند فتح الدردشة. يمكنك استخدام <code>{`{siteName}`}</code> ليتم استبداله باسم متجرك تلقائيًا.</p>
+                        <textarea
+                            name="chatbotWelcomeMessage"
+                            rows={4}
+                            value={theme.chatbotWelcomeMessage}
+                            onChange={handleThemeChange}
+                            className="admin-form-input"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-semibold text-gray-600 mb-2 block">أو اختر من القوالب:</label>
+                        <div className="space-y-2">
+                            {chatbotTemplates.map((template, index) => (
+                                <button 
+                                    key={index} 
+                                    onClick={() => setTheme(prev => ({ ...prev, chatbotWelcomeMessage: template }))}
+                                    className="w-full text-right text-sm p-2 bg-gray-50 hover:bg-gray-100 rounded-md border text-gray-600"
+                                >
+                                    {template.replace('{siteName}', state.theme.siteName)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </Card>
 

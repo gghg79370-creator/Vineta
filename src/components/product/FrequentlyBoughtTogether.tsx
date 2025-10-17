@@ -1,7 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
 import { Product, Variant } from '../../types';
-import { PlusIcon, CheckIcon } from '../icons';
 
 interface FrequentlyBoughtTogetherProps {
     mainProduct: Product;
@@ -15,50 +13,40 @@ const FbtProductCard: React.FC<{
     onToggle: () => void;
     selectedVariant: Variant | null;
     onVariantChange: (variantId: string) => void;
-}> = ({ item, isSelected, onToggle, selectedVariant, onVariantChange }) => {
+    isMain: boolean;
+}> = ({ item, isSelected, onToggle, selectedVariant, onVariantChange, isMain }) => {
     const displayPrice = selectedVariant?.price || item.price;
     
     return (
-        <div 
-            className="relative w-40 md:w-48 text-center group cursor-pointer animate-fade-in"
-            onClick={onToggle}
-            role="checkbox"
-            aria-checked={isSelected}
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onToggle(); }}
-        >
-            <div className={`relative rounded-2xl overflow-hidden border-2 transition-all duration-300 ${isSelected ? 'border-brand-primary' : 'border-transparent'} group-hover:border-brand-primary/50`}>
-                <div className={`absolute inset-0 bg-brand-primary transition-opacity duration-300 ${isSelected ? 'opacity-10' : 'opacity-0'}`}></div>
-                <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="w-full h-48 md:h-56 object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                />
-                <div className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isSelected ? 'bg-brand-primary border-brand-primary' : 'bg-white/50 border-white group-hover:bg-white'}`}>
-                    {isSelected && <CheckIcon className="w-5 h-5 text-white" />}
+        <div className="flex items-center gap-4">
+             <input type="checkbox" checked={isSelected} onChange={onToggle} className="w-5 h-5 rounded border-gray-400 text-brand-primary focus:ring-brand-primary" />
+             <div className="flex items-center gap-4 flex-1">
+                <img src={item.image} alt={item.name} className="w-20 h-24 object-cover rounded-lg" />
+                <div className="flex-1">
+                    <p className="font-semibold text-brand-dark">{isMain && <span className="text-sm font-normal text-brand-text-light">This item: </span>}{item.name}</p>
+                    <p className="font-bold text-brand-dark">{displayPrice} ج.م</p>
+                    {item.variants && item.variants.length > 0 && (
+                        <div className="relative mt-2 max-w-[150px]">
+                            <select
+                                value={selectedVariant?.id}
+                                onChange={(e) => onVariantChange(e.target.value)}
+                                className="w-full appearance-none bg-gray-100 border border-gray-300 rounded-md py-1 px-3 text-sm focus:ring-1 focus:ring-brand-primary"
+                                aria-label={`Select variant for ${item.name}`}
+                            >
+                                {item.variants.map(v => (
+                                    <option key={v.id} value={v.id}>{v.color} / {v.size}</option>
+                                ))}
+                            </select>
+                            <svg className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-2 pointer-events-none text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    )}
                 </div>
-            </div>
-            <h4 className="font-bold text-sm mt-3 text-brand-dark truncate">{item.name}</h4>
-            <p className="font-semibold text-brand-primary text-sm">{displayPrice} ج.م</p>
-            {item.variants && item.variants.length > 0 && (
-                <select
-                    value={selectedVariant?.id}
-                    onChange={(e) => { e.stopPropagation(); onVariantChange(e.target.value); }}
-                    onClick={(e) => e.stopPropagation()} // Prevent card toggle when clicking select
-                    className="mt-2 text-xs bg-gray-100 border-0 rounded-full py-1 px-3 focus:ring-1 focus:ring-brand-primary w-full appearance-none text-center"
-                    aria-label={`Select variant for ${item.name}`}
-                >
-                    {item.variants.map(v => (
-                        <option key={v.id} value={v.id}>{v.size} / {v.color}</option>
-                    ))}
-                </select>
-            )}
+             </div>
         </div>
     );
 };
 
-export const FrequentlyBoughtTogether = ({ mainProduct, otherProducts, addToCart }: FrequentlyBoughtTogetherProps) => {
+export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ mainProduct, otherProducts, addToCart }) => {
     const allItems = useMemo(() => [mainProduct, ...otherProducts.filter(p => p.id !== mainProduct.id).slice(0, 2)], [mainProduct, otherProducts]);
     
     const [selectedIds, setSelectedIds] = useState<number[]>(allItems.map(p => p.id));
@@ -79,7 +67,7 @@ export const FrequentlyBoughtTogether = ({ mainProduct, otherProducts, addToCart
 
     const handleVariantChange = (productId: number, variantId: string) => {
         const product = allItems.find(p => p.id === productId);
-        const variant = product?.variants?.find(v => v.id === parseInt(variantId));
+        const variant = product?.variants?.find(v => String(v.id) === variantId);
         if(variant) {
             setSelectedVariants(prev => ({...prev, [productId]: variant}));
         }
@@ -87,12 +75,15 @@ export const FrequentlyBoughtTogether = ({ mainProduct, otherProducts, addToCart
     
     const selectedItems = useMemo(() => allItems.filter(item => selectedIds.includes(item.id)), [allItems, selectedIds]);
     
-    const totalPrice = useMemo(() => {
+    const { totalPrice, totalOldPrice } = useMemo(() => {
         return selectedItems.reduce((acc, item) => {
             const variant = selectedVariants[item.id];
-            const price = variant ? variant.price : item.price;
-            return acc + parseFloat(price);
-        }, 0);
+            const price = parseFloat(variant ? variant.price : item.price);
+            const oldPrice = parseFloat(variant ? (variant.oldPrice || variant.price) : (item.oldPrice || item.price));
+            acc.totalPrice += price;
+            acc.totalOldPrice += oldPrice;
+            return acc;
+        }, { totalPrice: 0, totalOldPrice: 0 });
     }, [selectedItems, selectedVariants]);
 
     const handleAddAllToCart = () => {
@@ -108,36 +99,37 @@ export const FrequentlyBoughtTogether = ({ mainProduct, otherProducts, addToCart
     };
 
     return (
-        <div className="py-16 md:py-24 bg-gradient-to-br from-rose-50 to-indigo-50 dark:from-gray-900 dark:to-slate-800">
+        <div className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-center text-brand-dark mb-12 animate-fade-in-up">يُشترى معًا بشكل متكرر</h2>
-                <div className="max-w-4xl mx-auto">
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-8">
+                 <div className="max-w-4xl mx-auto bg-brand-subtle p-6 rounded-2xl shadow-sm">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-center text-brand-dark mb-8">يُشترى معًا بشكل متكرر</h2>
+                    <div className="space-y-6">
                         {allItems.map((item, index) => (
-                            <React.Fragment key={item.id}>
-                                <FbtProductCard
-                                    item={item}
-                                    isSelected={selectedIds.includes(item.id)}
-                                    onToggle={() => handleToggleItem(item.id)}
-                                    selectedVariant={selectedVariants[item.id]}
-                                    onVariantChange={(variantId) => handleVariantChange(item.id, variantId)}
-                                />
-                                {index < allItems.length - 1 && <PlusIcon className="w-8 h-8 text-brand-text-light flex-shrink-0 my-4 md:my-0" />}
-                            </React.Fragment>
+                           <FbtProductCard
+                                key={item.id}
+                                item={item}
+                                isSelected={selectedIds.includes(item.id)}
+                                onToggle={() => handleToggleItem(item.id)}
+                                selectedVariant={selectedVariants[item.id]}
+                                onVariantChange={(variantId) => handleVariantChange(item.id, variantId)}
+                                isMain={index === 0}
+                            />
                         ))}
                     </div>
-
-                    <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-700 mt-8 pt-8 text-center">
+                    <div className="border-t-2 border-dashed border-gray-400/50 mt-8 pt-6 text-center">
                         <p className="text-brand-text-light">
                             {selectedItems.length > 0 ? ` سعر ${selectedItems.length} منتجات محددة:` : 'حدد المنتجات لإضافتها إلى السلة'}
                         </p>
-                        <p className="font-extrabold text-4xl text-brand-dark my-2 transition-colors duration-300">{totalPrice.toFixed(2)} ج.م</p>
+                        <div className="flex justify-center items-baseline gap-3 my-2">
+                           <p className="font-extrabold text-3xl text-brand-primary">{totalPrice.toFixed(2)} ج.م</p>
+                           {totalOldPrice > totalPrice && <p className="text-xl text-brand-text-light line-through">{totalOldPrice.toFixed(2)} ج.م</p>}
+                        </div>
                         <button
                             onClick={handleAddAllToCart}
                             disabled={selectedItems.length === 0}
-                            className="w-full max-w-sm mx-auto bg-brand-dark text-white font-bold py-4 rounded-full text-lg mt-4 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_transparent] hover:shadow-lg hover:shadow-brand-primary/50 active:scale-95"
+                            className="w-full max-w-sm mx-auto bg-brand-dark text-white font-bold py-3 rounded-full text-lg mt-4 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg active:scale-95"
                         >
-                            أضف ({selectedItems.length}) إلى السلة
+                            أضف المحدد إلى السلة
                         </button>
                     </div>
                 </div>
