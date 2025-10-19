@@ -20,6 +20,7 @@ import AddCategoryPage from './pages/AddCategoryPage';
 import ContactMessagesPage from './pages/ContactMessagesPage';
 import InventoryPage from './pages/InventoryPage';
 import ReviewsPage from './pages/ReviewsPage';
+// FIX: Correctly import ThemeSettingsPage which was previously causing an error due to a truncated file.
 import ThemeSettingsPage from './pages/ThemeSettingsPage';
 import SaleCampaignsPage from './pages/SaleCampaignsPage';
 import AddSaleCampaignPage from './pages/AddSaleCampaignPage';
@@ -305,7 +306,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
 
             // Sales
             case 'orders': return <OrdersPage navigate={navigate} orders={orders} onStatusChange={handleStatusChange} />;
-            case 'orderDetail': return <OrderDetailPage navigate={navigate} order={pageData} customers={customers} onStatusChange={handleStatusChange} products={products} onNoteSave={handleSaveOrderNote} />;
+            case 'orderDetail': return <OrderDetailPage navigate={navigate} order={pageData} customers={customers} products={products} onStatusChange={handleStatusChange} onNoteSave={handleSaveOrderNote} />;
             case 'discounts': return <DiscountsPage discounts={discounts} navigate={navigate} onDeleteDiscounts={handleDeleteDiscounts} />;
             case 'addDiscount': return <AddDiscountPage navigate={navigate} onSave={handleSaveDiscount} />;
             case 'editDiscount': return <AddDiscountPage navigate={navigate} onSave={handleSaveDiscount} discountToEdit={pageData} />;

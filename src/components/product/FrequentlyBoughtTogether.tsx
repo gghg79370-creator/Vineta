@@ -19,25 +19,25 @@ const FbtProductCard: React.FC<{
     
     return (
         <div className="flex items-center gap-4">
-             <input type="checkbox" checked={isSelected} onChange={onToggle} className="w-5 h-5 rounded border-gray-400 text-brand-primary focus:ring-brand-primary" />
+             <input type="checkbox" checked={isSelected} onChange={onToggle} className="w-5 h-5 rounded border-brand-border text-brand-primary focus:ring-brand-primary" />
              <div className="flex items-center gap-4 flex-1">
                 <img src={item.image} alt={item.name} className="w-20 h-24 object-cover rounded-lg" />
                 <div className="flex-1">
-                    <p className="font-semibold text-brand-dark">{isMain && <span className="text-sm font-normal text-brand-text-light">This item: </span>}{item.name}</p>
+                    <p className="font-semibold text-brand-dark">{isMain && <span className="text-sm font-normal text-brand-text-light">هذا المنتج: </span>}{item.name}</p>
                     <p className="font-bold text-brand-dark">{displayPrice} ج.م</p>
                     {item.variants && item.variants.length > 0 && (
                         <div className="relative mt-2 max-w-[150px]">
                             <select
                                 value={selectedVariant?.id}
                                 onChange={(e) => onVariantChange(e.target.value)}
-                                className="w-full appearance-none bg-gray-100 border border-gray-300 rounded-md py-1 px-3 text-sm focus:ring-1 focus:ring-brand-primary"
+                                className="w-full appearance-none bg-brand-subtle border border-brand-border rounded-md py-1 px-3 text-sm focus:ring-1 focus:ring-brand-primary"
                                 aria-label={`Select variant for ${item.name}`}
                             >
                                 {item.variants.map(v => (
                                     <option key={v.id} value={v.id}>{v.color} / {v.size}</option>
                                 ))}
                             </select>
-                            <svg className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-2 pointer-events-none text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg className="w-4 h-4 absolute top-1/2 -translate-y-1/2 left-2 pointer-events-none text-brand-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     )}
                 </div>
@@ -101,7 +101,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     return (
         <div className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-                 <div className="max-w-4xl mx-auto bg-brand-subtle p-6 rounded-2xl shadow-sm">
+                 <div className="max-w-4xl mx-auto bg-surface p-6 rounded-2xl shadow-sm">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-center text-brand-dark mb-8">يُشترى معًا بشكل متكرر</h2>
                     <div className="space-y-6">
                         {allItems.map((item, index) => (
@@ -116,9 +116,9 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
                             />
                         ))}
                     </div>
-                    <div className="border-t-2 border-dashed border-gray-400/50 mt-8 pt-6 text-center">
+                    <div className="border-t-2 border-dashed border-brand-border/50 mt-8 pt-6 text-center">
                         <p className="text-brand-text-light">
-                            {selectedItems.length > 0 ? ` سعر ${selectedItems.length} منتجات محددة:` : 'حدد المنتجات لإضافتها إلى السلة'}
+                            {selectedItems.length > 0 ? `السعر الإجمالي:` : 'حدد المنتجات لإضافتها إلى السلة'}
                         </p>
                         <div className="flex justify-center items-baseline gap-3 my-2">
                            <p className="font-extrabold text-3xl text-brand-primary">{totalPrice.toFixed(2)} ج.م</p>

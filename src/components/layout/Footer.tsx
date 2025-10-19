@@ -11,7 +11,7 @@ const FooterSection: React.FC<{ title: string; children: React.ReactNode; }> = (
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="py-4 border-b md:border-none md:p-0">
+        <div className="py-4 border-b border-brand-border md:border-none md:p-0">
             <button
                 className="w-full flex justify-between items-center md:hidden"
                 onClick={() => setIsOpen(!isOpen)}
@@ -45,15 +45,15 @@ export const Footer = ({ navigateTo }: FooterProps) => {
     };
 
     return (
-    <footer className="bg-white text-brand-text border-t">
+    <footer className="bg-surface text-brand-text border-t border-brand-border">
         <div className="container mx-auto px-4">
             {/* Top part */}
-            <div className="flex justify-between items-center py-8 border-b">
+            <div className="flex justify-between items-center py-8 border-b border-brand-border">
                 <div className="flex gap-2">
-                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full text-gray-500 hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors" aria-label="X"><i className="fa-brands fa-x-twitter" /></a>
-                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full text-gray-500 hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors" aria-label="LinkedIn"><i className="fa-brands fa-linkedin-in" /></a>
-                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full text-gray-500 hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors" aria-label="Instagram"><i className="fa-brands fa-instagram" /></a>
-                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-full text-gray-500 hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors" aria-label="Facebook"><i className="fa-brands fa-facebook-f" /></a>
+                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="X"><i className="fa-brands fa-x-twitter" /></a>
+                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="LinkedIn"><i className="fa-brands fa-linkedin-in" /></a>
+                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="Instagram"><i className="fa-brands fa-instagram" /></a>
+                    <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="Facebook"><i className="fa-brands fa-facebook-f" /></a>
                 </div>
                 <h3 className="font-serif text-4xl font-bold text-brand-dark">{theme.siteName}</h3>
             </div>
@@ -81,7 +81,7 @@ export const Footer = ({ navigateTo }: FooterProps) => {
                                 placeholder="...أدخل بريدك الإلكتروني" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white border border-gray-300 rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
+                                className="w-full bg-brand-bg border border-brand-border rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                 required
                             />
                             <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
@@ -133,7 +133,7 @@ export const Footer = ({ navigateTo }: FooterProps) => {
                                 placeholder="...أدخل بريدك الإلكتروني" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white border border-gray-300 rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
+                                className="w-full bg-brand-bg border border-brand-border rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                 required
                             />
                             <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
@@ -161,8 +161,8 @@ export const Footer = ({ navigateTo }: FooterProps) => {
             </div>
 
             {/* Bottom part */}
-            <div className="relative border-t">
-                 <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="absolute left-4 -top-5 bg-white w-10 h-10 flex items-center justify-center border rounded-md hover:shadow-md transition-shadow" aria-label="العودة إلى الأعلى">
+            <div className="relative border-t border-brand-border">
+                 <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="absolute left-4 -top-5 bg-surface w-10 h-10 flex items-center justify-center border border-brand-border rounded-md hover:shadow-md transition-shadow" aria-label="العودة إلى الأعلى">
                     <i className="fa-solid fa-arrow-up"></i>
                 </button>
                 <div className="flex flex-col md:flex-row justify-between items-center py-6 gap-4">

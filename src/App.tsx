@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Product, Filters, User, Review, HeroSlide, SaleCampaign, AdminAnnouncement } from './types';
+import { Product, Filters, User, Review, HeroSlide, SaleCampaign, AdminAnnouncement, CartItem } from './types';
 import { allProducts } from './data/products';
 import { saleCampaignsData } from './data/sales';
 import { heroSlidesData } from './data/homepage';
@@ -26,6 +24,7 @@ import { FloatingCartBubble } from './components/cart/FloatingCartBubble';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import Chatbot from './components/chatbot/Chatbot';
 import { WriteReviewModal } from './components/modals/WriteReviewModal';
+import { AddToCartConfirmation } from './components/cart/AddToCartConfirmation';
 
 const serializeUrlParams = (filters: Filters, page: number) => {
     const params = new URLSearchParams();
@@ -98,6 +97,7 @@ const AppContent = () => {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [modalProductContext, setModalProductContext] = useState<Product | null>(null);
 
+    const [confirmationItem, setConfirmationItem] = useState<CartItem | null>(null);
     
     const [isCompareOpen, setIsCompareOpen] = useState(false);
     
@@ -309,7 +309,31 @@ const AppContent = () => {
         } = options;
 
         dispatch({ type: 'ADD_TO_CART', payload: { product, quantity, selectedSize, selectedColor } });
-        setIsCartOpen(true);
+        
+        const productDetails = allProducts.find(p => p.id === product.id);
+        if (!productDetails) return;
+
+        let price = productDetails.price;
+        let oldPrice = productDetails.oldPrice;
+
+        if (productDetails.variants && productDetails.variants.length > 0) {
+            const variant = productDetails.variants.find(v => v.size === selectedSize && v.color === selectedColor);
+            if (variant) {
+                price = variant.price;
+                oldPrice = variant.oldPrice;
+            }
+        }
+        
+        const cartItemForPopup: CartItem = {
+            ...productDetails,
+            price,
+            oldPrice,
+            quantity,
+            selectedSize,
+            selectedColor,
+        };
+
+        setConfirmationItem(cartItemForPopup);
     };
     
     const openQuickView = (product: Product) => {
@@ -339,6 +363,16 @@ const AppContent = () => {
     return (
         <div dir="rtl" className="font-sans">
             <ToastContainer />
+            {confirmationItem && (
+                <AddToCartConfirmation 
+                    item={confirmationItem}
+                    onClose={() => setConfirmationItem(null)}
+                    onViewCart={() => {
+                        setConfirmationItem(null);
+                        setIsCartOpen(true);
+                    }}
+                />
+            )}
             <AnnouncementBar announcements={announcements} />
             <Header 
                 navigateTo={navigateTo} 

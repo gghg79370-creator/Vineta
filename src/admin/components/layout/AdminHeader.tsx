@@ -43,15 +43,15 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
 
 
     return (
-        <header className="h-20 bg-white/80 backdrop-blur-lg border-b border-admin-border flex-shrink-0 sticky top-0 z-20">
+        <header className="h-20 bg-admin-card-bg/80 backdrop-blur-lg border-b border-admin-border flex-shrink-0 sticky top-0 z-20">
             <div className="flex items-center justify-between h-full px-4 md:px-6 lg:px-8">
                 {/* Left side: Mobile Toggle & Page Title */}
                 <div className="flex items-center gap-2">
-                    <button onClick={toggleSidebar} className="p-2 -mr-2 rounded-full text-gray-500 hover:bg-gray-100 md:hidden">
+                    <button onClick={toggleSidebar} className="p-2 -mr-2 rounded-full text-admin-text-secondary hover:bg-admin-bg md:hidden">
                         <Bars3Icon />
                     </button>
                     <div className="hidden md:block">
-                        <h1 className="text-xl font-bold text-gray-800">
+                        <h1 className="text-xl font-bold text-admin-text-primary">
                             {getGreeting()}, {currentUser?.name?.split(' ')[0]} 👋
                         </h1>
                     </div>
@@ -61,16 +61,16 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
                 <div className="flex items-center gap-2 md:gap-4">
                      <div className="relative">
                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                            <SearchIcon size="sm" className="text-gray-400" />
+                            <SearchIcon size="sm" className="text-admin-text-secondary" />
                         </div>
-                        <input type="search" placeholder="بحث..." className="bg-gray-100 border-none rounded-lg py-2.5 pr-10 pl-4 text-sm w-40 sm:w-48 lg:w-64 focus:ring-2 focus:ring-admin-accent focus:bg-white transition-all" />
+                        <input type="search" placeholder="بحث..." className="bg-admin-bg border-none rounded-lg py-2.5 pr-10 pl-4 text-sm w-40 sm:w-48 lg:w-64 focus:ring-2 focus:ring-admin-accent focus:bg-admin-card-bg transition-all" />
                     </div>
                     
                     <div className="relative" ref={panelRef}>
-                        <button onClick={() => setIsPanelOpen(prev => !prev)} className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900">
+                        <button onClick={() => setIsPanelOpen(prev => !prev)} className="relative p-2 rounded-full text-admin-text-secondary hover:bg-admin-bg hover:text-admin-text-primary">
                             <BellIcon />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-white">
+                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-admin-card-bg">
                                 </span>
                             )}
                         </button>
@@ -96,8 +96,8 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
                             className="w-10 h-10 rounded-full"
                         />
                         <div className="hidden sm:block">
-                            <p className="font-semibold text-sm text-gray-900">{currentUser?.name}</p>
-                            <p className="text-xs text-gray-500">{currentUser?.role}</p>
+                            <p className="font-semibold text-sm text-admin-text-primary">{currentUser?.name}</p>
+                            <p className="text-xs text-admin-text-secondary">{currentUser?.role}</p>
                         </div>
                     </div>
                 </div>

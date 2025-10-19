@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { CartItem, Product, Address, Order } from '../types';
 import { CheckIcon, CouponIcon, MapPinIcon, PlusIcon, CheckCircleIcon, LockClosedIcon } from '../components/icons';
@@ -24,7 +23,7 @@ const CheckoutStepper = ({ currentStep }: { currentStep: number }) => {
                             <div className="flex flex-col items-center">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300
                                     ${isCompleted ? 'bg-brand-primary text-white' : ''}
-                                    ${isActive ? 'bg-white text-brand-primary border-2 border-brand-primary' : ''}
+                                    ${isActive ? 'bg-surface text-brand-primary border-2 border-brand-primary' : ''}
                                     ${!isCompleted && !isActive ? 'bg-brand-border text-brand-text-light' : ''}`}
                                 >
                                     {isCompleted ? <CheckIcon size="sm" /> : stepNumber}
@@ -189,20 +188,20 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
             {addresses.map(address => {
                 const isSelected = selectedId === address.id;
                 return (
-                     <div key={address.id} onClick={() => onSelect(address.id)} className={`relative border p-4 rounded-lg cursor-pointer transition-all ${isSelected ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`}>
+                     <div key={address.id} onClick={() => onSelect(address.id)} className={`relative border p-4 rounded-lg cursor-pointer transition-all ${isSelected ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-brand-text-light'}`}>
                         {address.isDefault && <div className="absolute top-2 left-2 text-xs bg-brand-primary text-white font-semibold px-2 py-0.5 rounded-full">افتراضي</div>}
                         {isSelected && <div className="absolute top-2 right-2 text-brand-primary"><CheckCircleIcon /></div>}
                         <div className="flex items-start gap-3">
-                            <MapPinIcon className="w-6 h-6 text-gray-400 mt-1"/>
+                            <MapPinIcon className="w-6 h-6 text-brand-text-light mt-1"/>
                             <div className="flex-1">
-                                <p className="font-bold">{address.name} <span className="text-xs font-normal text-gray-500">({address.recipientName})</span></p>
-                                <p className="text-sm text-gray-600 mt-1">{`${address.street}, ${address.city}`}</p>
+                                <p className="font-bold">{address.name} <span className="text-xs font-normal text-brand-text-light">({address.recipientName})</span></p>
+                                <p className="text-sm text-brand-text-light mt-1">{`${address.street}, ${address.city}`}</p>
                             </div>
                         </div>
                     </div>
                 )
             })}
-            <div onClick={() => onSelect('new')} className={`border-2 border-dashed p-4 rounded-lg cursor-pointer transition-all flex items-center justify-center text-gray-500 hover:border-brand-primary hover:text-brand-primary ${selectedId === 'new' ? 'border-brand-primary text-brand-primary ring-2 ring-brand-primary/50' : 'border-gray-300'}`}>
+            <div onClick={() => onSelect('new')} className={`border-2 border-dashed p-4 rounded-lg cursor-pointer transition-all flex items-center justify-center text-brand-text-light hover:border-brand-primary hover:text-brand-primary ${selectedId === 'new' ? 'border-brand-primary text-brand-primary ring-2 ring-brand-primary/50' : 'border-brand-border'}`}>
                 <div className="text-center">
                     <PlusIcon className="w-8 h-8 mx-auto"/>
                     <p className="font-semibold mt-2">إضافة عنوان جديد</p>
@@ -213,7 +212,7 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
 
     return (
         <div className="bg-brand-subtle">
-            <div className="py-12 bg-white border-b">
+            <div className="py-12 bg-surface border-b border-brand-border">
                 <div className="container mx-auto px-4">
                      <h1 className="text-4xl font-bold text-center mb-8">الدفع</h1>
                      <CheckoutStepper currentStep={2} />
@@ -225,10 +224,10 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                         <h2 className="text-2xl font-bold mb-6">عنوان الشحن</h2>
                          {currentUser && currentUser.addresses.length > 0 ? (
                             <AddressSelector addresses={currentUser.addresses} selectedId={selectedShippingAddressId} onSelect={setSelectedShippingAddressId} />
-                         ) : <p className="text-gray-500 text-sm mb-4">أدخل عنوان الشحن الخاص بك.</p>}
+                         ) : <p className="text-brand-text-light text-sm mb-4">أدخل عنوان الشحن الخاص بك.</p>}
                         
                         {selectedShippingAddressId === 'new' && (
-                            <div className="space-y-4 mt-4 p-4 border rounded-lg bg-white animate-fade-in">
+                            <div className="space-y-4 mt-4 p-4 border rounded-lg bg-surface animate-fade-in">
                                 <div>
                                     <input name="shipping_recipientName" placeholder="الاسم الكامل *" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.shipping_recipientName ? 'border-red-500' : 'border-brand-border'}`} autoComplete="shipping name" />
                                     {errors.shipping_recipientName && <p className="text-red-500 text-xs mt-1">{errors.shipping_recipientName}</p>}
@@ -249,14 +248,14 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                         
                         <div className="mt-8">
                             <h2 className="text-2xl font-bold mb-6">الدفع</h2>
-                            <div className="space-y-3 bg-white p-4 rounded-lg border">
-                                <div className={`border p-4 rounded-lg cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`} onClick={() => setPaymentMethod('cod')}>
+                            <div className="space-y-3 bg-surface p-4 rounded-lg border">
+                                <div className={`border p-4 rounded-lg cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-brand-text-light'}`} onClick={() => setPaymentMethod('cod')}>
                                     <label className="font-semibold flex items-center gap-3 cursor-pointer">
                                         <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="h-4 w-4 text-brand-primary focus:ring-brand-primary"/> 
                                         الدفع عند الاستلام
                                     </label>
                                 </div>
-                                <div className={`border p-4 rounded-lg cursor-pointer transition-all ${paymentMethod === 'creditCard' ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-gray-400'}`} onClick={() => setPaymentMethod('creditCard')}>
+                                <div className={`border p-4 rounded-lg cursor-pointer transition-all ${paymentMethod === 'creditCard' ? 'border-brand-primary ring-2 ring-brand-primary/50' : 'hover:border-brand-text-light'}`} onClick={() => setPaymentMethod('creditCard')}>
                                     <label className="font-semibold flex items-center gap-3 cursor-pointer">
                                         <input type="radio" name="payment" value="creditCard" checked={paymentMethod === 'creditCard'} onChange={() => setPaymentMethod('creditCard')} className="h-4 w-4 text-brand-primary focus:ring-brand-primary"/>
                                         بطاقة الائتمان
@@ -288,16 +287,16 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                         </div>
                     </div>
                     <div>
-                        <div className="bg-white border p-6 rounded-lg lg:sticky top-28">
+                        <div className="bg-surface border border-brand-border p-6 rounded-lg lg:sticky top-28">
                             <h2 className="text-2xl font-bold mb-6">طلبك</h2>
                             <form onSubmit={handleApplyCoupon} className="flex gap-2 mb-4">
                                 <div className="relative flex-grow">
                                     <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light"><CouponIcon size="sm"/></div>
-                                    <input type="text" placeholder="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-3 pr-11 pl-4"/>
+                                    <input type="text" placeholder="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-surface border border-brand-border rounded-full py-3 pr-11 pl-4"/>
                                 </div>
                                 <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-6 rounded-full text-sm">تطبيق</button>
                             </form>
-                            <div className="space-y-3 border-b pb-4 max-h-60 overflow-y-auto">
+                            <div className="space-y-3 border-b border-brand-border pb-4 max-h-60 overflow-y-auto">
                                 {cartItems.map(item => (
                                     <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
@@ -314,11 +313,11 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                                     </div>
                                 ))}
                             </div>
-                            <div className="space-y-2 py-4 border-b">
+                            <div className="space-y-2 py-4 border-b border-brand-border">
                                 <div className="flex justify-between"><span>المجموع الفرعي:</span><span className="font-semibold">{cartSubtotal.toFixed(2)} ج.م</span></div>
                                 <div className="flex justify-between"><span>الشحن:</span><span className="font-semibold">{shipping === 0 ? 'مجاني' : `${shipping.toFixed(2)} ج.م`}</span></div>
                                 {state.appliedCoupon && (
-                                    <div className="flex justify-between text-green-600">
+                                    <div className="flex justify-between text-brand-instock">
                                         <span>خصم ({state.appliedCoupon.code}):</span>
                                         <span className="font-semibold">-{discountAmount.toFixed(2)} ج.م</span>
                                     </div>

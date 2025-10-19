@@ -64,16 +64,16 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
         <button
             onClick={onClick}
             aria-label={label}
-            className={`bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 transform opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-brand-primary hover:text-white active:scale-90 ${delay} ${active ? 'text-brand-primary' : 'text-brand-dark'}`}
+            className={`bg-surface rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 transform opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hover:bg-brand-primary hover:text-white active:scale-90 ${delay} ${active ? 'text-brand-primary' : 'text-brand-dark'}`}
         >
             {icon}
         </button>
     );
 
     return (
-        <div className="group relative text-center bg-white border border-gray-100 dark:bg-surface dark:border-line rounded-2xl overflow-hidden h-full flex flex-col cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-brand-primary" onClick={() => navigateTo('product', product)}>
+        <div className="group relative text-center bg-surface border border-brand-border/30 rounded-2xl overflow-hidden h-full flex flex-col cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-brand-primary" onClick={() => navigateTo('product', product)}>
             <div className="relative overflow-hidden">
-                <div className="bg-gray-100 aspect-[3/4]">
+                <div className="bg-brand-subtle aspect-[3/4]">
                     <img src={product.image} alt={product.name} className={`w-full h-full object-cover transition-all duration-500 md:group-hover:scale-110 ${alternativeImage ? 'md:group-hover:opacity-0' : ''}`} />
                     {alternativeImage && (
                         <img src={alternativeImage} alt={`${product.name} alternate view`} className="absolute inset-0 w-full h-full object-cover opacity-0 md:group-hover:opacity-100 transition-all duration-500 md:group-hover:scale-110" />
@@ -136,12 +136,12 @@ export const CollectionProductCard: React.FC<ProductCardProps> = ({
                 
                 <div className="flex justify-center gap-1.5 h-5">
                     {product.colors.slice(0, 5).map(color => (
-                        <span key={color} className="w-5 h-5 rounded-full border dark:border-line" style={{ backgroundColor: color }}></span>
+                        <span key={color} className="w-5 h-5 rounded-full border border-black/10" style={{ backgroundColor: color }}></span>
                     ))}
                 </div>
                 
                 {/* Mobile-only actions */}
-                <div className="mt-4 pt-4 border-t md:hidden">
+                <div className="mt-4 pt-4 border-t border-brand-border md:hidden">
                     <div className="flex items-center justify-center gap-2">
                         <button onClick={handleAddToCart} className="flex-1 bg-brand-dark text-white font-bold py-2 rounded-full text-xs flex items-center justify-center gap-1">
                             <ShoppingBagIcon size="sm"/>

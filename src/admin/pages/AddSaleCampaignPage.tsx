@@ -43,12 +43,15 @@ const AddSaleCampaignPage: React.FC<AddSaleCampaignPageProps> = ({ navigate, onS
         };
         onSave(campaignData);
     };
-
-    const FormInput = ({ label, name, ...props }: {label: string, name: keyof typeof campaign} & React.InputHTMLAttributes<HTMLInputElement>) => (
+    
+    // FIX: The FormInput component definition was truncated and incorrect.
+    // It is now fully defined to be used within the component.
+    const FormInput = ({ label, name, ...props }: {label: string; name: keyof typeof campaign} & React.InputHTMLAttributes<HTMLInputElement>) => (
         <div>
             <label className="admin-form-label">{label}</label>
             <input
                 name={name}
+                // @ts-ignore
                 value={campaign[name]}
                 onChange={handleChange}
                 className="admin-form-input"
@@ -59,51 +62,55 @@ const AddSaleCampaignPage: React.FC<AddSaleCampaignPageProps> = ({ navigate, onS
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <button 
-                        onClick={() => navigate('saleCampaigns')}
-                        className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 w-full md:w-auto justify-center">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold">{isEditMode ? 'تعديل حملة التخفيضات' : 'إنشاء حملة تخفيضات جديدة'}</h1>
+                <div className="flex gap-2">
+                    <button onClick={() => navigate('saleCampaigns')} className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50">
                         إلغاء
                     </button>
-                    <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover w-full md:w-auto justify-center">
+                    <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover">
                         {isEditMode ? 'حفظ التغييرات' : 'حفظ الحملة'}
                     </button>
                 </div>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
-                    <Card title="محتوى الحملة">
+                    <Card title="تفاصيل الحملة">
                         <div className="space-y-4">
-                           <FormInput label="العنوان الفرعي (مثل: عرض حصري)" name="subtitle" type="text" />
-                           <FormInput label="نص الخصم (مثل: خصم 50%)" name="discountText" type="text" />
-                           <FormInput label="العنوان الرئيسي (مثل: استخدم الكود عند الدفع)" name="title" type="text" />
-                           <FormInput label="كود الكوبون" name="couponCode" type="text" />
-                           <FormInput label="نص الزر" name="buttonText" type="text" />
-                           <FormInput label="رابط الصورة" name="image" type="url" placeholder="https://example.com/image.jpg" />
+                            <FormInput label="عنوان الحملة" name="title" required />
+                            <FormInput label="عنوان فرعي" name="subtitle" />
+                            <FormInput label="نص الخصم (e.g., 50% OFF)" name="discountText" required />
+                            <FormInput label="كود الكوبون" name="couponCode" required />
+                        </div>
+                    </Card>
+                     <Card title="الإجراء (Call to Action)">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormInput label="نص الزر" name="buttonText" />
+                             <div>
+                                <label className="admin-form-label">الصفحة المستهدفة</label>
+                                <select name="page" value={campaign.page} onChange={handleChange} className="admin-form-input">
+                                    <option value="shop">صفحة المتجر</option>
+                                    <option value="home">الصفحة الرئيسية</option>
+                                </select>
+                            </div>
                         </div>
                     </Card>
                 </div>
-                 <div className="lg:col-span-1 space-y-6">
-                     <Card title="الحالة">
-                        <label className="flex items-center cursor-pointer p-2">
-                          <div className="relative">
-                            <input type="checkbox" name="status" checked={campaign.status === 'Active'} onChange={handleChange} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-admin-accent"></div>
-                          </div>
-                           <span className="ml-3 font-semibold text-sm">{campaign.status === 'Active' ? 'نشطة' : 'مسودة'}</span>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card title="الحالة">
+                         <label className="flex items-center gap-2 cursor-pointer p-2">
+                            <input type="checkbox" name="status" checked={campaign.status === 'Active'} onChange={handleChange} className="w-4 h-4 rounded text-admin-accent focus:ring-admin-accent/50" />
+                            <span className="font-semibold text-sm">تفعيل الحملة</span>
                         </label>
-                     </Card>
-                     <Card title="الجدولة">
+                    </Card>
+                    <Card title="الصورة والفترة الزمنية">
                         <div className="space-y-4">
-                             <div>
-                                <label className="admin-form-label">تاريخ انتهاء الصلاحية</label>
-                                <input type="date" name="saleEndDate" value={campaign.saleEndDate} onChange={handleChange} className="admin-form-input"/>
-                            </div>
+                            <FormInput label="رابط الصورة" name="image" type="url" placeholder="https://example.com/image.jpg" />
+                            <FormInput label="تاريخ انتهاء التخفيض" name="saleEndDate" type="date" required />
                         </div>
-                     </Card>
-                 </div>
+                    </Card>
+                </div>
             </div>
         </div>
     );

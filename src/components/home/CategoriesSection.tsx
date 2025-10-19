@@ -44,7 +44,7 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
         if (style === 'dark') {
             return `${baseClasses} bg-black text-white hover:bg-gray-800`;
         }
-        return `${baseClasses} bg-white text-black hover:bg-gray-100`;
+        return `${baseClasses} bg-surface text-black hover:bg-gray-100`;
     };
 
     return (
@@ -78,14 +78,14 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
             <button 
                 onClick={() => goToSlide(activeIndex === 0 ? categoriesData.length - 1 : activeIndex - 1)} 
                 aria-label="Previous slide" 
-                className="absolute top-1/2 -translate-y-1/2 right-4 z-10 w-12 h-12 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white md:hidden"
+                className="absolute top-1/2 -translate-y-1/2 right-4 z-10 w-12 h-12 bg-surface/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-surface md:hidden"
             >
                 <ChevronRightIcon className="w-6 h-6 text-brand-dark"/>
             </button>
              <button 
                 onClick={() => goToSlide(activeIndex === categoriesData.length - 1 ? 0 : activeIndex + 1)} 
                 aria-label="Next slide" 
-                className="absolute top-1/2 -translate-y-1/2 left-4 z-10 w-12 h-12 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white md:hidden"
+                className="absolute top-1/2 -translate-y-1/2 left-4 z-10 w-12 h-12 bg-surface/50 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-surface md:hidden"
             >
                 <ChevronLeftIcon className="w-6 h-6 text-brand-dark"/>
             </button>

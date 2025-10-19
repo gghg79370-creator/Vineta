@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { allAdminBlogPosts } from '../admin/data/adminData';
@@ -17,7 +16,7 @@ const BlogListPage: React.FC<BlogListPageProps> = ({ navigateTo }) => {
     const publishedPosts = allAdminBlogPosts.filter(p => p.status === 'Published');
 
     return (
-        <div className="bg-white">
+        <div className="bg-brand-bg">
             <Breadcrumb items={breadcrumbItems} navigateTo={navigateTo} title="المدونة" />
             <div className="container mx-auto px-4 py-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

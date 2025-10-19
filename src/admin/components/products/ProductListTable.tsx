@@ -49,7 +49,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                     const stockInfo = getStockInfo(product);
                     const isSelected = selectedProducts.includes(product.id);
                     return (
-                        <div key={product.id} className={`bg-white p-4 rounded-lg shadow-sm border ${isSelected ? 'border-admin-accent ring-1 ring-admin-accent' : 'border-gray-200/80'}`}>
+                        <div key={product.id} className={`bg-admin-card-bg p-4 rounded-lg shadow-sm border ${isSelected ? 'border-admin-accent ring-1 ring-admin-accent' : 'border-admin-border'}`}>
                             <div className="flex items-start gap-4">
                                 <div className="flex items-center flex-shrink-0 gap-3">
                                     <input 
@@ -61,20 +61,20 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                     <img src={product.image} alt={product.name} className="w-16 h-20 object-cover rounded-md"/>
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-bold text-gray-800">{product.name}</p>
-                                    <p className="text-xs text-gray-500">{product.sku}</p>
+                                    <p className="font-bold text-admin-text-primary">{product.name}</p>
+                                    <p className="text-xs text-admin-text-secondary">{product.sku}</p>
                                     <span className={`mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-bold ${getStatusClasses(product.status)}`}>
                                         {product.status === 'Published' ? 'منشور' : 'مسودة'}
                                     </span>
                                 </div>
                             </div>
-                            <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                            <div className="mt-3 pt-3 border-t border-admin-border flex justify-between items-center">
                                 <div className="flex items-center gap-4">
                                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${stockInfo.statusClass}`}>
                                         {stockInfo.statusText}: {stockInfo.totalStock}
                                     </span>
                                     {product.unitsSold && (
-                                        <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+                                        <div className="flex items-center gap-1 text-xs font-semibold text-admin-text-secondary">
                                             <FireIcon size="sm" className="text-orange-500" />
                                             <span>{product.unitsSold}</span>
                                         </div>
@@ -94,7 +94,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto -mx-5">
                 <table className="w-full text-sm text-right">
-                    <thead className="bg-gray-50 text-admin-text-secondary">
+                    <thead className="bg-gray-50 dark:bg-gray-800/20 text-admin-text-secondary">
                         <tr>
                             <th className="p-4 w-4">
                                 <input 

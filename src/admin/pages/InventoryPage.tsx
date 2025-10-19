@@ -134,7 +134,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ products, setProducts }) 
 
                  <div className="overflow-x-auto -mx-5">
                     <table className="w-full text-sm text-right">
-                        <thead className="bg-gray-50 text-gray-500">
+                        <thead className="bg-admin-bg text-admin-text-secondary">
                             <tr>
                                 <th className="p-4 w-4">
                                     <input type="checkbox" onChange={handleSelectAll} checked={selectedVariants.size > 0 && selectedVariants.size === flattenedInventory.length && flattenedInventory.length > 0} className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"/>
@@ -144,31 +144,31 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ products, setProducts }) 
                                 <th className="p-4 font-semibold">المتوفر</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200/80">
+                        <tbody className="divide-y divide-admin-border">
                             {flattenedInventory.map(({ product, variant }) => {
                                 const key = `${product.id}-${variant.id}`;
                                 const isEdited = editedStocks[key] !== undefined && editedStocks[key] !== variant.stock;
                                 const currentValue = editedStocks[key] ?? variant.stock;
                                 
                                 return (
-                                <tr key={key} className={`hover:bg-gray-50 ${selectedVariants.has(key) ? 'bg-admin-accent/5' : ''}`}>
+                                <tr key={key} className={`hover:bg-admin-bg ${selectedVariants.has(key) ? 'bg-admin-accent/5' : ''}`}>
                                      <td className="p-4"><input type="checkbox" checked={selectedVariants.has(key)} onChange={() => handleSelectVariant(product.id, variant.id)} className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"/></td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <img src={product.image} alt={product.name} className="w-10 h-12 object-cover rounded-md"/>
                                             <div>
-                                                <p className="font-semibold text-gray-800">{product.name}</p>
-                                                <p className="text-xs text-gray-500">{Object.values(variant.options).join(' / ')}</p>
+                                                <p className="font-semibold text-admin-text-primary">{product.name}</p>
+                                                <p className="text-xs text-admin-text-secondary">{Object.values(variant.options).join(' / ')}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-gray-500">{variant.sku}</td>
+                                    <td className="p-4 text-admin-text-secondary">{variant.sku}</td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-2">
-                                            <div className="flex items-center border border-gray-300 rounded-lg bg-white">
-                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue - 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-r-lg"><MinusIcon size="sm"/></button>
-                                                <input type="number" value={currentValue} onChange={(e) => handleStockChange(product.id, variant.id, parseInt(e.target.value, 10) || 0)} className="w-16 border-y-0 border-x text-center font-semibold focus:ring-0 focus:border-gray-300"/>
-                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue + 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-l-lg"><PlusIcon size="sm"/></button>
+                                            <div className="flex items-center border border-admin-border rounded-lg bg-admin-card-bg">
+                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue - 1)} className="p-2 text-admin-text-secondary hover:bg-admin-bg rounded-r-lg"><MinusIcon size="sm"/></button>
+                                                <input type="number" value={currentValue} onChange={(e) => handleStockChange(product.id, variant.id, parseInt(e.target.value, 10) || 0)} className="w-16 bg-transparent border-y-0 border-x text-center font-semibold focus:ring-0 focus:border-admin-border"/>
+                                                <button onClick={() => handleStockChange(product.id, variant.id, currentValue + 1)} className="p-2 text-admin-text-secondary hover:bg-admin-bg rounded-l-lg"><PlusIcon size="sm"/></button>
                                             </div>
                                             {isEdited && <button onClick={() => handleSaveStock(product.id, variant.id)} className="bg-green-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs">حفظ</button>}
                                         </div>

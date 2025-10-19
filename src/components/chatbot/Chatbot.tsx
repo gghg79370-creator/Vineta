@@ -160,7 +160,7 @@ ${productList}
     return (
         <>
             {/* Chat Panel */}
-            <div className={`fixed bottom-0 right-0 left-0 md:left-auto md:bottom-8 md:right-8 z-[80] h-[80vh] md:h-[600px] w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl bg-white flex flex-col transition-transform duration-500 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-[calc(100%+2rem)]'}`}>
+            <div className={`fixed bottom-0 right-0 left-0 md:left-auto md:bottom-8 md:right-8 z-[80] h-[80vh] md:h-[600px] w-full md:w-96 rounded-t-2xl md:rounded-2xl shadow-2xl bg-brand-bg flex flex-col transition-transform duration-500 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-[calc(100%+2rem)]'}`}>
                 <header className="flex-shrink-0 flex items-center justify-between p-4 bg-brand-dark text-white rounded-t-2xl md:rounded-t-2xl">
                     <div className="flex items-center gap-3">
                         <div className="relative">
@@ -180,7 +180,7 @@ ${productList}
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex items-end gap-2.5 animate-chat-bubble-in ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 {msg.sender === 'ai' && (<div className="w-8 h-8 rounded-full bg-brand-dark flex items-center justify-center flex-shrink-0"><SparklesIcon size="sm" className="text-white"/></div>)}
-                                <div className={`w-full max-w-[85%] rounded-2xl p-3 text-sm shadow-sm ${msg.sender === 'user' ? 'bg-gradient-to-br from-red-400 to-brand-primary text-white rounded-br-none' : 'bg-white text-brand-dark rounded-bl-none'}`}>
+                                <div className={`w-full max-w-[85%] rounded-2xl p-3 text-sm shadow-sm ${msg.sender === 'user' ? 'bg-gradient-to-br from-red-400 to-brand-primary text-white rounded-br-none' : 'bg-surface text-brand-dark rounded-bl-none'}`}>
                                     {msg.text && <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>}
                                     {msg.products && msg.products.map(product => (
                                         <ProductCardInChat 
@@ -190,17 +190,17 @@ ${productList}
                                         />
                                     ))}
                                 </div>
-                                {msg.sender === 'user' && (<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"><UserIcon size="sm" className="text-gray-600"/></div>)}
+                                {msg.sender === 'user' && (<div className="w-8 h-8 rounded-full bg-brand-subtle flex items-center justify-center flex-shrink-0"><UserIcon size="sm" className="text-brand-text-light"/></div>)}
                             </div>
                         ))}
                          {isLoading && (
                             <div className="flex items-end gap-2.5 justify-start animate-chat-bubble-in">
                                 <div className="w-8 h-8 rounded-full bg-brand-dark flex items-center justify-center flex-shrink-0"><SparklesIcon size="sm" className="text-white"/></div>
-                                <div className="rounded-2xl p-3 bg-white shadow-sm rounded-bl-none">
+                                <div className="rounded-2xl p-3 bg-surface shadow-sm rounded-bl-none">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-typing-bounce [animation-delay:-0.3s]"></span>
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-typing-bounce [animation-delay:-0.15s]"></span>
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-typing-bounce"></span>
+                                        <span className="h-2 w-2 bg-brand-text-light rounded-full animate-typing-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="h-2 w-2 bg-brand-text-light rounded-full animate-typing-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="h-2 w-2 bg-brand-text-light rounded-full animate-typing-bounce"></span>
                                     </div>
                                 </div>
                             </div>
@@ -209,14 +209,14 @@ ${productList}
                     </div>
                 </div>
                  {messages.length <= 1 && !isLoading && (
-                    <div className="p-4 border-t border-brand-border bg-white/50">
+                    <div className="p-4 border-t border-brand-border bg-surface/50">
                         <p className="text-xs text-brand-text-light mb-2 font-semibold">جرب أن تسأل:</p>
                         <div className="flex flex-wrap gap-2">
-                            {suggestedPrompts.map(prompt => (<button key={prompt} onClick={() => handlePromptClick(prompt)} className="bg-white border border-brand-border text-xs px-3 py-1.5 rounded-full hover:bg-brand-subtle font-medium text-brand-dark">{prompt}</button>))}
+                            {suggestedPrompts.map(prompt => (<button key={prompt} onClick={() => handlePromptClick(prompt)} className="bg-surface border border-brand-border text-xs px-3 py-1.5 rounded-full hover:bg-brand-subtle font-medium text-brand-dark">{prompt}</button>))}
                         </div>
                     </div>
                 )}
-                <form onSubmit={handleFormSubmit} className="flex-shrink-0 p-3 border-t border-brand-border bg-white rounded-b-2xl md:rounded-b-2xl">
+                <form onSubmit={handleFormSubmit} className="flex-shrink-0 p-3 border-t border-brand-border bg-surface rounded-b-2xl md:rounded-b-2xl">
                     <div className="relative">
                         <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="اكتب رسالة..." className="w-full bg-brand-subtle border-transparent rounded-full py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-primary" disabled={isLoading} />
                         <button type="submit" className="absolute top-1/2 left-2 -translate-y-1/2 p-2.5 rounded-full bg-brand-dark text-white hover:opacity-90 disabled:opacity-50 disabled:scale-90 transition-all" disabled={isLoading || !input.trim()}><PaperAirplaneIcon size="sm" className="w-5 h-5" /></button>

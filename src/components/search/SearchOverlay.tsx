@@ -90,11 +90,11 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-white z-[70] animate-fade-in" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 bg-brand-bg z-[70] animate-fade-in" role="dialog" aria-modal="true">
             <div className="container mx-auto px-4 h-full flex flex-col">
-                <header className="flex items-center justify-between py-6 border-b">
+                <header className="flex items-center justify-between py-6 border-b border-brand-border">
                     <form onSubmit={handleSearch} className="relative flex-grow">
-                        <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+                        <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-brand-text-light" />
                         <input
                             type="search"
                             value={searchTerm}
@@ -104,7 +104,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                             autoFocus
                         />
                     </form>
-                    <button onClick={handleClose} className="p-2 -mr-2 text-gray-500 hover:text-gray-900 rounded-full">
+                    <button onClick={handleClose} className="p-2 -mr-2 text-brand-text-light hover:text-brand-text rounded-full">
                         <CloseIcon size="md" />
                     </button>
                 </header>
@@ -113,13 +113,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                     {searchTerm.trim() ? (
                         <div>
                             {isSearching ? (
-                                <p className="text-center text-gray-500">جاري البحث...</p>
+                                <p className="text-center text-brand-text-light">جاري البحث...</p>
                             ) : results.length > 0 ? (
                                 <>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                         {results.slice(0, 4).map(product => (
                                             <div key={product.id} className="group cursor-pointer" onClick={() => handleProductClick(product)}>
-                                                <div className="bg-gray-100 rounded-lg overflow-hidden aspect-[3/4]">
+                                                <div className="bg-brand-subtle rounded-lg overflow-hidden aspect-[3/4]">
                                                     <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                                 </div>
                                                 <h4 className="font-semibold mt-2 text-sm"><HighlightMatch text={product.name} query={searchTerm} /></h4>
@@ -136,7 +136,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                                     )}
                                 </>
                             ) : (
-                                <p className="text-center text-gray-500">لم يتم العثور على نتائج لـ "{searchTerm}"</p>
+                                <p className="text-center text-brand-text-light">لم يتم العثور على نتائج لـ "{searchTerm}"</p>
                             )}
                         </div>
                     ) : (
@@ -145,7 +145,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {popularProducts.map(product => (
                                     <div key={product.id} className="group cursor-pointer" onClick={() => handleProductClick(product)}>
-                                        <div className="bg-gray-100 rounded-lg overflow-hidden aspect-[3/4]">
+                                        <div className="bg-brand-subtle rounded-lg overflow-hidden aspect-[3/4]">
                                             <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                         </div>
                                         <h4 className="font-semibold mt-2 text-sm truncate">{product.name}</h4>

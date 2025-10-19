@@ -22,16 +22,16 @@ const CountdownTimer = ({ targetDate }: { targetDate: Date | null }) => {
     }
     
     return (
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 md:p-6 my-6 md:my-8">
+        <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 md:p-6 my-6 md:my-8">
             <div className="flex justify-center items-start gap-x-2 md:gap-x-4">
                 {timeParts.map((part, index) => (
                     <React.Fragment key={part.label}>
                         <div className="flex flex-col items-center w-16">
-                            <span className="text-4xl md:text-5xl font-bold text-red-500 tabular-nums">{String(part.value).padStart(2, '0')}</span>
-                            <span className="text-xs text-gray-500 mt-1">{part.label}</span>
+                            <span className="text-4xl md:text-5xl font-bold text-brand-primary tabular-nums">{String(part.value).padStart(2, '0')}</span>
+                            <span className="text-xs text-brand-text-light mt-1">{part.label}</span>
                         </div>
                         {index < timeParts.length - 1 && (
-                            <span className="text-3xl md:text-4xl font-semibold text-red-400 mt-1">:</span>
+                            <span className="text-3xl md:text-4xl font-semibold text-brand-primary/80 mt-1">:</span>
                         )}
                     </React.Fragment>
                 ))}
@@ -55,18 +55,18 @@ export const CountdownSaleSection: React.FC<CountdownSaleSectionProps> = ({ navi
                     alt="خلفية تخفيضات الصيف"
                     className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-rose-100/60"></div>
+                <div className="absolute inset-0 bg-brand-primary/10"></div>
                 
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                     <p className="font-semibold text-brand-dark tracking-widest text-sm uppercase">{saleTitle}</p>
                     <h2 className="font-sans text-7xl sm:text-8xl lg:text-9xl font-extrabold text-brand-dark my-2 leading-none">{discountText}</h2>
-                    <p className="font-semibold text-gray-800 tracking-wider mb-2 uppercase">مع الرمز الترويجي: {campaign.couponCode}</p>
+                    <p className="font-semibold text-brand-text tracking-wider mb-2 uppercase">مع الرمز الترويجي: {campaign.couponCode}</p>
                     
                     <CountdownTimer targetDate={saleEndDate} />
 
                     <button 
                         onClick={() => navigateTo(campaign.page)} 
-                        className="bg-white text-brand-dark font-bold py-3 px-10 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-100"
+                        className="bg-surface text-brand-dark font-bold py-3 px-10 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-100"
                     >
                         {campaign.buttonText}
                     </button>

@@ -24,7 +24,7 @@ const AccordionItem = ({ title, children, defaultOpen = false, hasActiveFilter =
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
     const contentId = `filter-accordion-${title.replace(/\s+/g, '-')}`;
     return (
-        <div className="border-b">
+        <div className="border-b border-brand-border">
             <button 
                 onClick={() => setIsOpen(!isOpen)} 
                 className="w-full flex justify-between items-center text-right py-4 font-semibold text-brand-dark"
@@ -89,11 +89,11 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
     };
 
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [] });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-surface p-6 rounded-lg shadow-sm border">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-xl">الفلاتر</h3>
                 <button onClick={clearFilters} className="text-sm font-semibold text-brand-primary hover:underline">مسح الكل</button>
@@ -109,9 +109,9 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
             <AccordionItem title="التقييم" defaultOpen hasActiveFilter={filters.rating > 0}>
                 <div className="space-y-1 pr-2">
                     {[4, 3, 2, 1].map(star => (
-                        <button key={star} onClick={() => handleRatingChange(star)} className={`w-full text-right flex items-center gap-2 p-1 rounded-md ${filters.rating === star ? 'bg-amber-100/60' : 'hover:bg-gray-50'}`}>
+                        <button key={star} onClick={() => handleRatingChange(star)} className={`w-full text-right flex items-center gap-2 p-1 rounded-md ${filters.rating === star ? 'bg-brand-primary/10' : 'hover:bg-brand-subtle'}`}>
                             <div className="flex">
-                                {[...Array(5)].map((_, i) => <StarIcon key={i} className={`w-5 h-5 ${i < star ? 'text-yellow-400' : 'text-gray-300'}`} />)}
+                                {[...Array(5)].map((_, i) => <StarIcon key={i} className={`w-5 h-5 ${i < star ? 'text-yellow-400' : 'text-brand-border'}`} />)}
                             </div>
                             <span className="text-sm text-brand-text-light">& الأعلى</span>
                         </button>
@@ -130,7 +130,7 @@ const FilterSidebar = ({ filters, setFilters }: { filters: Filters; setFilters: 
             </AccordionItem>
             <AccordionItem title="السعر" defaultOpen hasActiveFilter={filters.priceRange.max < 1000}>
                 <div className="px-2 pt-2">
-                    <input type="range" min="0" max="1000" value={filters.priceRange.max} onChange={(e) => handlePriceChange(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-dark" />
+                    <input type="range" min="0" max="1000" value={filters.priceRange.max} onChange={(e) => handlePriceChange(Number(e.target.value))} className="w-full h-2 bg-brand-subtle rounded-lg appearance-none cursor-pointer accent-brand-dark" />
                     <div className="flex justify-between items-center mt-2">
                         <p className="text-sm font-bold">السعر: 0 ج.م — {filters.priceRange.max} ج.م</p>
                     </div>
@@ -274,9 +274,9 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                 </aside>
 
                 <main className="w-full lg:w-3/4">
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-4 bg-white rounded-lg shadow-sm border">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 p-4 bg-surface rounded-lg shadow-sm border">
                         <div className="flex items-center gap-4 w-full md:w-auto">
-                            <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-95">
+                            <button onClick={() => setIsFilterOpen(true)} className="lg:hidden flex items-center gap-2 bg-surface border border-brand-border rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-95">
                                 <FilterIcon/>
                                 <span>فلتر</span>
                             </button>
@@ -288,7 +288,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                             <select 
                                 value={sortBy}
                                 onChange={handleSortByChange}
-                                className="appearance-none bg-white border border-brand-border rounded-full px-4 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
+                                className="appearance-none bg-surface border border-brand-border rounded-full px-4 py-2 text-sm font-semibold w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-brand-dark/50"
                             >
                                 <option value="best-selling">الأكثر مبيعًا</option>
                                 <option value="price-asc">السعر: من الأقل إلى الأعلى</option>
@@ -296,7 +296,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                                 <option value="newest">أحدث المنتجات</option>
                                 <option value="rating">الأعلى تقييمًا</option>
                             </select>
-                            <div className="hidden md:flex items-center gap-1 border border-brand-border rounded-full p-1 bg-white">
+                            <div className="hidden md:flex items-center gap-1 border border-brand-border rounded-full p-1 bg-surface">
                                 {[2,3,4].map(cols => (
                                     <button 
                                         key={cols}
@@ -307,7 +307,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                                         <GridViewIcon columns={cols} className="w-5 h-5" />
                                     </button>
                                 ))}
-                                <div className="w-px h-5 bg-gray-200 mx-1"></div>
+                                <div className="w-px h-5 bg-brand-border mx-1"></div>
                                 <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-full transition-colors active:scale-95 ${viewMode === 'list' ? 'bg-brand-subtle text-brand-dark' : 'text-brand-text-light hover:bg-brand-subtle'}`} aria-label="List View">
                                     <Bars3Icon size="sm" />
                                 </button>
@@ -330,7 +330,7 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                             </div>
                         )
                     ) : (
-                        <div className="text-center py-16 bg-white rounded-lg border">
+                        <div className="text-center py-16 bg-surface rounded-lg border">
                             <h2 className="text-2xl font-bold text-brand-dark mb-2">لا توجد منتجات مطابقة</h2>
                             <p className="text-brand-text-light">حاول ضبط الفلاتر للعثور على ما تبحث عنه.</p>
                         </div>
@@ -338,13 +338,13 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                     
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center mt-12 space-x-2 space-x-reverse">
-                            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors rotate-180 disabled:opacity-50 active:scale-95" aria-label="Previous Page"><ChevronRightIcon /></button>
+                            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-surface border border-brand-border rounded-full hover:bg-brand-subtle transition-colors rotate-180 disabled:opacity-50 active:scale-95" aria-label="Previous Page"><ChevronRightIcon /></button>
                             {[...Array(totalPages).keys()].map(number => (
-                                <button key={number + 1} onClick={() => paginate(number + 1)} className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors active:scale-95 ${currentPage === number + 1 ? 'bg-brand-dark text-white' : 'bg-white border border-brand-border hover:bg-brand-subtle'}`}>
+                                <button key={number + 1} onClick={() => paginate(number + 1)} className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors active:scale-95 ${currentPage === number + 1 ? 'bg-brand-dark text-white' : 'bg-surface border border-brand-border hover:bg-brand-subtle'}`}>
                                     {number + 1}
                                 </button>
                             ))}
-                            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-white border border-brand-border rounded-full hover:bg-brand-subtle transition-colors disabled:opacity-50 active:scale-95" aria-label="Next Page"><ChevronRightIcon /></button>
+                            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-surface border border-brand-border rounded-full hover:bg-brand-subtle transition-colors disabled:opacity-50 active:scale-95" aria-label="Next Page"><ChevronRightIcon /></button>
                         </div>
                     )}
                 </main>

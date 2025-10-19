@@ -80,14 +80,14 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     return (
         <>
         <div className={`fixed inset-0 bg-black/60 z-[70] flex items-end md:items-center md:justify-center p-0 md:p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
-            <div className={`bg-white w-full max-h-[90vh] md:max-w-4xl rounded-t-2xl md:rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
+            <div className={`bg-brand-bg w-full max-h-[90vh] md:max-w-4xl rounded-t-2xl md:rounded-2xl shadow-lg flex flex-col md:flex-row transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
                 <div className="md:w-1/2 relative flex-shrink-0">
                      <img src={activeImage} alt={product.name} className="w-full h-64 md:h-full object-cover rounded-t-2xl md:rounded-r-2xl md:rounded-tl-none" />
                      <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
-                         <button onClick={handlePrevImage} className="bg-white/80 rounded-full p-2 shadow-md hover:bg-white transition-colors"><ChevronRightIcon className="rotate-180" /></button>
-                         <button onClick={handleNextImage} className="bg-white/80 rounded-full p-2 shadow-md hover:bg-white transition-colors"><ChevronRightIcon /></button>
+                         <button onClick={handlePrevImage} className="bg-surface/80 rounded-full p-2 shadow-md hover:bg-surface transition-colors"><ChevronRightIcon className="rotate-180" /></button>
+                         <button onClick={handleNextImage} className="bg-surface/80 rounded-full p-2 shadow-md hover:bg-surface transition-colors"><ChevronRightIcon /></button>
                      </div>
-                     <button onClick={onClose} className="absolute top-4 right-4 bg-white/50 rounded-full p-2 shadow-md hover:bg-white transition-colors"><CloseIcon /></button>
+                     <button onClick={onClose} className="absolute top-4 right-4 bg-surface/50 rounded-full p-2 shadow-md hover:bg-surface transition-colors"><CloseIcon /></button>
                 </div>
                 <div className="p-6 overflow-y-auto flex-grow">
                     <h2 className="text-2xl font-bold text-brand-dark">{product.name}</h2>
@@ -102,7 +102,7 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                         <p className="font-bold text-brand-dark mb-2">اللون: <span className="font-normal text-brand-text-light">{product.colors.find(c => c === selectedColor)}</span></p>
                          <div className="flex gap-3">
                             {product.colors.map(color => (
-                                <button key={color} onClick={() => handleSelectColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent'}`} aria-label={`Select color ${color}`}>
+                                <button key={color} onClick={() => handleSelectColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent hover:border-brand-border'}`} aria-label={`Select color ${color}`}>
                                   <span className="w-6 h-6 rounded-full border border-black/10" style={{backgroundColor: color}}></span>
                                 </button>
                             ))}
@@ -122,17 +122,17 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                                         key={size} 
                                         onClick={() => setSelectedSize(size)} 
                                         disabled={!isAvailable} 
-                                        className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors relative ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white border-brand-border hover:border-brand-dark'} ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`px-4 py-2 rounded-lg border text-sm font-bold transition-colors relative ${selectedSize === size ? 'bg-brand-dark text-white border-brand-dark' : `bg-surface border-brand-border ${isAvailable ? 'hover:border-brand-dark' : ''}`} ${!isAvailable ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         {size}
-                                        {!isAvailable && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-gray-400 transform rotate-[-20deg]"></span>}
+                                        {!isAvailable && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-px bg-brand-text-light transform rotate-[-20deg]"></span>}
                                     </button>
                                 )
                             })}
                         </div>
                     </div>
 
-                    <div className="flex items-center border rounded-full justify-between w-40 mb-3">
+                    <div className="flex items-center border border-brand-border rounded-full justify-between w-40 mb-3">
                         <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 text-brand-text-light hover:text-brand-dark"><MinusIcon/></button>
                         <span className="w-8 text-center font-bold text-lg">{quantity}</span>
                         <button onClick={() => setQuantity(q => q + 1)} className="p-3 text-brand-text-light hover:text-brand-dark"><PlusIcon/></button>

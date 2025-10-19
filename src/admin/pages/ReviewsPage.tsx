@@ -58,14 +58,14 @@ const ReviewsPage: React.FC<ReviewsPageProps> = ({ products, onStatusChange, onD
     return (
         <div className="space-y-6">
             <Card title="جميع التقييمات">
-                <div className="border-b mb-4">
+                <div className="border-b border-admin-border mb-4">
                     <div className="flex items-center gap-4">
                         {tabs.map(tab => (
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)} 
                                 className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors
-                                ${activeTab === tab.id ? 'border-admin-accent text-admin-accent' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
+                                ${activeTab === tab.id ? 'border-admin-accent text-admin-accent' : 'border-transparent text-admin-text-secondary hover:text-admin-text-primary'}`}>
                                 {tab.label} ({tab.id === 'All' ? allReviews.length : allReviews.filter(r => r.status === tab.id).length})
                             </button>
                         ))}
@@ -73,7 +73,7 @@ const ReviewsPage: React.FC<ReviewsPageProps> = ({ products, onStatusChange, onD
                 </div>
                 <div className="overflow-x-auto -mx-5">
                     <table className="w-full text-sm text-right">
-                        <thead className="bg-gray-50 text-gray-500">
+                        <thead className="bg-admin-bg text-admin-text-secondary">
                             <tr>
                                 <th className="p-4 font-semibold">العميل</th>
                                 <th className="p-4 font-semibold">التقييم</th>
@@ -82,15 +82,15 @@ const ReviewsPage: React.FC<ReviewsPageProps> = ({ products, onStatusChange, onD
                                 <th className="p-4 font-semibold"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200/80">
+                        <tbody className="divide-y divide-admin-border">
                             {filteredReviews.map(review => (
-                                <tr key={review.id} className="hover:bg-gray-50">
+                                <tr key={review.id} className="hover:bg-admin-bg">
                                      <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <img src={review.image} alt={review.author} className="w-10 h-10 rounded-full"/>
                                             <div>
                                                 <p className="font-semibold">{review.author}</p>
-                                                <p className="text-xs text-gray-500">{review.date}</p>
+                                                <p className="text-xs text-admin-text-secondary">{review.date}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -98,7 +98,7 @@ const ReviewsPage: React.FC<ReviewsPageProps> = ({ products, onStatusChange, onD
                                         <div className="flex mb-1">
                                             {[...Array(5)].map((_, i) => <StarIcon key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`} />)}
                                         </div>
-                                        <p className="text-gray-600 max-w-xs truncate" title={review.text}>{review.text}</p>
+                                        <p className="text-admin-text-secondary max-w-xs truncate" title={review.text}>{review.text}</p>
                                     </td>
                                     <td className="p-4 font-semibold">{review.productName}</td>
                                     <td className="p-4">
@@ -108,9 +108,9 @@ const ReviewsPage: React.FC<ReviewsPageProps> = ({ products, onStatusChange, onD
                                     </td>
                                     <td className="p-4 text-left">
                                         <div className="flex items-center gap-2 justify-end">
-                                            {review.status !== 'Approved' && <button onClick={() => onStatusChange(review.productId, review.id, 'Approved')} title="Approve" className="text-gray-400 hover:text-green-500"><CheckCircleIcon size="sm"/></button>}
-                                            {review.status !== 'Hidden' && <button onClick={() => onStatusChange(review.productId, review.id, 'Hidden')} title="Hide" className="text-gray-400 hover:text-gray-600"><EyeIcon size="sm" /></button>}
-                                            <button onClick={() => setReviewToDelete(review)} title="Delete" className="text-gray-400 hover:text-red-500"><TrashIcon size="sm"/></button>
+                                            {review.status !== 'Approved' && <button onClick={() => onStatusChange(review.productId, review.id, 'Approved')} title="Approve" className="text-admin-text-secondary hover:text-green-500"><CheckCircleIcon size="sm"/></button>}
+                                            {review.status !== 'Hidden' && <button onClick={() => onStatusChange(review.productId, review.id, 'Hidden')} title="Hide" className="text-admin-text-secondary hover:text-admin-text-primary"><EyeIcon size="sm" /></button>}
+                                            <button onClick={() => setReviewToDelete(review)} title="Delete" className="text-admin-text-secondary hover:text-red-500"><TrashIcon size="sm"/></button>
                                         </div>
                                     </td>
                                 </tr>

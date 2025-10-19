@@ -32,8 +32,8 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose,
 
     return (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <div className="p-5 flex justify-between items-center border-b">
+            <div className="bg-brand-bg w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border">
                     <h2 className="font-bold text-lg text-brand-dark">دليل المقاسات</h2>
                     <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>

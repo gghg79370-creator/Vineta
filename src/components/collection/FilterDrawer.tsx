@@ -13,7 +13,7 @@ interface FilterDrawerProps {
 const AccordionItem = ({ title, children, defaultOpen = false, hasActiveFilter = false }: { title: string, children?: React.ReactNode, defaultOpen?: boolean, hasActiveFilter?: boolean }) => {
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
     return (
-        <div className="border-b">
+        <div className="border-b border-brand-border">
             <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold text-brand-dark">
                 <span className="flex items-center gap-2">
                     {title}
@@ -148,13 +148,13 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                 aria-hidden="true"
             ></div>
             <div 
-                className={`fixed bottom-0 right-0 left-0 bg-white shadow-2xl z-[60] rounded-t-2xl max-h-[85vh] flex flex-col transform transition-transform duration-300 ease-in-out
+                className={`fixed bottom-0 right-0 left-0 bg-brand-bg shadow-2xl z-[60] rounded-t-2xl max-h-[85vh] flex flex-col transform transition-transform duration-300 ease-in-out
                     ${isOpen && !isAnimatingOut ? 'translate-y-0' : 'translate-y-full'}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="filter-dialog-title"
             >
-                <div className="p-4 flex justify-between items-center border-b flex-shrink-0">
+                <div className="p-4 flex justify-between items-center border-b border-brand-border flex-shrink-0">
                     <h2 id="filter-dialog-title" className="font-bold text-xl text-brand-dark flex items-center gap-2">
                         فلتر
                         {appliedFiltersCount > 0 && <span className="bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">{appliedFiltersCount}</span>}
@@ -188,7 +188,7 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                     <AccordionItem title="التقييم" defaultOpen hasActiveFilter={hasRatingFilter}>
                          <div className="space-y-1 pr-2">
                             {[4, 3, 2, 1].map(star => (
-                                <button key={star} onClick={() => handleRatingChange(star)} className={`w-full text-right flex items-center gap-2 p-1 rounded-md ${filters.rating === star ? 'bg-amber-100/60' : 'hover:bg-gray-50'}`}>
+                                <button key={star} onClick={() => handleRatingChange(star)} className={`w-full text-right flex items-center gap-2 p-1 rounded-md ${filters.rating === star ? 'bg-amber-100/60' : 'hover:bg-brand-subtle'}`}>
                                     <div className="flex">
                                         {[...Array(5)].map((_, i) => <StarIcon key={i} className={`w-5 h-5 ${i < star ? 'text-yellow-400' : 'text-gray-300'}`} />)}
                                     </div>
@@ -241,7 +241,7 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                                     />
                                 </div>
                             </div>
-                             <button onClick={applyPriceFilter} className="w-full bg-gray-100 text-brand-dark font-bold py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                             <button onClick={applyPriceFilter} className="w-full bg-brand-subtle text-brand-dark font-bold py-2 rounded-lg text-sm hover:bg-brand-border transition-colors">
                                 تطبيق
                             </button>
                         </div>
@@ -289,8 +289,8 @@ export const FilterDrawer = ({ isOpen, setIsOpen, filters, setFilters }: FilterD
                         </div>
                     </AccordionItem>
                 </div>
-                <div className="p-4 border-t grid grid-cols-2 gap-4 flex-shrink-0">
-                    <button onClick={clearFilters} className="w-full bg-white border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle transition-transform active:scale-98">مسح الكل</button>
+                <div className="p-4 border-t border-brand-border grid grid-cols-2 gap-4 flex-shrink-0">
+                    <button onClick={clearFilters} className="w-full bg-surface border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle transition-transform active:scale-98">مسح الكل</button>
                     <button onClick={handleClose} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 transition-transform active:scale-98">عرض النتائج</button>
                 </div>
             </div>

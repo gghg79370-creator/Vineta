@@ -120,7 +120,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ initialImages = [], on
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDraggingOver ? 'border-admin-accent bg-admin-accent/10' : 'border-gray-300'}`}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDraggingOver ? 'border-admin-accent bg-admin-accent/10' : 'border-admin-border'}`}
             >
                 <input
                     type="file"
@@ -131,15 +131,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ initialImages = [], on
                     id="file-upload"
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
-                    <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-gray-400" />
+                    <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-admin-text-secondary" />
                     <p className="mt-2 font-semibold text-admin-accent">انقر للتحميل أو قم بالسحب والإفلات</p>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-admin-text-secondary mt-1">PNG, JPG, GIF up to 10MB</p>
                 </label>
             </div>
 
             {images.length > 0 && (
                 <div className="mt-4">
-                    <p className="text-xs text-gray-500 mb-2">اسحب الصور لإعادة ترتيبها. الصورة الأولى هي الصورة الرئيسية.</p>
+                    <p className="text-xs text-admin-text-secondary mb-2">اسحب الصور لإعادة ترتيبها. الصورة الأولى هي الصورة الرئيسية.</p>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                         {images.map((file, index) => (
                             <div

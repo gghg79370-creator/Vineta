@@ -31,7 +31,7 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }
                     <div>
                         <h3 className="font-bold text-lg">دليل إعداد متجرك</h3>
                         <p className="text-sm text-admin-text-secondary">{completedCount} من {tasks.length} مهام مكتملة</p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2 max-w-xs">
+                        <div className="w-full bg-admin-border rounded-full h-2 mt-2 max-w-xs">
                             <div className="bg-admin-accent h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
@@ -40,7 +40,7 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }
                 {isOpen && (
                     <div className="px-5 pb-5 animate-fade-in">
                         {tasks.map(task => (
-                            <div key={task.id} className="flex items-center gap-4 py-3 border-b last:border-b-0">
+                            <div key={task.id} className="flex items-center gap-4 py-3 border-b border-admin-border last:border-b-0">
                                 <input
                                     type="checkbox"
                                     id={`task-${task.id}`}
@@ -48,7 +48,7 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }
                                     checked={task.completed}
                                     onChange={(e) => onToggleTask(task.id, e.target.checked)}
                                 />
-                                <label htmlFor={`task-${task.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-admin-border bg-white flex-shrink-0">
+                                <label htmlFor={`task-${task.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-admin-border bg-admin-card-bg flex-shrink-0">
                                     <svg className="task-checkbox-svg w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline className="task-checkbox-path" points="20 6 9 17 4 12"></polyline></svg>
                                 </label>
                                 <div className="flex-1">
@@ -88,12 +88,12 @@ const ActivityFeed = () => {
         <div className="space-y-4">
             {activities.map((activity, index) => (
                 <div key={index} className="flex items-start gap-3">
-                    <div className="bg-gray-100 rounded-full p-2.5 text-gray-500">
+                    <div className="bg-admin-bg rounded-full p-2.5 text-admin-text-secondary">
                         {activity.icon}
                     </div>
                     <div>
-                        <p className="text-sm text-gray-800">{activity.text}</p>
-                        <p className="text-xs text-gray-400">{activity.time}</p>
+                        <p className="text-sm text-admin-text-primary">{activity.text}</p>
+                        <p className="text-xs text-admin-text-secondary">{activity.time}</p>
                     </div>
                 </div>
             ))}
@@ -153,7 +153,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                         {/* Desktop Table */}
                         <div className="overflow-x-auto -mx-5 hidden md:block">
                             <table className="w-full text-sm text-right">
-                                <thead className="text-gray-500">
+                                <thead className="text-admin-text-secondary">
                                     <tr>
                                         <th className="px-5 py-3 font-semibold">رقم الطلب</th>
                                         <th className="px-5 py-3 font-semibold">العميل</th>
@@ -180,7 +180,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                                                     {statusTranslations[order.status]}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-4 text-gray-500">{order.date}</td>
+                                            <td className="px-5 py-4 text-admin-text-secondary">{order.date}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -189,11 +189,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                         {/* Mobile List */}
                         <div className="md:hidden space-y-4">
                              {recentOrders.map(order => (
-                                <div key={order.id} onClick={() => navigate('orderDetail', order)} className="p-4 bg-gray-50/50 rounded-lg border border-gray-200/80">
+                                <div key={order.id} onClick={() => navigate('orderDetail', order)} className="p-4 bg-admin-bg/50 rounded-lg border border-admin-border">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <p className="font-bold text-admin-accent">{order.id}</p>
-                                            <p className="text-xs text-gray-500">{order.date}</p>
+                                            <p className="text-xs text-admin-text-secondary">{order.date}</p>
                                         </div>
                                          <span className={`px-2 py-1 rounded-md text-xs font-bold ${statusClasses[order.status]}`}>
                                             {statusTranslations[order.status]}
@@ -228,13 +228,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                                 <div key={product.id} className="flex items-center gap-3">
                                     <img src={product.image} alt={product.name} className="w-12 h-14 object-cover rounded-md"/>
                                     <div className="flex-1">
-                                        <p className="font-semibold text-sm text-gray-800">{product.name}</p>
-                                        <p className="text-xs text-gray-500">{product.sku}</p>
+                                        <p className="font-semibold text-sm text-admin-text-primary">{product.name}</p>
+                                        <p className="text-xs text-admin-text-secondary">{product.sku}</p>
                                     </div>
                                     <div className="text-right flex items-center gap-2">
                                         <div>
                                             <p className="font-bold text-red-500 text-lg">{totalStock}</p>
-                                            <p className="text-xs text-gray-500">في المخزن</p>
+                                            <p className="text-xs text-admin-text-secondary">في المخزن</p>
                                         </div>
                                         <button onClick={() => navigate('editProduct', product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}>
                                             <PencilIcon size="sm"/>

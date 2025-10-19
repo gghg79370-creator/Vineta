@@ -83,7 +83,7 @@ export const Carousel: React.FC<CarouselProps> = ({ items, renderItem, title }) 
 
 
     return (
-        <div className="relative">
+        <div className="relative overflow-hidden">
             <div className="flex justify-between items-center mb-6">
                 {title && <h3 className="font-bold text-lg">{title}</h3>}
                 <div className="flex gap-2" style={{ marginLeft: title ? 'auto' : '0' }}>

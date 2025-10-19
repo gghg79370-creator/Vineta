@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { allAdminBlogPosts } from '../admin/data/adminData';
@@ -32,13 +31,13 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ navigateTo }) => {
     ];
 
     return (
-        <div className="bg-white">
+        <div className="bg-brand-bg">
             <Breadcrumb items={breadcrumbItems} navigateTo={navigateTo} title={post.title} />
             <div className="container mx-auto px-4 py-12 max-w-4xl">
                 <div className="mb-8">
                     <img src={post.featuredImage} alt={post.title} className="w-full h-auto max-h-[500px] object-cover rounded-lg" />
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
+                <div className="flex items-center gap-4 text-sm text-brand-text-light mb-6">
                     <div className="flex items-center gap-2">
                         <UserIcon size="sm" />
                         <span>{post.author}</span>

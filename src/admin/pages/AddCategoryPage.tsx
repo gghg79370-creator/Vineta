@@ -85,7 +85,7 @@ const AddCategoryPage: React.FC<AddCategoryPageProps> = ({ navigate, onSave, cat
         for (const categoryNode of categories) {
             const isDisabled = disabledCategoryIds.includes(categoryNode.id);
             options.push(
-                <option key={categoryNode.id} value={categoryNode.id} disabled={isDisabled} className={isDisabled ? 'text-gray-400' : ''}>
+                <option key={categoryNode.id} value={categoryNode.id} disabled={isDisabled} className={isDisabled ? 'text-admin-text-secondary' : ''}>
                     {'\u00A0'.repeat(depth * 4)}
                     {depth > 0 ? '↳ ' : ''}{categoryNode.name}
                 </option>
@@ -104,7 +104,7 @@ const AddCategoryPage: React.FC<AddCategoryPageProps> = ({ navigate, onSave, cat
                  <div className="flex items-center gap-3 w-full md:w-auto">
                     <button 
                         onClick={() => navigate('categories')}
-                        className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors w-full md:w-auto justify-center">
+                        className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-admin-bg transition-colors w-full md:w-auto justify-center">
                         إلغاء
                     </button>
                     <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
@@ -141,7 +141,7 @@ const AddCategoryPage: React.FC<AddCategoryPageProps> = ({ navigate, onSave, cat
                                     <input type="checkbox" name="status" checked={category.status === 'Visible'} onChange={handleChange} className="sr-only peer" />
                                     <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-admin-accent"></div>
                                   </div>
-                                   <span className="ml-3 font-semibold text-sm">{category.status === 'Visible' ? 'مرئي' : 'مخفي'}</span>
+                                   <span className="font-semibold text-sm">{category.status === 'Visible' ? 'مرئي' : 'مخفي'}</span>
                                 </label>
                             </div>
                              <div>

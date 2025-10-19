@@ -17,12 +17,12 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
      const SubMenu = ({ title, children }: {title: string, children?: React.ReactNode}) => {
         const [isSubOpen, setIsSubOpen] = useState(false);
         return (
-            <div className="border-b">
+            <div className="border-b border-brand-border">
                 <button onClick={() => setIsSubOpen(!isSubOpen)} className="w-full flex justify-between items-center py-4 font-bold text-lg">
                     <span>{title}</span>
-                    <span className={`transform transition-transform text-gray-400 ${isSubOpen ? 'rotate-180' : ''}`}><ChevronDownIcon size="sm" /></span>
+                    <span className={`transform transition-transform text-brand-text-light ${isSubOpen ? 'rotate-180' : ''}`}><ChevronDownIcon size="sm" /></span>
                 </button>
-                {isSubOpen && <div className="pr-4 pb-2 space-y-3 text-gray-600 animate-fade-in">{children}</div>}
+                {isSubOpen && <div className="pr-4 pb-2 space-y-3 text-brand-text-light animate-fade-in">{children}</div>}
             </div>
         )
     }
@@ -35,14 +35,14 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
     return (
         <>
             <div className={`fixed inset-0 bg-black/60 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
-            <div className={`fixed top-0 right-0 h-full w-[90vw] max-w-sm bg-white shadow-lg z-[60] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-[90vw] max-w-sm bg-brand-bg shadow-lg z-[60] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                  <div className="flex flex-col h-full text-brand-dark">
-                     <div className="p-5 text-center border-b relative">
+                     <div className="p-5 text-center border-b border-brand-border relative">
                         <h2 className="font-serif text-4xl font-bold text-brand-dark">{theme.siteName}</h2>
-                        <button onClick={() => setIsOpen(false)} aria-label="إغلاق القائمة" className="absolute top-1/2 -translate-y-1/2 left-4 p-2 rounded-full hover:bg-gray-100"><CloseIcon /></button>
+                        <button onClick={() => setIsOpen(false)} aria-label="إغلاق القائمة" className="absolute top-1/2 -translate-y-1/2 left-4 p-2 rounded-full hover:bg-brand-subtle"><CloseIcon /></button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 divide-y">
+                    <div className="flex-1 overflow-y-auto p-6 divide-y divide-brand-border">
                         <SubMenu title="الرئيسية"><button onClick={() => handleNavigate('home')} className="block py-1 hover:text-brand-primary">الرئيسية 1</button></SubMenu>
                         <SubMenu title="المتجر"><button onClick={() => handleNavigate('shop')} className="block py-1 hover:text-brand-primary">قائمة المنتجات</button></SubMenu>
                         <SubMenu title="المنتجات"><button onClick={() => handleNavigate('product', allProducts[0])} className="block py-1 hover:text-brand-primary">منتج بسيط</button></SubMenu>
@@ -53,13 +53,13 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
                         </button>
                         <SubMenu title="صفحات"><button onClick={() => handleNavigate('faq')} className="block py-1 hover:text-brand-primary">الأسئلة الشائعة</button></SubMenu>
                     </div>
-                    <div className="p-6 border-t bg-gray-50 space-y-6">
+                    <div className="p-6 border-t border-brand-border bg-brand-subtle space-y-6">
                          {currentUser ? (
                             <div className="flex items-center gap-4">
                                 <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Avatar" className="w-14 h-14 rounded-full border-2 border-brand-primary"/>
                                 <div>
                                     <p className="font-bold text-lg text-brand-dark">{currentUser.name}</p>
-                                    <button onClick={() => handleNavigate('account')} className="text-sm text-gray-500 hover:text-brand-dark">عرض الحساب</button>
+                                    <button onClick={() => handleNavigate('account')} className="text-sm text-brand-text-light hover:text-brand-dark">عرض الحساب</button>
                                 </div>
                             </div>
                          ) : (
@@ -67,10 +67,10 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
                          )}
 
                          <div className="flex justify-center gap-6 mt-4">
-                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="X"><i className="fa-brands fa-x-twitter text-lg"></i></a>
-                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Facebook"><i className="fa-brands fa-facebook-f text-lg"></i></a>
-                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Instagram"><i className="fa-brands fa-instagram text-lg"></i></a>
-                             <a href="#" className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-dark" aria-label="Youtube"><i className="fa-brands fa-youtube text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-brand-text-light hover:text-brand-dark" aria-label="X"><i className="fa-brands fa-x-twitter text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-brand-text-light hover:text-brand-dark" aria-label="Facebook"><i className="fa-brands fa-facebook-f text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-brand-text-light hover:text-brand-dark" aria-label="Instagram"><i className="fa-brands fa-instagram text-lg"></i></a>
+                             <a href="#" className="w-10 h-10 flex items-center justify-center text-brand-text-light hover:text-brand-dark" aria-label="Youtube"><i className="fa-brands fa-youtube text-lg"></i></a>
                          </div>
                     </div>
                  </div>

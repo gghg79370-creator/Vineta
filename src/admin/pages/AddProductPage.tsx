@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '../components/ui/Card';
 import { ImageUpload } from '../components/products/ImageUpload';
@@ -134,12 +135,12 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
 
     return (
         <div className="space-y-6">
-             <div className="sticky top-[80px] -mt-8 -mx-8 md:mb-6 p-4 bg-white/80 backdrop-blur-lg border-b z-10 hidden md:flex justify-between items-center">
-                <h2 className="text-xl font-bold">{isEditMode ? `تعديل: ${productToEdit.name}` : 'إضافة منتج جديد'}</h2>
+             <div className="sticky top-[80px] -mt-8 -mx-8 md:mb-6 p-4 bg-admin-card-bg/80 backdrop-blur-lg border-b border-admin-border z-10 hidden md:flex justify-between items-center">
+                <h2 className="text-xl font-bold text-admin-text-primary">{isEditMode ? `تعديل: ${productToEdit.name}` : 'إضافة منتج جديد'}</h2>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => navigate('products')}
-                        className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                        className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         إلغاء
                     </button>
                     <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover transition-colors">
@@ -174,13 +175,13 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                     </Card>
                     
                     <Card title="التسعير والمخزون" icon={<CurrencyDollarIcon size="sm"/>}>
-                        <label className="flex items-center gap-2 border-b pb-4 mb-4">
+                        <label className="flex items-center gap-2 border-b border-admin-border pb-4 mb-4">
                             <input type="checkbox" checked={hasVariants} onChange={e => setHasVariants(e.target.checked)} className="rounded text-admin-accent focus:ring-admin-accent/50"/>
                             <span>هذا المنتج له متغيرات (مثل المقاس أو اللون)</span>
                         </label>
                         
                         {hasVariants && totalVariantStock !== null && (
-                            <div className="mb-4 p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                            <div className="mb-4 p-3 bg-admin-bg rounded-lg flex justify-between items-center">
                                 <span className="font-bold">إجمالي المخزون</span>
                                 <div>
                                     <span className="font-bold text-lg">{totalVariantStock}</span>
@@ -280,12 +281,12 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                 <input type="text" name="tags" value={product.tags} onChange={handleChange} className="admin-form-input" placeholder="صيف, كاجوال, #SummerStyle"/>
                                 <p className="text-xs text-gray-500 mt-1">افصل بين الوسوم بفاصلة.</p>
                             </div>
-                            <div className="pt-4 border-t">
+                            <div className="pt-4 border-t border-admin-border">
                                 <label className="admin-form-label">الشارات (Badges)</label>
                                 <div className="space-y-2 mb-3">
                                     {badges.map((badge, index) => (
-                                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-                                            <span className="text-sm font-semibold">{badge.text} <span className="text-xs text-gray-500">({badge.type})</span></span>
+                                        <div key={index} className="flex items-center justify-between bg-admin-bg p-2 rounded-lg">
+                                            <span className="text-sm font-semibold">{badge.text} <span className="text-xs text-admin-text-secondary">({badge.type})</span></span>
                                             <button type="button" onClick={() => setBadges(badges.filter((_, i) => i !== index))} className="text-red-500 hover:text-red-700">
                                                 <TrashIcon size="sm" />
                                             </button>
@@ -294,7 +295,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                                 </div>
                                 <div className="flex items-end gap-2">
                                     <div className="flex-1">
-                                        <label className="text-xs font-medium text-gray-600">نص الشارة</label>
+                                        <label className="text-xs font-medium text-admin-text-secondary">نص الشارة</label>
                                         <input type="text" placeholder="جديد" value={newBadge.text} onChange={(e) => setNewBadge(prev => ({ ...prev, text: e.target.value }))} className="admin-form-input mt-1"/>
                                     </div>
                                     <button
@@ -337,7 +338,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
                         <div className="space-y-4">
                             <div>
                                 <label className="admin-form-label">الهامش (Margin)</label>
-                                <input type="text" readOnly value="-- %" className="admin-form-input bg-gray-100 cursor-not-allowed" />
+                                <input type="text" readOnly value="-- %" className="admin-form-input bg-admin-bg cursor-not-allowed" />
                             </div>
                             <div>
                                 <label className="admin-form-label">العروض</label>
@@ -353,7 +354,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ navigate, onSave, produ
              <StickyMobileActions>
                 <button 
                     onClick={() => navigate('products')}
-                    className="bg-white border border-gray-300 text-gray-700 font-bold py-2.5 px-4 rounded-lg hover:bg-gray-50 w-full justify-center">
+                    className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2.5 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 w-full justify-center">
                     إلغاء
                 </button>
                 <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2.5 px-4 rounded-lg hover:bg-admin-accentHover w-full justify-center">

@@ -72,7 +72,7 @@ export const AskQuestionModal = ({ isOpen, onClose }: AskQuestionModalProps) => 
                     value={value}
                     onChange={onChange}
                     required={required}
-                    className={`w-full border rounded-lg py-2.5 pr-10 pl-3 focus:outline-none focus:ring-2 ${error ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
+                    className={`w-full border bg-surface rounded-lg py-2.5 pr-10 pl-3 focus:outline-none focus:ring-2 ${error ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
                 />
             </div>
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -82,8 +82,8 @@ export const AskQuestionModal = ({ isOpen, onClose }: AskQuestionModalProps) => 
 
     return (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="p-5 flex justify-between items-center border-b flex-shrink-0">
+            <div className="bg-brand-bg w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border flex-shrink-0">
                     <h2 className="font-bold text-lg text-brand-dark">اسأل خبيرًا</h2>
                     <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>
@@ -102,7 +102,7 @@ export const AskQuestionModal = ({ isOpen, onClose }: AskQuestionModalProps) => 
                             onChange={(e) => setQuestion(e.target.value)}
                             required
                             rows={4}
-                            className={`w-full border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 ${errors.question ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
+                            className={`w-full border bg-surface rounded-lg py-2 px-3 focus:outline-none focus:ring-2 ${errors.question ? 'border-red-500 ring-red-500/50' : 'border-brand-border focus:ring-brand-dark/50'}`}
                         ></textarea>
                          {errors.question && <p className="text-red-500 text-xs mt-1">{errors.question}</p>}
                     </div>

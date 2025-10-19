@@ -21,7 +21,7 @@ const ContactMessagesPage: React.FC = () => {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
+        <div className="bg-admin-card-bg rounded-xl shadow-sm border h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 overflow-hidden">
                 <div className="md:col-span-1 border-l border-admin-border flex flex-col overflow-hidden">
                     <div className="p-4 border-b">

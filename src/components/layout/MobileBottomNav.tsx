@@ -71,7 +71,7 @@ export const MobileBottomNav = ({
     ];
 
     return (
-        <footer className="fixed bottom-0 right-0 left-0 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 rounded-t-2xl border-t border-brand-border/50 h-16">
+        <footer className="fixed bottom-0 right-0 left-0 bg-brand-bg shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 rounded-t-2xl border-t border-brand-border/50 h-16">
             <nav className="flex justify-around items-start pt-2 h-full">
                 {navItems.map(item => {
                     const isActive = item.isActive;

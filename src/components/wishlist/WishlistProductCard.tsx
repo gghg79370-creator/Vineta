@@ -55,12 +55,12 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
     return (
         <div 
             onClick={() => onSelect(product.id)}
-            className={`group text-center bg-white rounded-2xl overflow-hidden border-2 transition-all duration-300 h-full flex flex-col cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 ${isSelected ? 'border-brand-primary bg-brand-primary/5' : 'border-gray-200'}`}
+            className={`group text-center bg-surface rounded-2xl overflow-hidden border-2 transition-all duration-300 h-full flex flex-col cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 ${isSelected ? 'border-brand-primary bg-brand-primary/5' : 'border-brand-border/50'}`}
         >
             <div className="relative overflow-hidden">
                 <div 
                     onClick={(e) => { e.stopPropagation(); navigateTo('product', product)}}
-                    className="bg-gray-100 aspect-[3/4]"
+                    className="bg-brand-subtle aspect-[3/4]"
                 >
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" />
                 </div>
@@ -73,7 +73,7 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
                         type="checkbox"
                         checked={isSelected}
                         readOnly
-                        className="h-5 w-5 rounded-md border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer shadow-sm"
+                        className="h-5 w-5 rounded-md border-brand-border text-brand-primary focus:ring-brand-primary cursor-pointer shadow-sm"
                     />
                 </div>
                 
@@ -112,20 +112,20 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
                         <ShoppingBagIcon size="sm" />
                         <span>أضف للسلة</span>
                     </button>
-                    <button onClick={handleRemoveClick} className="bg-gray-200 text-gray-600 p-2.5 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors">
+                    <button onClick={handleRemoveClick} className="bg-brand-subtle text-brand-text-light p-2.5 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors">
                         <TrashIcon size="sm" />
                     </button>
                 </div>
             </div>
 
-            <div className="px-4 pb-4 mt-auto border-t pt-3 mx-4">
+            <div className="px-4 pb-4 mt-auto border-t border-brand-border pt-3 mx-4">
                 {isEditingNote ? (
                     <div className="text-left" onClick={e => e.stopPropagation()}>
                         <textarea
                             value={noteText}
                             onChange={(e) => setNoteText(e.target.value)}
                             placeholder="أضف ملاحظة..."
-                            className="w-full text-sm border-gray-200 rounded-md p-2 focus:ring-brand-primary focus:border-brand-primary resize-none"
+                            className="w-full text-sm border-brand-border rounded-md p-2 focus:ring-brand-primary focus:border-brand-primary resize-none bg-surface"
                             rows={2}
                             autoFocus
                             onKeyDown={e => {
@@ -137,14 +137,14 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
                         />
                         <div className="flex gap-2 mt-2">
                              <button onClick={handleSaveNote} className="flex-1 text-xs bg-brand-dark text-white rounded-full py-1.5 font-semibold transition-transform active:scale-95">حفظ</button>
-                             <button onClick={(e) => { e.stopPropagation(); setIsEditingNote(false); }} className="flex-1 text-xs bg-gray-200 text-gray-700 rounded-full py-1.5 font-semibold transition-transform active:scale-95">إلغاء</button>
+                             <button onClick={(e) => { e.stopPropagation(); setIsEditingNote(false); }} className="flex-1 text-xs bg-brand-subtle text-brand-text-light rounded-full py-1.5 font-semibold transition-transform active:scale-95">إلغاء</button>
                         </div>
                     </div>
                 ) : (
-                    <button onClick={handleNoteClick} className="w-full text-sm p-2 rounded-lg hover:bg-gray-50 text-right">
+                    <button onClick={handleNoteClick} className="w-full text-sm p-2 rounded-lg hover:bg-brand-subtle text-right">
                         {product.note ? (
                              <div className="flex justify-between items-center gap-2">
-                                <p className="text-gray-600 italic text-xs line-clamp-2" title={product.note}>"{product.note}"</p>
+                                <p className="text-brand-text-light italic text-xs line-clamp-2" title={product.note}>"{product.note}"</p>
                                 <PencilIcon size="sm" className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             </div>
                         ) : (

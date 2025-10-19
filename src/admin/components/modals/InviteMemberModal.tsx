@@ -30,10 +30,10 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, onClose, 
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-                <div className="p-4 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-lg">دعوة عضو جديد</h3>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800">&times;</button>
+            <div className="bg-admin-card-bg rounded-lg shadow-xl w-full max-w-md">
+                <div className="p-4 border-b border-admin-border flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-admin-text-primary">دعوة عضو جديد</h3>
+                    <button onClick={onClose} className="text-admin-text-secondary hover:text-admin-text-primary">&times;</button>
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
@@ -60,8 +60,8 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, onClose, 
                         </select>
                     </div>
                 </div>
-                <div className="p-4 bg-gray-50 flex justify-end gap-3 rounded-b-lg">
-                    <button onClick={onClose} className="bg-white border border-gray-300 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50">إلغاء</button>
+                <div className="p-4 bg-admin-bg flex justify-end gap-3 rounded-b-lg">
+                    <button onClick={onClose} className="bg-admin-card-bg border border-admin-border text-admin-text-primary px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700">إلغاء</button>
                     <button onClick={handleSave} className="bg-admin-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-admin-accentHover">إرسال دعوة</button>
                 </div>
             </div>

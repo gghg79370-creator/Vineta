@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { StarIcon } from '../icons';
 import { allProducts } from '../../data/products';
@@ -31,8 +33,8 @@ const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navig
     <div className="testimonial-card p-6 rounded-2xl shadow-sm h-full flex flex-col justify-between border border-brand-border/50">
         <div>
             <div className="flex justify-between items-center mb-3">
-                <p className="text-sm font-bold text-gray-600">
-                    <i className="fa-solid fa-check-circle text-green-500 ml-2" aria-hidden="true"></i>
+                <p className="text-sm font-bold text-brand-text">
+                    <i className="fa-solid fa-check-circle text-brand-instock ml-2" aria-hidden="true"></i>
                     مشتري معتمد - {testimonial.author}
                 </p>
                 <div className="flex text-yellow-400">
@@ -58,12 +60,12 @@ const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navig
 export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ navigateTo }) => {
     return (
         <section id="testimonials" className="py-12 md:py-20 bg-brand-subtle">
-            <div className="container mx-auto">
+            <div className="container mx-auto overflow-hidden">
                 <div className="text-center mb-8 px-4">
                     <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark">عملاء سعداء</h2>
                 </div>
                 
-                <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth py-2 -mx-4 px-4 md:grid md:grid-cols-3 md:mx-0 md:px-4">
+                <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth py-2 -mx-4 px-4 md:grid md:grid-cols-3 md:mx-0 md:px-0">
                     {testimonialsData.map((testimonial, index) => (
                         <div key={index} className="flex-shrink-0 w-[85%] sm:w-2/3 md:w-auto snap-start">
                             <TestimonialCard testimonial={testimonial} navigateTo={navigateTo} />

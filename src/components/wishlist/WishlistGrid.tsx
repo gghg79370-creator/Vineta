@@ -27,11 +27,11 @@ const ConfirmationModal: React.FC<{
             aria-labelledby="confirmation-title"
             aria-describedby="confirmation-message"
         >
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="bg-brand-bg w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
                 <h3 id="confirmation-title" className="text-xl font-bold text-brand-dark mb-2">{title}</h3>
                 <p id="confirmation-message" className="text-brand-text-light mb-6">{message}</p>
                 <div className="grid grid-cols-2 gap-4">
-                    <button onClick={onClose} className="bg-gray-100 text-brand-dark font-bold py-3 rounded-full hover:bg-gray-200">إلغاء</button>
+                    <button onClick={onClose} className="bg-brand-subtle text-brand-dark font-bold py-3 rounded-full hover:bg-brand-border">إلغاء</button>
                     <button onClick={onConfirm} className="bg-brand-sale text-white font-bold py-3 rounded-full hover:bg-opacity-90">تأكيد الحذف</button>
                 </div>
             </div>
@@ -158,7 +158,7 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
                 <>
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                         <h2 className="font-bold text-lg text-brand-dark">{wishlistItems.length} منتجات في قائمة رغباتك</h2>
-                        <label className="flex items-center gap-2 font-semibold cursor-pointer p-2 rounded-md hover:bg-gray-100">
+                        <label className="flex items-center gap-2 font-semibold cursor-pointer p-2 rounded-md hover:bg-brand-subtle">
                             <input
                                 type="checkbox"
                                 className="h-4 w-4 rounded border-brand-border text-brand-dark focus:ring-brand-dark"
@@ -184,7 +184,7 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
                     </div>
                 </>
             ) : (
-                <div className="text-center py-20 bg-gray-50 rounded-lg">
+                <div className="text-center py-20 bg-surface rounded-lg">
                     <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-brand-dark mb-2">قائمة رغباتك فارغة.</h2>
                     <p className="text-brand-text-light mb-6 max-w-xs mx-auto">أضف بعض المنتجات التي تعجبك هنا لتتبعها وشرائها لاحقًا.</p>
@@ -195,7 +195,7 @@ export const WishlistGrid: React.FC<WishlistGridProps> = ({ navigateTo }) => {
             )}
             
             {selectedIds.length > 0 && (
-                 <div className="fixed bottom-0 right-0 left-0 bg-white/90 backdrop-blur-sm shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 animate-slide-in-up">
+                 <div className="fixed bottom-0 right-0 left-0 bg-brand-bg/90 backdrop-blur-sm shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 animate-slide-in-up">
                     <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                          <p className="font-bold text-brand-dark">{selectedIds.length} عنصر محدد</p>
                          <div className="flex items-center gap-3">

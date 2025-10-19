@@ -25,7 +25,7 @@ const promiseData = [
 ];
 
 const PromiseCard: React.FC<typeof promiseData[0]> = ({ icon, title, description }) => (
-    <div className="bg-white p-6 rounded-xl text-center flex flex-col items-center border border-brand-border/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+    <div className="bg-surface p-6 rounded-xl text-center flex flex-col items-center border border-brand-border/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
         <div className="mb-4">{icon}</div>
         <h3 className="font-bold text-lg text-brand-dark mb-2">{title}</h3>
         <p className="text-sm text-brand-text-light">{description}</p>

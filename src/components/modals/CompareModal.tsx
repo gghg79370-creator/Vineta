@@ -1,4 +1,5 @@
 
+
 import React, { useMemo, useState, useEffect } from 'react';
 import { Product } from '../../types';
 import { CloseIcon, StarIcon, CheckCircleIcon, XCircleIcon, ShoppingBagIcon, SparklesIcon, ArrowLongRightIcon } from '../icons';
@@ -104,8 +105,8 @@ ${productsToCompare}
 
     return (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300" onClick={onClose}>
-            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-lg flex flex-col animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <div className="p-5 flex justify-between items-center border-b flex-shrink-0">
+            <div className="bg-brand-bg w-full max-w-4xl rounded-2xl shadow-lg flex flex-col animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border flex-shrink-0">
                     <h2 className="font-bold text-lg text-brand-dark">مقارنة المنتجات ({compareList.length}/4)</h2>
                      <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>
@@ -114,8 +115,8 @@ ${productsToCompare}
                     {compareList.length > 0 ? (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {compareList.map(p => (
-                             <div key={p.id} className="border rounded-lg p-3 text-center relative group">
-                                <button onClick={() => removeFromCompare(p.id)} className="absolute top-2 right-2 bg-white/50 rounded-full p-1 shadow-sm hover:bg-white z-10"><CloseIcon size="sm"/></button>
+                             <div key={p.id} className="border border-brand-border bg-surface rounded-lg p-3 text-center relative group">
+                                <button onClick={() => removeFromCompare(p.id)} className="absolute top-2 right-2 bg-brand-bg/50 rounded-full p-1 shadow-sm hover:bg-brand-bg z-10"><CloseIcon size="sm"/></button>
                                 <img onClick={() => handleViewProduct(p)} src={p.image} alt={p.name} className="w-full aspect-[3/4] object-cover rounded-md mx-auto cursor-pointer" />
                                 <p onClick={() => handleViewProduct(p)} className="font-semibold mt-2 text-sm h-10 line-clamp-2 cursor-pointer hover:text-brand-primary">{p.name}</p>
                                 <div className="my-2">
@@ -137,11 +138,11 @@ ${productsToCompare}
                     )}
                 </div>
 
-                <div className="p-4 bg-gray-50 border-t flex-shrink-0 flex justify-center gap-4">
-                     <button onClick={onClose} className="bg-white border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-gray-100">
+                <div className="p-4 bg-brand-subtle border-t border-brand-border flex-shrink-0 flex justify-center gap-4">
+                     <button onClick={onClose} className="bg-surface border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-brand-subtle">
                         مقارنة
                     </button>
-                    <button onClick={clearCompare} className="bg-white border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-gray-100">
+                    <button onClick={clearCompare} className="bg-surface border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-brand-subtle">
                         مسح الكل
                     </button>
                 </div>

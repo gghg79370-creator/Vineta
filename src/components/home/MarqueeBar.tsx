@@ -14,7 +14,7 @@ export const MarqueeBar = () => {
     );
 
     return (
-        <div className="relative overflow-x-hidden text-brand-dark font-bold py-4 border-b border-t bg-white">
+        <div className="relative overflow-x-hidden text-brand-dark font-bold py-4 border-b border-t bg-surface">
             <div className="flex animate-marquee whitespace-nowrap">
                 <MarqueeContent />
                 <MarqueeContent />

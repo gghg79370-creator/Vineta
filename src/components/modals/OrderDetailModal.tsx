@@ -35,19 +35,19 @@ export const OrderDetailModal = ({ isOpen, order, onClose }: OrderDetailModalPro
 
     return (
         <div className={`fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className={`bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
-                <div className="p-5 flex justify-between items-center border-b">
+            <div className={`bg-brand-bg w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border">
                     <h2 className="font-bold text-lg text-brand-dark">تفاصيل الطلب</h2>
                     <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>
-                <div className="p-5 flex flex-wrap gap-x-6 gap-y-2 items-center border-b bg-brand-subtle">
+                <div className="p-5 flex flex-wrap gap-x-6 gap-y-2 items-center border-b border-brand-border bg-brand-subtle">
                     <span className="font-bold text-brand-dark">#{order.id}</span>
                     <span className="text-sm text-brand-text-light">{order.date}</span>
                     <span className="text-sm text-brand-text-light">{order.items.length} منتجات</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-md ${statusClasses[order.status]}`}>{order.status}</span>
                 </div>
                 <div className="p-5 overflow-y-auto" style={{maxHeight: 'calc(90vh - 120px)'}}>
-                    <div className="border-b pb-5 mb-5">
+                    <div className="border-b border-brand-border pb-5 mb-5">
                         <h3 className="font-bold text-lg mb-4">تتبع الطلب</h3>
                         
                         {order.estimatedDelivery && order.status !== 'Delivered' && order.status !== 'Cancelled' && (
@@ -134,7 +134,7 @@ export const OrderDetailModal = ({ isOpen, order, onClose }: OrderDetailModalPro
                         ))}
                     </div>
 
-                    <div className="border-t mt-5 pt-5 flex justify-end">
+                    <div className="border-t border-brand-border mt-5 pt-5 flex justify-end">
                         <div className="w-full max-w-xs space-y-2">
                              <div className="flex justify-between">
                                 <span className="text-brand-text-light">المجموع الفرعي:</span>
@@ -144,7 +144,7 @@ export const OrderDetailModal = ({ isOpen, order, onClose }: OrderDetailModalPro
                                 <span className="text-brand-text-light">الشحن:</span>
                                 <span className="font-semibold text-brand-dark">0.00 ج.م</span>
                             </div>
-                             <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
+                             <div className="flex justify-between font-bold text-lg border-t border-brand-border pt-2 mt-2">
                                 <span className="text-brand-dark">الإجمالي:</span>
                                 <span className="text-brand-dark">{order.total} ج.م</span>
                             </div>

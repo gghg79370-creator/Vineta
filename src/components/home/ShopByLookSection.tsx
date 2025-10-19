@@ -18,7 +18,7 @@ const Hotspot = ({ top, right, product, navigateTo, addToCart }: {
         <div className="relative group flex items-center justify-center">
             <div className="absolute w-6 h-6 bg-white rounded-full animate-sonar-pulse"></div>
             <div className="relative w-4 h-4 bg-white rounded-full cursor-pointer shadow-md"></div>
-            <div className="absolute bottom-full mb-4 w-56 bg-white rounded-xl shadow-2xl p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none group-hover:pointer-events-auto">
+            <div className="absolute bottom-full mb-4 w-56 bg-surface rounded-xl shadow-2xl p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none group-hover:pointer-events-auto">
                 <div className="flex gap-3">
                     <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                          <img src={product.image} alt={product.name} className="w-full h-full object-cover cursor-pointer" onClick={() => navigateTo('product', product)}/>

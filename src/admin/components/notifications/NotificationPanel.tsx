@@ -46,22 +46,22 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
     };
 
     return (
-        <div className="absolute top-full mt-2 left-0 w-80 bg-white rounded-xl shadow-2xl border border-admin-border z-50 animate-fade-in-up origin-top-left">
-            <div className="p-3 border-b flex justify-between items-center">
-                <h3 className="font-bold text-gray-800">الإشعارات</h3>
+        <div className="absolute top-full mt-2 left-0 w-80 bg-admin-card-bg rounded-xl shadow-2xl border border-admin-border z-50 animate-fade-in-up origin-top-left">
+            <div className="p-3 border-b border-admin-border flex justify-between items-center">
+                <h3 className="font-bold text-admin-text-primary">الإشعارات</h3>
                 <button onClick={onMarkAllAsRead} className="text-xs font-semibold text-admin-accent hover:underline">
                     وضع علامة "مقروء" على الكل
                 </button>
             </div>
             <div className="max-h-96 overflow-y-auto admin-sidebar-scrollbar">
                 {notifications.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8 text-sm">لا توجد إشعارات جديدة.</p>
+                    <p className="text-center text-admin-text-secondary py-8 text-sm">لا توجد إشعارات جديدة.</p>
                 ) : (
                     notifications.map(notification => (
                         <button 
                             key={notification.id}
                             onClick={() => handleNotificationClick(notification)}
-                            className="w-full text-right p-3 flex items-start gap-3 hover:bg-gray-50 border-b last:border-b-0"
+                            className="w-full text-right p-3 flex items-start gap-3 hover:bg-admin-bg border-b last:border-b-0 border-admin-border"
                         >
                             <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                                 notification.type === 'order' ? 'bg-blue-100' :
@@ -71,10 +71,10 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                                 {icons[notification.type]}
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className={`font-semibold text-sm truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-600'}`}>
+                                <p className={`font-semibold text-sm truncate ${!notification.isRead ? 'text-admin-text-primary' : 'text-admin-text-secondary'}`}>
                                     {notification.title}
                                 </p>
-                                <p className="text-xs text-gray-500 line-clamp-2">{notification.message}</p>
+                                <p className="text-xs text-admin-text-secondary line-clamp-2">{notification.message}</p>
                                 <p className="text-xs text-gray-400 mt-1">{formatTimeAgo(notification.timestamp)}</p>
                             </div>
                             {!notification.isRead && (
@@ -84,7 +84,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                     ))
                 )}
             </div>
-             <div className="p-2 bg-gray-50 rounded-b-xl text-center">
+             <div className="p-2 bg-admin-bg rounded-b-xl text-center">
                  <button onClick={onClearAll} className="text-xs font-semibold text-red-500 hover:underline">
                     مسح الكل
                 </button>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface Category {
@@ -58,7 +59,7 @@ interface FeaturedCategoriesProps {
 export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ navigateTo }) => {
     return (
         <section className="bg-brand-subtle py-20">
-            <div className="container mx-auto">
+            <div className="container mx-auto overflow-hidden">
                  <div className="text-center mb-10 px-4">
                     <h2 className="text-4xl font-extrabold text-brand-dark">الفئات المميزة</h2>
                     <p className="text-brand-text-light mt-2 max-w-2xl mx-auto">اكتشف أحدث صيحات الموضة والأساسيات الخالدة في مجموعاتنا المختارة.</p>

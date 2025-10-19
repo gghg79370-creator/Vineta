@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Address } from '../../types';
 import { CloseIcon } from '../icons';
@@ -74,41 +75,41 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, onSave, ad
     
     return (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <div className="p-5 flex justify-between items-center border-b">
+            <div className="bg-brand-bg w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border">
                     <h2 className="font-bold text-lg text-brand-dark">{addressToEdit ? 'تعديل العنوان' : 'إضافة عنوان جديد'}</h2>
                     <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                      <div>
                         <label className="block text-sm font-bold text-brand-text mb-1">اسم العنوان (مثل: المنزل، العمل)</label>
-                        <input name="name" value={formData.name} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border" required/>
+                        <input name="name" value={formData.name} onChange={handleChange} className="w-full border bg-surface p-2 rounded-lg border-brand-border" required/>
                          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
                      <div>
                         <label className="block text-sm font-bold text-brand-text mb-1">اسم المستلم</label>
-                        <input name="recipientName" value={formData.recipientName} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border" required/>
+                        <input name="recipientName" value={formData.recipientName} onChange={handleChange} className="w-full border bg-surface p-2 rounded-lg border-brand-border" required/>
                          {errors.recipientName && <p className="text-red-500 text-xs mt-1">{errors.recipientName}</p>}
                     </div>
                      <div>
                         <label className="block text-sm font-bold text-brand-text mb-1">الشارع</label>
-                        <textarea name="street" value={formData.street} onChange={handleChange} rows={2} className="w-full border p-2 rounded-lg border-brand-border" required></textarea>
+                        <textarea name="street" value={formData.street} onChange={handleChange} rows={2} className="w-full border bg-surface p-2 rounded-lg border-brand-border" required></textarea>
                          {errors.street && <p className="text-red-500 text-xs mt-1">{errors.street}</p>}
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                          <div>
                             <label className="block text-sm font-bold text-brand-text mb-1">المدينة / المحافظة</label>
-                            <input name="city" value={formData.city} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border" required/>
+                            <input name="city" value={formData.city} onChange={handleChange} className="w-full border bg-surface p-2 rounded-lg border-brand-border" required/>
                              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-brand-text mb-1">الرمز البريدي</label>
-                            <input name="postalCode" value={formData.postalCode} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border"/>
+                            <input name="postalCode" value={formData.postalCode} onChange={handleChange} className="w-full border bg-surface p-2 rounded-lg border-brand-border"/>
                         </div>
                     </div>
                      <div>
                         <label className="block text-sm font-bold text-brand-text mb-1">الدولة</label>
-                        <select name="country" value={formData.country} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border bg-white">
+                        <select name="country" value={formData.country} onChange={handleChange} className="w-full border p-2 rounded-lg border-brand-border bg-surface">
                             <option value="مصر">مصر</option>
                             <option value="السعودية">السعودية</option>
                             <option value="الإمارات">الإمارات</option>
@@ -121,7 +122,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, onSave, ad
                         </label>
                     </div>
                      <div className="pt-4 flex justify-end gap-3">
-                        <button type="button" onClick={onClose} className="bg-white border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full">إلغاء</button>
+                        <button type="button" onClick={onClose} className="bg-surface border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full">إلغاء</button>
                         <button type="submit" className="bg-brand-dark text-white font-bold py-2 px-6 rounded-full">حفظ</button>
                     </div>
                 </form>

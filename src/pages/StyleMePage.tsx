@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { Product } from '../types';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -133,13 +131,13 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
     };
 
     return (
-        <div className="bg-gray-50">
+        <div className="bg-brand-subtle">
             <Breadcrumb items={breadcrumbItems} navigateTo={navigateTo} title="المصمم الذكي" />
             <div className="container mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Input Section */}
                     <div className="lg:col-span-4 lg:sticky top-28">
-                        <div className="bg-white rounded-xl shadow-sm border p-6">
+                        <div className="bg-surface rounded-xl shadow-sm border border-brand-border p-6">
                             <h2 className="text-xl font-bold text-brand-dark mb-4">صف رؤيتك للأناقة</h2>
                             <div className="space-y-4">
                                 <div>
@@ -150,7 +148,7 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                                         value={promptText}
                                         onChange={(e) => setPromptText(e.target.value)}
                                         placeholder="مثال: 'إطلالة كاجوال لعطلة نهاية الأسبوع على الشاطئ' أو 'شيء أنيق لاجتماع عمل'..."
-                                        className="w-full border p-3 rounded-lg border-brand-border focus:ring-brand-dark"
+                                        className="w-full border bg-surface p-3 rounded-lg border-brand-border focus:ring-brand-dark"
                                     />
                                 </div>
                                 <div>
@@ -158,15 +156,15 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                                     {inspirationImage ? (
                                         <div className="relative">
                                             <img src={inspirationImage.preview} alt="Inspiration preview" className="w-full h-40 object-cover rounded-lg" />
-                                            <button onClick={() => setInspirationImage(null)} className="absolute -top-2 -right-2 bg-white rounded-full text-gray-600 hover:text-red-500 shadow-md">
+                                            <button onClick={() => setInspirationImage(null)} className="absolute -top-2 -right-2 bg-surface rounded-full text-brand-text hover:text-brand-sale shadow-md">
                                                 <XCircleIcon />
                                             </button>
                                         </div>
                                     ) : (
                                         <label htmlFor="image-upload" className="cursor-pointer border-2 border-dashed border-brand-border rounded-lg p-6 text-center block hover:bg-brand-subtle">
-                                            <ArrowUpTrayIcon className="w-8 h-8 mx-auto text-gray-400" />
+                                            <ArrowUpTrayIcon className="w-8 h-8 mx-auto text-brand-text-light" />
                                             <p className="mt-2 font-semibold text-brand-primary">انقر للتحميل</p>
-                                            <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF</p>
+                                            <p className="text-xs text-brand-text-light mt-1">PNG, JPG, GIF</p>
                                         </label>
                                     )}
                                     <input type="file" id="image-upload" accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -187,18 +185,18 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                     {/* Result Section */}
                     <div className="lg:col-span-8">
                         {isLoading ? (
-                            <div className="text-center p-8 bg-white rounded-xl shadow-sm border animate-fade-in">
+                            <div className="text-center p-8 bg-surface rounded-xl shadow-sm border border-brand-border animate-fade-in">
                                 <Spinner size="lg" color="text-brand-dark"/>
                                 <h3 className="text-xl font-bold mt-4 text-brand-dark">يقوم Vinnie بتنسيق إطلالتك...</h3>
                                 <p className="text-brand-text-light mt-2">قد يستغرق هذا بضع لحظات.</p>
                             </div>
                         ) : result ? (
-                            <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 animate-fade-in-up">
+                            <div className="bg-surface rounded-xl shadow-sm border border-brand-border p-6 md:p-8 animate-fade-in-up">
                                 <h2 className="text-3xl font-bold text-brand-dark mb-2 text-center">{result.lookTitle}</h2>
                                 <p className="text-brand-text-light text-center mb-8 max-w-xl mx-auto">{result.lookDescription}</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {result.products.map(p => (
-                                        <div key={p.id} className="bg-white rounded-lg border overflow-hidden group flex flex-col">
+                                        <div key={p.id} className="bg-surface rounded-lg border border-brand-border overflow-hidden group flex flex-col">
                                             <img src={p.image} alt={p.name} className="w-full aspect-[3/4] object-cover cursor-pointer group-hover:scale-105 transition-transform" onClick={() => navigateTo('product', p)}/>
                                             <div className="p-3 text-center flex flex-col flex-grow">
                                                 <p className="font-semibold text-sm flex-grow">{p.name}</p>
@@ -213,8 +211,8 @@ const StyleMePage: React.FC<StyleMePageProps> = ({ navigateTo, addToCart }) => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center p-8 bg-white rounded-xl shadow-sm border min-h-[400px] flex flex-col justify-center items-center">
-                                <SparklesIcon size="lg" className="w-16 h-16 text-gray-300 mb-4" />
+                            <div className="text-center p-8 bg-surface rounded-xl shadow-sm border border-brand-border min-h-[400px] flex flex-col justify-center items-center">
+                                <SparklesIcon size="lg" className="w-16 h-16 text-brand-border mb-4" />
                                 <h3 className="text-2xl font-bold text-brand-dark">إطلالتك المخصصة في انتظارك</h3>
                                 <p className="text-brand-text-light mt-2 max-w-sm mx-auto">استخدم اللوحة على اليسار لوصف ما تبحث عنه، ودع مساعدنا الذكي يقوم بالباقي!</p>
                             </div>

@@ -1,217 +1,162 @@
-
-
 import React, { useState } from 'react';
+import { HeroSlide, AdminAnnouncement } from '../../types';
 import { Card } from '../components/ui/Card';
-import { AdminAnnouncement, HeroSlide } from '../../types';
-import { PlusIcon, TrashIcon, PencilIcon } from '../../components/icons';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon } from '../../components/icons';
+import HeroSlideModal from '../components/modals/HeroSlideModal';
 import AnnouncementModal from '../components/modals/AnnouncementModal';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
-import HeroSlideModal from '../components/modals/HeroSlideModal';
-
-// Simplified list component for announcements within this page
-const AnnouncementList: React.FC<{ 
-    announcements: AdminAnnouncement[], 
-    onEdit: (announcement: AdminAnnouncement) => void, 
-    onDelete: (announcement: AdminAnnouncement) => void 
-}> = ({ announcements, onEdit, onDelete }) => {
-    const getStatusClasses = (status: AdminAnnouncement['status']) => {
-        return status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700';
-    };
-    
-    return (
-        <div className="space-y-2">
-            {announcements.map(announcement => (
-                <div key={announcement.id} className="flex items-center gap-4 p-2 rounded-lg bg-gray-50 border">
-                    <div className="flex-1">
-                        <p className="font-semibold">{announcement.content}</p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                            <span className={`px-2 py-0.5 rounded-full font-bold ${getStatusClasses(announcement.status)}`}>
-                                {announcement.status === 'Active' ? 'نشط' : 'غير نشط'}
-                            </span>
-                            <span>يبدأ: {new Date(announcement.startDate).toLocaleDateString('ar-EG')}</span>
-                            {announcement.endDate && <span>ينتهي: {new Date(announcement.endDate).toLocaleDateString('ar-EG')}</span>}
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => onEdit(announcement)} className="text-gray-400 hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
-                        <button onClick={() => onDelete(announcement)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
-                    </div>
-                </div>
-            ))}
-             {announcements.length === 0 && (
-                <p className="text-center text-gray-500 py-4">لا توجد إعلانات حاليًا.</p>
-            )}
-        </div>
-    );
-};
-
-const HeroSlideList: React.FC<{
-    slides: HeroSlide[];
-    onEdit: (slide: HeroSlide) => void;
-    onDelete: (slide: HeroSlide) => void;
-}> = ({ slides, onEdit, onDelete }) => {
-    const getStatusClasses = (status: HeroSlide['status']) => {
-        return status === 'Visible' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700';
-    };
-
-    return (
-        <div className="space-y-3">
-            {slides.map(slide => (
-                <div key={slide.id} className="flex items-center gap-4 p-3 rounded-lg bg-gray-50 border">
-                    <img src={slide.bgImage} alt={slide.title} className="w-20 h-16 object-cover rounded-md flex-shrink-0" />
-                    <div className="flex-1">
-                        <p className="font-bold">{slide.title}</p>
-                        <p className="text-xs text-gray-500">{slide.subtitle}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusClasses(slide.status)}`}>
-                        {slide.status === 'Visible' ? 'مرئي' : 'مخفي'}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => onEdit(slide)} className="text-gray-400 hover:text-admin-accent p-1"><PencilIcon size="sm" /></button>
-                        <button onClick={() => onDelete(slide)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm" /></button>
-                    </div>
-                </div>
-            ))}
-             {slides.length === 0 && (
-                <p className="text-center text-gray-500 py-4">لا توجد شرائح حاليًا.</p>
-            )}
-        </div>
-    );
-};
-
+import { useToast } from '../../hooks/useToast';
 
 interface ThemeSettingsPageProps {
     heroSlides: HeroSlide[];
     setHeroSlides: React.Dispatch<React.SetStateAction<HeroSlide[]>>;
     announcements: AdminAnnouncement[];
-    onAnnouncementsUpdate: (announcements: AdminAnnouncement[]) => void;
+    onAnnouncementsUpdate: React.Dispatch<React.SetStateAction<AdminAnnouncement[]>>;
 }
 
 const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = ({ heroSlides, setHeroSlides, announcements, onAnnouncementsUpdate }) => {
-    const [editingAnnouncement, setEditingAnnouncement] = useState<AdminAnnouncement | null>(null);
-    const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+    // Hero Slide State
+    const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
+    const [slideToEdit, setSlideToEdit] = useState<HeroSlide | null>(null);
+    const [slideToDelete, setSlideToDelete] = useState<HeroSlide | null>(null);
+
+    // Announcement State
+    const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
+    const [announcementToEdit, setAnnouncementToEdit] = useState<AdminAnnouncement | null>(null);
     const [announcementToDelete, setAnnouncementToDelete] = useState<AdminAnnouncement | null>(null);
-    
-    const [editingHeroSlide, setEditingHeroSlide] = useState<HeroSlide | null>(null);
-    const [showHeroSlideModal, setShowHeroSlideModal] = useState(false);
-    const [heroSlideToDelete, setHeroSlideToDelete] = useState<HeroSlide | null>(null);
 
-    const handleSaveAnnouncement = (announcement: AdminAnnouncement) => {
-        let updatedAnnouncements;
-        if (announcement.id && announcement.id !== 0) { // Existing announcement
-            updatedAnnouncements = announcements.map(a => a.id === announcement.id ? announcement : a);
-        } else { // New announcement
-            updatedAnnouncements = [...announcements, { ...announcement, id: Date.now() }];
-        }
-        onAnnouncementsUpdate(updatedAnnouncements);
-        setShowAnnouncementModal(false);
-        setEditingAnnouncement(null);
+    const addToast = useToast();
+    
+    // Hero Slide Handlers
+    const handleAddHeroSlide = () => {
+        setSlideToEdit(null);
+        setIsHeroModalOpen(true);
     };
 
-    const handleDeleteAnnouncement = () => {
-        if (!announcementToDelete) return;
-        const updatedAnnouncements = announcements.filter(a => a.id !== announcementToDelete.id);
-        onAnnouncementsUpdate(updatedAnnouncements);
-        setAnnouncementToDelete(null);
+    const handleEditHeroSlide = (slide: HeroSlide) => {
+        setSlideToEdit(slide);
+        setIsHeroModalOpen(true);
     };
-    
+
     const handleSaveHeroSlide = (slide: HeroSlide) => {
-        if (slide.id && slide.id !== 0) { // Edit
-            setHeroSlides(prev => prev.map(s => s.id === slide.id ? slide : s));
-        } else { // Add
+        if (slide.id === 0) { // New slide
             setHeroSlides(prev => [...prev, { ...slide, id: Date.now() }]);
+            addToast('تمت إضافة الشريحة بنجاح!', 'success');
+        } else { // Edit slide
+            setHeroSlides(prev => prev.map(s => s.id === slide.id ? slide : s));
+            addToast('تم حفظ الشريحة بنجاح!', 'success');
         }
-        setShowHeroSlideModal(false);
-        setEditingHeroSlide(null);
+        setIsHeroModalOpen(false);
     };
 
-    const handleDeleteHeroSlide = () => {
-        if (!heroSlideToDelete) return;
-        setHeroSlides(prev => prev.filter(s => s.id !== heroSlideToDelete.id));
-        setHeroSlideToDelete(null);
+    const handleDeleteHeroSlide = (slide: HeroSlide) => {
+        setSlideToDelete(slide);
     };
+    
+    const confirmDeleteHeroSlide = () => {
+        if (slideToDelete) {
+            setHeroSlides(prev => prev.filter(s => s.id !== slideToDelete.id));
+            addToast('تم حذف الشريحة.', 'success');
+            setSlideToDelete(null);
+        }
+    };
+    
+    // Announcement Handlers
+    const handleAddAnnouncement = () => {
+        setAnnouncementToEdit(null);
+        setIsAnnouncementModalOpen(true);
+    };
+
+    const handleEditAnnouncement = (announcement: AdminAnnouncement) => {
+        setAnnouncementToEdit(announcement);
+        setIsAnnouncementModalOpen(true);
+    };
+    
+    const handleSaveAnnouncement = (announcement: AdminAnnouncement) => {
+        if (announcement.id === 0) {
+            onAnnouncementsUpdate(prev => [...prev, { ...announcement, id: Date.now() }]);
+            addToast('تمت إضافة الإعلان بنجاح!', 'success');
+        } else {
+            onAnnouncementsUpdate(prev => prev.map(a => a.id === announcement.id ? announcement : a));
+            addToast('تم حفظ الإعلان بنجاح!', 'success');
+        }
+        setIsAnnouncementModalOpen(false);
+    };
+    
+    const handleDeleteAnnouncement = (announcement: AdminAnnouncement) => {
+        setAnnouncementToDelete(announcement);
+    };
+    
+    const confirmDeleteAnnouncement = () => {
+        if (announcementToDelete) {
+            onAnnouncementsUpdate(prev => prev.filter(a => a.id !== announcementToDelete.id));
+            addToast('تم حذف الإعلان.', 'success');
+            setAnnouncementToDelete(null);
+        }
+    };
+
 
     return (
         <div className="space-y-6">
-            <AnnouncementModal 
-                isOpen={showAnnouncementModal}
-                onClose={() => {
-                    setShowAnnouncementModal(false);
-                    setEditingAnnouncement(null);
-                }}
-                onSave={handleSaveAnnouncement}
-                announcementToEdit={editingAnnouncement}
-            />
-            <ConfirmDeleteModal 
-                isOpen={!!announcementToDelete}
-                onClose={() => setAnnouncementToDelete(null)}
-                onConfirm={handleDeleteAnnouncement}
-                title="حذف الإعلان"
-                itemName={announcementToDelete?.content || ''}
-            />
-             <HeroSlideModal 
-                isOpen={showHeroSlideModal}
-                onClose={() => {
-                    setShowHeroSlideModal(false);
-                    setEditingHeroSlide(null);
-                }}
-                onSave={handleSaveHeroSlide}
-                slide={editingHeroSlide}
-            />
-             <ConfirmDeleteModal 
-                isOpen={!!heroSlideToDelete}
-                onClose={() => setHeroSlideToDelete(null)}
-                onConfirm={handleDeleteHeroSlide}
-                title="حذف الشريحة"
-                itemName={heroSlideToDelete?.title || ''}
-            />
-
-            <Card 
-                title="شريط الإعلانات"
-                actions={
-                    <button 
-                        onClick={() => { setEditingAnnouncement(null); setShowAnnouncementModal(true); }} 
-                        className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors"
-                    >
-                        <PlusIcon />
-                        <span>إضافة إعلان</span>
-                    </button>
-                }
-            >
-                <p className="text-gray-500 text-sm mb-4">إدارة شريط الإعلانات الذي يظهر في أعلى الموقع.</p>
-                <AnnouncementList 
-                    announcements={announcements} 
-                    onEdit={(ann) => {
-                        setEditingAnnouncement(ann); 
-                        setShowAnnouncementModal(true);
-                    }}
-                    onDelete={(ann) => setAnnouncementToDelete(ann)}
-                />
-            </Card>
-
-            <Card 
-                title="قسم الهيرو (Hero Section)"
-                actions={
-                    <button 
-                        onClick={() => { setEditingHeroSlide(null); setShowHeroSlideModal(true); }} 
-                        className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover transition-colors"
-                    >
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-admin-text-primary">تخصيص الصفحة الرئيسية</h1>
+            </div>
+            
+            <Card title="شرائح العرض الرئيسية (Hero Slides)">
+                <div className="flex justify-end mb-4">
+                    <button onClick={handleAddHeroSlide} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover">
                         <PlusIcon />
                         <span>إضافة شريحة</span>
                     </button>
-                }
-            >
-                 <p className="text-gray-500 text-sm mb-4">إدارة الشرائح في قسم الهيرو بالصفحة الرئيسية.</p>
-                 <HeroSlideList 
-                    slides={heroSlides}
-                    onEdit={(slide) => { setEditingHeroSlide(slide); setShowHeroSlideModal(true); }}
-                    onDelete={(slide) => setHeroSlideToDelete(slide)}
-                 />
+                </div>
+                <div className="space-y-3">
+                    {heroSlides.map(slide => (
+                        <div key={slide.id} className="bg-admin-bg p-3 rounded-lg flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <img src={slide.bgImage} alt={slide.title} className="w-24 h-14 object-cover rounded-md"/>
+                                <div>
+                                    <p className="font-bold">{slide.title}</p>
+                                    <p className="text-xs text-admin-text-secondary">{slide.subtitle}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                {slide.status === 'Visible' ? <EyeIcon className="text-green-500"/> : <EyeSlashIcon className="text-gray-400"/>}
+                                <button onClick={() => handleEditHeroSlide(slide)} className="text-admin-text-secondary hover:text-admin-accent"><PencilIcon/></button>
+                                <button onClick={() => handleDeleteHeroSlide(slide)} className="text-admin-text-secondary hover:text-red-500"><TrashIcon/></button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </Card>
 
-            <Card title="ألوان العلامة التجارية">
-                 <p className="text-gray-500 text-sm">تخصيص الألوان الأساسية للمتجر (قيد الإنشاء).</p>
+            <Card title="شريط الإعلانات العلوي">
+                <div className="flex justify-end mb-4">
+                    <button onClick={handleAddAnnouncement} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-admin-accentHover">
+                        <PlusIcon />
+                        <span>إضافة إعلان</span>
+                    </button>
+                </div>
+                <div className="space-y-2">
+                     {announcements.map(ann => (
+                        <div key={ann.id} className="bg-admin-bg p-3 rounded-lg flex items-center justify-between">
+                            <p className="font-semibold">{ann.content}</p>
+                            <div className="flex items-center gap-4">
+                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${ann.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                                    {ann.status === 'Active' ? 'نشط' : 'غير نشط'}
+                                </span>
+                                <button onClick={() => handleEditAnnouncement(ann)} className="text-admin-text-secondary hover:text-admin-accent"><PencilIcon/></button>
+                                <button onClick={() => handleDeleteAnnouncement(ann)} className="text-admin-text-secondary hover:text-red-500"><TrashIcon/></button>
+                            </div>
+                        </div>
+                     ))}
+                </div>
             </Card>
+
+            {/* Modals */}
+            <HeroSlideModal isOpen={isHeroModalOpen} onClose={() => setIsHeroModalOpen(false)} onSave={handleSaveHeroSlide} slide={slideToEdit} />
+            <AnnouncementModal isOpen={isAnnouncementModalOpen} onClose={() => setIsAnnouncementModalOpen(false)} onSave={handleSaveAnnouncement} announcementToEdit={announcementToEdit} />
+            <ConfirmDeleteModal isOpen={!!slideToDelete} onClose={() => setSlideToDelete(null)} onConfirm={confirmDeleteHeroSlide} title="حذف الشريحة" itemName={slideToDelete?.title || ''} />
+            <ConfirmDeleteModal isOpen={!!announcementToDelete} onClose={() => setAnnouncementToDelete(null)} onConfirm={confirmDeleteAnnouncement} title="حذف الإعلان" itemName={announcementToDelete?.content || ''} />
         </div>
     );
 };

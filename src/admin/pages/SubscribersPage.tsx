@@ -24,10 +24,10 @@ const SubscribersPage: React.FC<SubscribersPageProps> = ({ subscribers }) => {
                     <p className="text-admin-text-secondary mt-1">عرض وإدارة المشتركين لديك.</p>
                 </div>
                  <div className="flex items-center gap-2">
-                     <button className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50">
+                     <button className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-admin-bg">
                         استيراد
                     </button>
-                    <button className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50">
+                    <button className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-admin-bg">
                         تصدير
                     </button>
                  </div>

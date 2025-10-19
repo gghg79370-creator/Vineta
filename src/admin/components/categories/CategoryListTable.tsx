@@ -20,7 +20,7 @@ const CategoryListTable: React.FC<CategoryListTableProps> = ({ categories, onEdi
     return (
         <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm text-right">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-admin-bg text-admin-text-secondary">
                     <tr>
                         <th className="px-5 py-3 font-semibold" title="اسم الفئة. الفئات المتداخلة تظهر بمسافة بادئة.">اسم الفئة</th>
                         <th className="px-5 py-3 font-semibold" title="إجمالي عدد المنتجات المرتبطة مباشرة بهذه الفئة.">عدد المنتجات</th>
@@ -30,7 +30,7 @@ const CategoryListTable: React.FC<CategoryListTableProps> = ({ categories, onEdi
                 </thead>
                 <tbody className="divide-y divide-admin-border">
                     {categories.map(category => (
-                        <tr key={category.id} className="hover:bg-gray-50">
+                        <tr key={category.id} className="hover:bg-admin-bg">
                             <td className="px-5 py-3">
                                 {editingCategory?.id === category.id ? (
                                     <div className="flex items-center gap-2">
@@ -47,13 +47,13 @@ const CategoryListTable: React.FC<CategoryListTableProps> = ({ categories, onEdi
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-3">
-                                        <span style={{ marginRight: `${category.depth * 1.5}rem` }} className="font-semibold text-gray-800">
-                                           {category.depth > 0 && <span className="text-gray-400 mr-2">↳</span>} {category.name}
+                                        <span style={{ marginRight: `${category.depth * 1.5}rem` }} className="font-semibold text-admin-text-primary">
+                                           {category.depth > 0 && <span className="text-admin-text-secondary mr-2">↳</span>} {category.name}
                                         </span>
                                     </div>
                                 )}
                             </td>
-                            <td className="px-5 py-3 text-gray-500">{category.productCount}</td>
+                            <td className="px-5 py-3 text-admin-text-secondary">{category.productCount}</td>
                             <td className="px-5 py-3">
                                 <span className={`px-2 py-1 rounded-md text-xs font-bold ${getStatusClasses(category.status)}`}>
                                     {category.status === 'Visible' ? 'مرئي' : 'مخفي'}
@@ -61,8 +61,8 @@ const CategoryListTable: React.FC<CategoryListTableProps> = ({ categories, onEdi
                             </td>
                             <td className="px-5 py-3 text-left">
                                 <div className="flex items-center gap-2 justify-end">
-                                    <button onClick={() => setEditingCategory({id: category.id, name: category.name})} className="text-gray-400 hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
-                                    <button onClick={() => onDelete(category)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
+                                    <button onClick={() => setEditingCategory({id: category.id, name: category.name})} className="text-admin-text-secondary hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
+                                    <button onClick={() => onDelete(category)} className="text-admin-text-secondary hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
                                 </div>
                             </td>
                         </tr>

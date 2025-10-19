@@ -8,7 +8,7 @@ interface ContactPageProps {
     navigateTo: (pageName: string) => void;
 }
 
-const ContactPage = ({ navigateTo }: ContactPageProps) => {
+const ContactPage: React.FC<ContactPageProps> = ({ navigateTo }) => {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -83,22 +83,22 @@ const ContactPage = ({ navigateTo }: ContactPageProps) => {
                         </div>
                     </div>
                      <div>
-                        <div className="bg-white p-8 rounded-lg shadow-md">
+                        <div className="bg-surface p-8 rounded-lg shadow-md border border-brand-border">
                              <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم" className={`w-full border p-3 rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم" className={`w-full border p-3 rounded-lg bg-surface ${errors.name ? 'border-red-500' : 'border-brand-border'}`} required />
                                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                                 </div>
                                 <div>
-                                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className={`w-full border p-3 rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className={`w-full border p-3 rounded-lg bg-surface ${errors.email ? 'border-red-500' : 'border-brand-border'}`} required />
                                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                                 </div>
                                 <div>
-                                    <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="الموضوع" className={`w-full border p-3 rounded-lg ${errors.subject ? 'border-red-500' : 'border-gray-200'}`} required />
+                                    <input type="text" name="subject" value={formData.subject} onChange={handleChange} placeholder="الموضوع" className={`w-full border p-3 rounded-lg bg-surface ${errors.subject ? 'border-red-500' : 'border-brand-border'}`} required />
                                     {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
                                 </div>
                                 <div>
-                                    <textarea name="message" value={formData.message} onChange={handleChange} placeholder="رسالتك" rows={5} className={`w-full border p-3 rounded-lg ${errors.message ? 'border-red-500' : 'border-gray-200'}`} required></textarea>
+                                    <textarea name="message" value={formData.message} onChange={handleChange} placeholder="رسالتك" rows={5} className={`w-full border p-3 rounded-lg bg-surface ${errors.message ? 'border-red-500' : 'border-brand-border'}`} required></textarea>
                                     {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                                 </div>
                                 <button type="submit" disabled={loading} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 flex items-center justify-center min-h-[48px]">

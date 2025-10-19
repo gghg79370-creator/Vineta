@@ -11,7 +11,7 @@ const Fab: React.FC<FabProps> = ({ onClick, icon = <PlusIcon />, ariaLabel = "Ad
     return (
         <button
             onClick={onClick}
-            className="md:hidden fixed bottom-6 left-6 bg-admin-accent text-white rounded-full p-4 shadow-lg z-30 transform transition-transform hover:scale-110 active:scale-100"
+            className="md:hidden fixed bottom-6 left-6 bg-admin-accent text-white rounded-full p-4 shadow-lg z-30 transform transition-transform hover:scale-110 active:scale-100 hover:bg-admin-accentHover"
             aria-label={ariaLabel}
         >
             {icon}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '../components/icons';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
@@ -31,7 +30,7 @@ const FaqPage = ({navigateTo}: FaqPageProps) => {
     const AccordionItem: React.FC<AccordionItemProps> = ({ q, a }) => {
         const [isOpen, setIsOpen] = useState(false);
         return (
-            <div className="border-b">
+            <div className="border-b border-brand-border">
                 <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-right py-4 font-semibold">
                     <span>{q}</span>
                     <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}><ChevronDownIcon/></span>
@@ -51,7 +50,7 @@ const FaqPage = ({navigateTo}: FaqPageProps) => {
     ];
 
     return (
-        <div className="bg-white py-8">
+        <div className="bg-brand-bg py-8">
             <div className="container mx-auto px-4">
                  <Breadcrumb items={breadcrumbItems} navigateTo={navigateTo} title="أسئلة متكررة" />
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -60,7 +59,7 @@ const FaqPage = ({navigateTo}: FaqPageProps) => {
                             <h2 className="text-2xl font-bold mb-2">اتصل بنا</h2>
                             <p className="text-brand-text-light mb-4">إذا كان لديك سؤال يتطلب مساعدة فورية، يمكنك النقر على الزر أدناه للدردشة المباشرة.</p>
                             <button className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 mb-3">اتصل بنا</button>
-                            <button className="w-full bg-white border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle">دردش معنا</button>
+                            <button className="w-full bg-surface border border-brand-border text-brand-dark font-bold py-3 rounded-full hover:bg-brand-subtle">دردش معنا</button>
                         </div>
                      </div>
                      <div className="md:col-span-2 space-y-8">

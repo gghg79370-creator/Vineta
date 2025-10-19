@@ -34,7 +34,7 @@ export const RecentlyViewedSection: React.FC<RecentlyViewedSectionProps> = (prop
     }
 
     return (
-         <section className="container mx-auto px-4 py-10 bg-brand-subtle rounded-2xl">
+         <section className="container mx-auto px-4 py-10 bg-brand-subtle rounded-2xl overflow-hidden">
              <Carousel
                 title={title}
                 items={recentlyViewedProducts}

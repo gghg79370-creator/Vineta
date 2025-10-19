@@ -66,7 +66,7 @@ const InspiredProductCard: React.FC<{ product: Product, navigateTo: (pageName: s
 export const InspiredByYouSection: React.FC<InspiredByYouSectionProps> = ({ navigateTo }) => {
     return (
         <section className="bg-white py-12 md:py-20">
-            <div className="container mx-auto">
+            <div className="container mx-auto overflow-hidden">
                 <div className="text-center mb-8 px-4">
                     <h2 className="text-3xl md:text-4xl font-extrabold text-brand-dark">بإلهام منكِ</h2>
                 </div>

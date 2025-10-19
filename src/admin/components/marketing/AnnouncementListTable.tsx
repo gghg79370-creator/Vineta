@@ -17,7 +17,7 @@ const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({ announcem
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-sm text-right">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-admin-bg text-admin-text-secondary">
                     <tr>
                         <th className="p-3 font-semibold">المحتوى</th>
                         <th className="p-3 font-semibold">الحالة</th>
@@ -26,21 +26,21 @@ const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({ announcem
                         <th className="p-3 font-semibold">إجراءات</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-admin-border">
                     {announcements.map(item => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                            <td className="p-3 font-semibold text-gray-800">{item.content}</td>
+                        <tr key={item.id} className="hover:bg-admin-bg">
+                            <td className="p-3 font-semibold text-admin-text-primary">{item.content}</td>
                             <td className="p-3">
                                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusClasses(item.status)}`}>
                                     {item.status === 'Active' ? 'نشط' : 'غير نشط'}
                                 </span>
                             </td>
-                            <td className="p-3 text-gray-500">{item.startDate}</td>
-                             <td className="p-3 text-gray-500">{item.endDate || 'لا يوجد'}</td>
+                            <td className="p-3 text-admin-text-secondary">{item.startDate}</td>
+                             <td className="p-3 text-admin-text-secondary">{item.endDate || 'لا يوجد'}</td>
                             <td className="p-3">
                                  <div className="flex items-center gap-2">
-                                    <button onClick={() => onEdit(item)} className="text-gray-400 hover:text-primary-600 p-1"><PencilIcon size="sm"/></button>
-                                    <button onClick={() => onDelete(item)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
+                                    <button onClick={() => onEdit(item)} className="text-admin-text-secondary hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
+                                    <button onClick={() => onDelete(item)} className="text-admin-text-secondary hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
                                 </div>
                             </td>
                         </tr>

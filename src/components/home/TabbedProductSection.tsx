@@ -57,7 +57,7 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
                     <p className="text-brand-text-light mt-2 max-w-2xl mx-auto">تحقق مما هو جديد، وما هو رائج، وما هو معروض للبيع.</p>
                 </div>
                 <div className="flex justify-center items-center mb-10">
-                    <div className="bg-white p-2 rounded-full flex justify-center items-center gap-2 shadow-sm">
+                    <div className="bg-surface p-2 rounded-full flex justify-center items-center gap-2 shadow-sm">
                         {tabs.map(tab => (
                             <button 
                                 key={tab.id}
@@ -94,7 +94,7 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
                     )}
                 </div>
                  <div className="text-center mt-12 hidden md:block">
-                    <button onClick={() => props.navigateTo('shop')} className="bg-white border border-brand-border text-brand-dark font-bold py-3 px-8 rounded-full hover:bg-brand-subtle transition-colors">
+                    <button onClick={() => props.navigateTo('shop')} className="bg-surface border border-brand-border text-brand-dark font-bold py-3 px-8 rounded-full hover:bg-brand-subtle transition-colors">
                         عرض الكل
                     </button>
                 </div>

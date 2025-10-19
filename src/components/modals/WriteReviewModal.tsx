@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { CloseIcon, StarIcon, UserIcon, EnvelopeIcon, ArrowUpTrayIcon } from '../icons';
 import { useToast } from '../../hooks/useToast';
@@ -94,7 +92,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
                         aria-label={`Rate ${i + 1} stars`}
                         className="transform hover:scale-110 transition-transform"
                     >
-                        <StarIcon className={`w-7 h-7 ${i < ratingToShow ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        <StarIcon className={`w-7 h-7 ${i < ratingToShow ? 'text-yellow-400' : 'text-brand-border'}`} />
                     </button>
                 ))}
             </div>
@@ -105,8 +103,8 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
 
     return (
          <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="p-5 flex justify-between items-center border-b flex-shrink-0">
+            <div className="bg-brand-bg w-full max-w-lg rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out scale-100 opacity-100 animate-fade-in-up max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="p-5 flex justify-between items-center border-b border-brand-border flex-shrink-0">
                     <h2 className="font-bold text-lg text-brand-dark">اكتب تقييمًا لـ "{productName}"</h2>
                     <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
                 </div>
@@ -121,7 +119,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
                             <label htmlFor="review_name" className="block text-sm font-bold mb-1">الاسم *</label>
                             <div className="relative">
                                 <UserIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-light" />
-                                <input type="text" id="review_name" value={name} onChange={e => setName(e.target.value)} className="w-full border border-brand-border rounded-lg py-2 pr-10 pl-3" />
+                                <input type="text" id="review_name" value={name} onChange={e => setName(e.target.value)} className="w-full border bg-surface border-brand-border rounded-lg py-2 pr-10 pl-3" />
                             </div>
                              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                         </div>
@@ -129,14 +127,14 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({ isOpen, onCl
                             <label htmlFor="review_email" className="block text-sm font-bold mb-1">البريد الإلكتروني *</label>
                              <div className="relative">
                                 <EnvelopeIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-light" />
-                                <input type="email" id="review_email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border border-brand-border rounded-lg py-2 pr-10 pl-3" />
+                                <input type="email" id="review_email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border bg-surface border-brand-border rounded-lg py-2 pr-10 pl-3" />
                             </div>
                             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                         </div>
                     </div>
                     <div>
                         <label htmlFor="review_body" className="block text-sm font-bold mb-1">تقييمك *</label>
-                        <textarea id="review_body" value={reviewText} onChange={e => setReviewText(e.target.value)} rows={4} className="w-full border border-brand-border rounded-lg py-2 px-3"></textarea>
+                        <textarea id="review_body" value={reviewText} onChange={e => setReviewText(e.target.value)} rows={4} className="w-full border bg-surface border-brand-border rounded-lg py-2 px-3"></textarea>
                         {errors.reviewText && <p className="text-red-500 text-xs mt-1">{errors.reviewText}</p>}
                     </div>
                     <div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AdminVariant } from '../../data/adminData';
 import { PlusIcon, TrashIcon } from '../../../components/icons';
@@ -126,9 +125,9 @@ const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }
     return (
         <div className="space-y-4">
             <div>
-                <h4 className="text-sm font-bold text-gray-700 mb-2">الخيارات</h4>
+                <h4 className="text-sm font-bold text-admin-text-secondary mb-2">الخيارات</h4>
                 {options.map((option, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-3 border rounded-lg mb-2 bg-gray-50/80">
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-3 border border-admin-border rounded-lg mb-2 bg-admin-bg/50">
                         <input
                             type="text"
                             placeholder="اسم الخيار (مثل المقاس)"
@@ -144,7 +143,7 @@ const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }
                                 onChange={(e) => updateOptionValues(index, e.target.value)}
                                 className="admin-form-input flex-grow"
                             />
-                             <button onClick={() => removeOption(index)} className="text-gray-400 hover:text-red-500 p-1" aria-label="Remove option">
+                             <button onClick={() => removeOption(index)} className="text-admin-text-secondary hover:text-red-500 p-1" aria-label="Remove option">
                                  <TrashIcon size="sm"/>
                              </button>
                         </div>
@@ -160,29 +159,29 @@ const VariantManager: React.FC<VariantManagerProps> = ({ variants, setVariants }
 
             {variants.length > 0 && (
                 <div>
-                     <h4 className="text-sm font-bold text-gray-700 mb-2">قائمة المتغيرات</h4>
-                    <div className="overflow-x-auto border rounded-lg">
+                     <h4 className="text-sm font-bold text-admin-text-secondary mb-2">قائمة المتغيرات</h4>
+                    <div className="overflow-x-auto border border-admin-border rounded-lg">
                         <table className="w-full text-sm text-right">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-admin-bg">
                                 <tr>
-                                    <th className="p-3 font-semibold">المتغير</th>
-                                    <th className="p-3 font-semibold">السعر</th>
-                                    <th className="p-3 font-semibold">المخزون</th>
-                                    <th className="p-3 font-semibold">SKU</th>
+                                    <th className="p-3 font-semibold text-admin-text-secondary">المتغير</th>
+                                    <th className="p-3 font-semibold text-admin-text-secondary">السعر</th>
+                                    <th className="p-3 font-semibold text-admin-text-secondary">المخزون</th>
+                                    <th className="p-3 font-semibold text-admin-text-secondary">SKU</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y">
+                            <tbody className="divide-y divide-admin-border">
                                 {variants.map((variant, index) => (
                                     <tr key={variant.id}>
-                                        <td className="p-3 font-medium">{Object.values(variant.options).join(' / ')}</td>
+                                        <td className="p-3 font-medium text-admin-text-primary">{Object.values(variant.options).join(' / ')}</td>
                                         <td className="p-2">
-                                            <input type="text" value={variant.price} onChange={e => updateVariant(index, 'price', e.target.value)} className="w-24 border-gray-300 rounded-md text-sm p-2" />
+                                            <input type="text" value={variant.price} onChange={e => updateVariant(index, 'price', e.target.value)} className="w-24 admin-form-input p-2" />
                                         </td>
                                         <td className="p-2">
-                                            <input type="number" value={variant.stock} onChange={e => updateVariant(index, 'stock', Number(e.target.value))} className="w-20 border-gray-300 rounded-md text-sm p-2" />
+                                            <input type="number" value={variant.stock} onChange={e => updateVariant(index, 'stock', Number(e.target.value))} className="w-20 admin-form-input p-2" />
                                         </td>
                                          <td className="p-2">
-                                            <input type="text" value={variant.sku} onChange={e => updateVariant(index, 'sku', e.target.value)} className="w-32 border-gray-300 rounded-md text-sm p-2" />
+                                            <input type="text" value={variant.sku} onChange={e => updateVariant(index, 'sku', e.target.value)} className="w-32 admin-form-input p-2" />
                                         </td>
                                     </tr>
                                 ))}

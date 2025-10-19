@@ -54,13 +54,13 @@ const StickyActions = ({ product, selectedVariant, quantity, onAddToCart, onQuan
     const allVariants = useMemo(() => product.variants || [], [product.variants]);
     
     return (
-        <div className="fixed bottom-0 right-0 left-0 bg-white/90 backdrop-blur-sm shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 p-3 border-t animate-slide-in-up lg:hidden">
+        <div className="fixed bottom-0 right-0 left-0 bg-surface/90 backdrop-blur-sm shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40 p-3 border-t border-brand-border animate-slide-in-up lg:hidden">
             <div className="flex items-center gap-3">
                  <div className="relative flex-1">
                     <select
                         value={selectedVariant?.id || ''}
                         onChange={(e) => onVariantChange(Number(e.target.value))}
-                        className="w-full appearance-none bg-gray-100 border border-gray-300 rounded-full py-3 px-4 font-semibold text-sm focus:ring-1 focus:ring-brand-primary"
+                        className="w-full appearance-none bg-brand-subtle border border-brand-border rounded-full py-3 px-4 font-semibold text-sm focus:ring-1 focus:ring-brand-primary"
                     >
                         {allVariants.map(v => (
                             <option key={v.id} value={v.id} disabled={v.stock === 0}>
@@ -68,15 +68,15 @@ const StickyActions = ({ product, selectedVariant, quantity, onAddToCart, onQuan
                             </option>
                         ))}
                     </select>
-                    <ChevronDownIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"/>
+                    <ChevronDownIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-light pointer-events-none"/>
                 </div>
 
-                <div className="flex items-center border border-brand-border rounded-full justify-between bg-white">
+                <div className="flex items-center border border-brand-border rounded-full justify-between bg-surface">
                     <button onClick={() => onQuantityChange(quantity - 1)} className="p-3 text-brand-text-light"><MinusIcon size="sm"/></button>
                     <span className="font-bold px-1 text-sm">{quantity}</span>
                     <button onClick={() => onQuantityChange(quantity + 1)} className="p-3 text-brand-text-light"><PlusIcon size="sm"/></button>
                 </div>
-                <button onClick={onAddToCart} disabled={disabled} className="flex-1 bg-brand-dark text-white font-bold py-3 px-4 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <button onClick={onAddToCart} disabled={disabled} className="flex-1 bg-gray-900 text-white font-bold py-3 px-4 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                     أضف للسلة
                 </button>
             </div>
@@ -262,32 +262,20 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         <div className="flex items-center gap-4 mb-5"><span className="text-4xl font-extrabold text-brand-primary">{displayPrice} ج.م</span>{displayOldPrice && <><span className="text-2xl text-brand-text-light line-through">{displayOldPrice} ج.م</span><span className="text-sm font-bold bg-brand-sale text-white px-3 py-1 rounded-md">{discountPercent}% OFF</span></>}</div>
                         
                         <div className="my-6 space-y-2 border-t pt-6">
-                            {stockCount !== undefined && stockCount === 0 ? (
-                                <p className="font-bold text-brand-sale">هذا الخيار غير متوفر في المخزون حاليًا.</p>
-                            ) : (
-                                <div className="flex items-center gap-3 text-sm">
-                                    <span className={`px-2.5 py-1 rounded-md font-bold text-sm bg-green-100 text-green-700`}>متوفر</span>
-                                    {product.soldIn24h && (
-                                        <span className="flex items-center gap-1.5 text-brand-text-light font-semibold">
-                                            <FireIcon size="sm" className="text-orange-500"/> {product.soldIn24h} بيعت في آخر 24 ساعة
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                            {stockCount !== undefined && stockCount > 0 && stockCount <= 10 && (
-                                <>
-                                    <p className="text-sm font-bold text-brand-sale pt-2">سارع! تبقى فقط {stockCount} قطع!</p>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div className="bg-gradient-to-r from-orange-400 to-red-500 h-2 rounded-full" style={{width: `${stockProgress}%`}}></div>
-                                    </div>
-                                </>
-                            )}
+                            <div className="flex items-center gap-3 text-sm">
+                                <span className={`px-2.5 py-1 rounded-md font-bold text-sm ${stockCount && stockCount > 0 ? 'bg-brand-instock/10 text-brand-instock' : 'bg-brand-sale/10 text-brand-sale'}`}>{stockCount && stockCount > 0 ? 'متوفر' : 'نفد المخزون'}</span>
+                                {product.soldIn24h && <span className="flex items-center gap-1.5 text-brand-text-light font-semibold"><FireIcon size="sm" className="text-orange-500"/> {product.soldIn24h} بيعت في آخر 24 ساعة</span>}
+                            </div>
+                            {stockCount !== undefined && stockCount > 0 && stockCount <= 10 && <>
+                                <p className="text-sm font-bold text-brand-primary pt-2">سارع! تبقى فقط {stockCount} قطع!</p>
+                                <div className="w-full bg-brand-subtle rounded-full h-2"><div className="bg-brand-primary h-2 rounded-full" style={{width: `${stockProgress}%`}}></div></div>
+                            </>}
                         </div>
 
                         <div className="mb-5"><label className="font-bold text-brand-dark mb-3 block">اللون: <span className="font-normal text-brand-text-light">{selectedColor}</span></label><div className="flex items-center gap-3">{product.colors.map(color => (<button key={color} onClick={() => handleSelectColor(color)} className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center ${selectedColor === color ? 'border-brand-dark' : 'border-transparent hover:border-gray-300'}`}><span className="w-8 h-8 rounded-full border border-black/10" style={{backgroundColor: color}}></span></button>))}</div></div>
-                        <div className="mb-6"><div className="flex justify-between items-center mb-3"><p className="font-bold text-brand-dark">المقاس:</p><button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-brand-text-light underline hover:text-brand-dark">دليل المقاسات</button></div><div className="flex gap-3 flex-wrap">{product.sizes.map(size => {const isSelected = selectedSize === size; const isAvailableForColor = product.variants?.some(v => v.color === selectedColor && v.size === size && v.stock > 0) ?? (stockCount !== undefined && stockCount > 0); return (<button key={size} onClick={() => setSelectedSize(size)} disabled={!isAvailableForColor} className={`w-14 h-14 flex items-center justify-center rounded-lg border-2 text-base font-bold transition-all relative ${isSelected ? 'bg-brand-dark text-white border-brand-dark' : isAvailableForColor ? 'bg-white border-brand-border hover:border-brand-dark' : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'}`}>{size}{!isAvailableForColor && <span className="absolute w-12 h-px bg-gray-400 transform rotate-[-20deg]"></span>}</button>);})}</div></div>
+                        <div className="mb-6"><div className="flex justify-between items-center mb-3"><p className="font-bold text-brand-dark">المقاس:</p><button onClick={() => setIsSizeGuideOpen(true)} className="text-sm text-brand-text-light underline hover:text-brand-dark">دليل المقاسات</button></div><div className="flex gap-3 flex-wrap">{product.sizes.map(size => {const isSelected = selectedSize === size; const isAvailableForColor = product.variants?.some(v => v.color === selectedColor && v.size === size && v.stock > 0) ?? (stockCount !== undefined && stockCount > 0); return (<button key={size} onClick={() => setSelectedSize(size)} disabled={!isAvailableForColor} className={`w-14 h-14 flex items-center justify-center rounded-lg border-2 text-base font-bold transition-all relative ${isSelected ? 'bg-brand-dark text-white border-brand-dark' : isAvailableForColor ? 'bg-surface border-brand-border hover:border-brand-dark' : 'bg-brand-subtle border-brand-border text-brand-text-light cursor-not-allowed'}`}>{size}{!isAvailableForColor && <span className="absolute w-12 h-px bg-brand-text-light transform rotate-[-20deg]"></span>}</button>);})}</div></div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-3 mb-3"><div className="flex items-center border-2 border-brand-border rounded-full justify-between bg-white"><button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-4 text-brand-text-light hover:text-brand-dark"><MinusIcon/></button><span className="text-center font-bold text-lg">{quantity}</span><button onClick={() => setQuantity(q => q + 1)} className="p-4 text-brand-text-light hover:text-brand-dark"><PlusIcon/></button></div><button onClick={handleAddToCart} disabled={stockCount === 0} className="w-full bg-brand-dark text-white font-bold py-3.5 px-8 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-90">أضف إلى السلة</button></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-3 mb-3"><div className="flex items-center border-2 border-brand-border rounded-full justify-between bg-surface"><button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-4 text-brand-text-light hover:text-brand-dark"><MinusIcon/></button><span className="text-center font-bold text-lg">{quantity}</span><button onClick={() => setQuantity(q => q + 1)} className="p-4 text-brand-text-light hover:text-brand-dark"><PlusIcon/></button></div><button onClick={handleAddToCart} disabled={stockCount === 0} className="w-full bg-gray-900 text-white font-bold py-3.5 px-8 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-90">أضف إلى السلة</button></div>
                         <button onClick={handleBuyNow} disabled={stockCount === 0} className="w-full bg-brand-primary text-white font-bold py-3.5 px-8 rounded-full transition-transform transform disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-98">اشترِ الآن</button>
                         <div className="text-center mt-2"><button className="text-sm font-semibold underline text-brand-text-light hover:text-brand-dark">خيارات دفع أخرى</button></div>
 

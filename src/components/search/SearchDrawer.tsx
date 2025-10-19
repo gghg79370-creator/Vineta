@@ -62,9 +62,9 @@ const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
 
 const ProductSkeleton = () => (
     <div className="animate-skeleton-pulse">
-        <div className="bg-gray-200 rounded-lg aspect-[4/5]"></div>
-        <div className="h-4 bg-gray-200 rounded mt-2 w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded mt-1 w-1/2"></div>
+        <div className="bg-brand-subtle rounded-lg aspect-[4/5]"></div>
+        <div className="h-4 bg-brand-subtle rounded mt-2 w-3/4"></div>
+        <div className="h-4 bg-brand-subtle rounded mt-1 w-1/2"></div>
     </div>
 );
 
@@ -395,16 +395,16 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                 </div>
             )}
             <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
-            <div className={`fixed top-0 right-0 left-0 bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-full'}`}>
+            <div className={`fixed top-0 right-0 left-0 bg-brand-bg z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-full'}`}>
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     <form onSubmit={handleFormSubmit} className="relative mb-8">
                         <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light pointer-events-none"><SearchIcon size="md"/></div>
-                        <input type="search" placeholder={`بحث في ${theme.siteName}...`} className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-48 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-white" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
+                        <input type="search" placeholder={`بحث في ${theme.siteName}...`} className="w-full bg-brand-subtle border-2 border-transparent rounded-lg py-4 pr-14 pl-48 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-dark focus:border-brand-dark focus:bg-surface" value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setVisualSearchImage(null);}} autoFocus />
                         <div className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => { navigateTo('wishlist'); setIsOpen(false); }}
-                                className="relative text-brand-text-light p-2 rounded-full hover:bg-gray-200"
+                                className="relative text-brand-text-light p-2 rounded-full hover:bg-brand-subtle"
                                 aria-label={`Wishlist (${wishlistCount} items)`}
                             >
                                 <HeartIcon size="md" />
@@ -414,20 +414,20 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                     </span>
                                 )}
                             </button>
-                            <div className="w-px h-6 bg-gray-200"></div>
-                            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-200" aria-label="البحث بصورة من ملف"><ArrowUpTrayIcon/></button>
-                            <button type="button" onClick={startCamera} className="text-brand-text-light p-1.5 rounded-full hover:bg-gray-200" aria-label="البحث بالكاميرا"><CameraIcon /></button>
-                            <div className="w-px h-6 bg-gray-200"></div>
-                            <button type="button" onClick={() => setIsOpen(false)} className="font-semibold text-sm text-gray-500 hover:text-brand-dark px-2">إلغاء</button>
+                            <div className="w-px h-6 bg-brand-border"></div>
+                            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-brand-text-light p-1.5 rounded-full hover:bg-brand-subtle" aria-label="البحث بصورة من ملف"><ArrowUpTrayIcon/></button>
+                            <button type="button" onClick={startCamera} className="text-brand-text-light p-1.5 rounded-full hover:bg-brand-subtle" aria-label="البحث بالكاميرا"><CameraIcon /></button>
+                            <div className="w-px h-6 bg-brand-border"></div>
+                            <button type="button" onClick={() => setIsOpen(false)} className="font-semibold text-sm text-brand-text-light hover:text-brand-dark px-2">إلغاء</button>
                         </div>
                     </form>
 
                     <div className="grid grid-cols-3 gap-8 min-h-[350px]">
-                        <div className="col-span-1 border-l pl-8">
+                        <div className="col-span-1 border-l border-brand-border pl-8">
                             {visualSearchImage ? (
                                 <div className="animate-fade-in">
                                     <h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CameraIcon size="sm"/> البحث بالصورة</h3>
-                                    <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden border shadow-sm">
+                                    <div className="relative w-full aspect-[4/5] rounded-lg overflow-hidden border border-brand-border shadow-sm">
                                         <img src={visualSearchImage} alt="visual search" className="w-full h-full object-cover" />
                                         {isAnalyzing && (
                                             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4">
@@ -451,8 +451,8 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                             <button onClick={clearFilters} className="text-sm font-semibold text-red-600 hover:underline mt-2">مسح كل الفلاتر</button>
                                         </div>
                                     )}
-                                    <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CategoryIcon size="sm"/> اكتشف</h3><div className="flex flex-wrap gap-2">{popularCategories.map(cat => (<button key={cat} onClick={() => performSearch(cat)} className="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold hover:bg-gray-200">{cat}</button>))}</div></div>
-                                    <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><TagIcon size="sm"/> الوسوم الرائجة</h3><div className="flex flex-wrap gap-2">{trendingTags.map(tag => (<button key={tag} onClick={() => performSearch(tag)} className="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold hover:bg-gray-200">{tag}</button>))}</div></div>
+                                    <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><CategoryIcon size="sm"/> اكتشف</h3><div className="flex flex-wrap gap-2">{popularCategories.map(cat => (<button key={cat} onClick={() => performSearch(cat)} className="px-3 py-1 bg-brand-subtle rounded-full text-xs font-semibold hover:bg-brand-border">{cat}</button>))}</div></div>
+                                    <div><h3 className="font-bold mb-3 text-brand-dark flex items-center gap-2"><TagIcon size="sm"/> الوسوم الرائجة</h3><div className="flex flex-wrap gap-2">{trendingTags.map(tag => (<button key={tag} onClick={() => performSearch(tag)} className="px-3 py-1 bg-brand-subtle rounded-full text-xs font-semibold hover:bg-brand-border">{tag}</button>))}</div></div>
                                 </div>
                             ) : (
                                 <div className="space-y-6 animate-fade-in">
@@ -460,7 +460,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                         <div>
                                             <h3 className="font-bold text-brand-dark flex items-center gap-2 mb-2"><SearchIcon size="sm" /> اقتراحات</h3>
                                             {instantSuggestions.map(suggestion => (
-                                                <button key={suggestion} onClick={() => performSearch(suggestion)} className="w-full text-right p-2 font-semibold text-gray-700 hover:bg-gray-100 rounded-md">
+                                                <button key={suggestion} onClick={() => performSearch(suggestion)} className="w-full text-right p-2 font-semibold text-brand-text hover:bg-brand-subtle rounded-md">
                                                     <HighlightMatch text={suggestion} query={searchTerm} />
                                                 </button>
                                             ))}
@@ -473,7 +473,7 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                            )}
                         </div>
                         <div className="col-span-2 space-y-6">
-                            {(isAiSearching || aiSummary) && (<div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-indigo-400 rounded-r-lg animate-fade-in"><h3 className="font-bold text-brand-dark flex items-center gap-2 mb-2"><SparklesIcon size="sm" /> مساعد التسوق</h3>{isAiSearching ? <div className="h-12 bg-gray-200 rounded animate-skeleton-pulse"></div> : <p className="text-sm text-indigo-800 leading-relaxed">{aiSummary}</p>}</div>)}
+                            {(isAiSearching || aiSummary) && (<div className="p-4 bg-brand-primary/10 border-l-4 border-brand-primary rounded-r-lg animate-fade-in"><h3 className="font-bold text-brand-dark flex items-center gap-2 mb-2"><SparklesIcon size="sm" /> مساعد التسوق</h3>{isAiSearching ? <div className="h-12 bg-brand-subtle rounded animate-skeleton-pulse"></div> : <p className="text-sm text-brand-primary leading-relaxed">{aiSummary}</p>}</div>)}
                             
                             <div className="animate-fade-in">
                                 {isSearching ? <div className="grid grid-cols-3 gap-4"><ProductSkeleton /><ProductSkeleton /><ProductSkeleton /></div> : (
@@ -498,13 +498,13 @@ export const SearchDrawer = ({ isOpen, setIsOpen, navigateTo, setIsChatbotOpen, 
                                             {results.length > 0 && <div><h3 className="font-bold mb-3 text-brand-dark">نتائج مباشرة</h3><div className="grid grid-cols-3 gap-4">{results.map(product => (<div key={product.id} onClick={() => { navigateTo('product', product); setIsOpen(false); }} className="group cursor-pointer"><div className="bg-brand-subtle rounded-lg aspect-[4/5] overflow-hidden"><img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/></div><p className="font-semibold text-sm mt-2 truncate"><HighlightMatch text={product.name} query={searchTerm} /></p><p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p></div>))}</div>{allResultsCount > results.length && (<button onClick={() => performSearch(searchTerm)} className="w-full mt-6 bg-brand-subtle text-brand-dark font-bold py-3 rounded-lg text-base hover:bg-brand-border">عرض كل النتائج ({allResultsCount})</button>)}</div>}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8"><p className="font-bold text-brand-dark">لم نجد أي تطابق لـ "{searchTerm}".</p><p className="text-brand-text-light mt-2">جرّب البحث عن شيء آخر أو تحقق من منتجاتنا الرائجة.</p><div className="mt-8 p-6 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200"><h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4><p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p><button onClick={startCamera} className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:opacity-90"><CameraIcon size="sm" /> البحث بالكاميرا</button></div></div>
+                                        <div className="text-center py-8"><p className="font-bold text-brand-dark">لم نجد أي تطابق لـ "{searchTerm}".</p><p className="text-brand-text-light mt-2">جرّب البحث عن شيء آخر أو تحقق من منتجاتنا الرائجة.</p><div className="mt-8 p-6 bg-brand-primary/10 rounded-lg border-2 border-dashed border-brand-primary/50"><h4 className="font-bold text-brand-dark">هل لديك صورة؟</h4><p className="text-sm text-brand-text-light my-2">جرّب البحث البصري للعثور على منتجات مشابهة.</p><button onClick={startCamera} className="bg-brand-primary text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:bg-opacity-90"><CameraIcon size="sm" /> البحث بالكاميرا</button></div></div>
                                     )
                                 )}
                             </div>
                             {(searchTerm.length >= 2 || visualSearchImage) && (
-                                <div className="mt-6 pt-6 border-t border-dashed animate-fade-in">
-                                    <div className="p-4 bg-brand-subtle rounded-lg text-center border">
+                                <div className="mt-6 pt-6 border-t border-dashed border-brand-border animate-fade-in">
+                                    <div className="p-4 bg-brand-subtle rounded-lg text-center border border-brand-border">
                                         <h4 className="font-bold text-brand-dark">لم تجد ما تبحث عنه؟</h4>
                                         <p className="text-sm text-brand-text-light my-2">دردش مع مساعدنا الذكي للحصول على مساعدة شخصية.</p>
                                         <button 
