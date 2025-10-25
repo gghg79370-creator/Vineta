@@ -37,7 +37,7 @@ const TestimonialCard: React.FC<{ testimonial: typeof testimonialsData[0], navig
                     <i className="fa-solid fa-check-circle text-brand-instock ml-2" aria-hidden="true"></i>
                     مشتري معتمد - {testimonial.author}
                 </p>
-                <div className="flex text-yellow-400">
+                <div className="flex text-brand-onway">
                     {[...Array(testimonial.rating)].map((_, i) => <StarIcon key={i} className="w-4 h-4" />)}
                 </div>
             </div>

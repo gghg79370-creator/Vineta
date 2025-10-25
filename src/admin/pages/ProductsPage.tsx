@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { AdminProduct } from '../data/adminData';
 import { ProductListTable } from '../components/products/ProductListTable';
@@ -79,6 +80,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
     const confirmDelete = () => {
         if (productToDelete) {
             onDeleteProducts(productToDelete.map(p => p.id));
+            addToast(`${productToDelete.length} ${productToDelete.length > 1 ? 'products' : 'product'} deleted.`, 'success');
             setProductToDelete(null);
             setSelectedProducts([]);
         }
@@ -107,6 +109,12 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
         setStockFilter('All');
         setOnSaleFilter('All');
         setCurrentPage(1);
+    };
+
+    const handleBulkPublish = (publish: boolean) => {
+        onPublishProducts(selectedProducts, publish);
+        addToast(`${selectedProducts.length} products have been ${publish ? 'published' : 'unpublished'}.`, 'success');
+        setSelectedProducts([]);
     };
 
     return (
@@ -158,8 +166,8 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ navigate, products, onDelet
                         <div className="bg-admin-accent/10 p-3 rounded-lg flex items-center justify-between animate-fade-in">
                             <p className="font-semibold text-sm text-admin-accent">{selectedProducts.length} منتج محدد</p>
                             <div className="flex items-center gap-3">
-                                <button onClick={() => onPublishProducts(selectedProducts, true)} className="font-semibold text-sm text-admin-accent hover:underline flex items-center gap-1"><CheckCircleIcon size="sm"/> نشر</button>
-                                <button onClick={() => onPublishProducts(selectedProducts, false)} className="font-semibold text-sm text-admin-accent hover:underline flex items-center gap-1"><XCircleIcon size="sm"/> إلغاء النشر</button>
+                                <button onClick={() => handleBulkPublish(true)} className="font-semibold text-sm text-admin-accent hover:underline flex items-center gap-1"><CheckCircleIcon size="sm"/> نشر</button>
+                                <button onClick={() => handleBulkPublish(false)} className="font-semibold text-sm text-admin-accent hover:underline flex items-center gap-1"><XCircleIcon size="sm"/> إلغاء النشر</button>
                                 <div className="w-px h-5 bg-admin-accent/20"></div>
                                 <button onClick={() => handleDeleteClick(products.filter(p => selectedProducts.includes(p.id)))} className="font-semibold text-sm text-red-600 hover:underline flex items-center gap-1"><TrashIcon size="sm" /> حذف</button>
                             </div>

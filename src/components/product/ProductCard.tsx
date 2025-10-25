@@ -1,3 +1,5 @@
+
+
 import React, { useMemo } from 'react';
 import { Product } from '../../types';
 import { EyeIcon, ShoppingBagIcon, FireIcon, SparklesIcon } from '../icons';
@@ -45,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             const format = (num: number) => String(num).padStart(2, '0');
             
             return (
-                <div className="h-6 flex items-center justify-center text-xs font-bold text-red-600 gap-1 animate-fade-in">
+                <div className="h-6 flex items-center justify-center text-xs font-bold text-brand-sale gap-1 animate-fade-in">
                     <FireIcon size="sm" />
                     <span>
                         ينتهي العرض خلال: {timeLeft.days > 0 && `${timeLeft.days}ي `}{format(timeLeft.hours)}:{format(timeLeft.minutes)}:{format(timeLeft.seconds)}
@@ -55,7 +57,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         } else if (isNew) {
             const newBadge = product.badges?.find(b => b.type === 'new');
             return (
-                <div className="h-6 flex items-center justify-center text-xs font-bold text-blue-600 gap-1 animate-fade-in">
+                <div className="h-6 flex items-center justify-center text-xs font-bold text-blue-500 gap-1 animate-fade-in">
                     <SparklesIcon size="sm" />
                     <span>{newBadge?.text || 'وصل حديثاً'}</span>
                 </div>
@@ -67,41 +69,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
     const badgeStyles: { [key: string]: string } = {
         sale: 'bg-brand-sale text-white',
-        new: 'bg-brand-dark text-white',
-        trending: 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white',
-        custom: 'bg-blue-100 text-blue-800',
+        new: 'bg-blue-500 text-white',
+        trending: 'bg-orange-500 text-white',
+        vip: 'bg-purple-600 text-white',
+        custom: 'bg-brand-dark text-white',
     };
 
     return (
         <div className="group text-center bg-brand-bg rounded-2xl overflow-hidden border border-brand-border/10 h-full flex flex-col cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1" onClick={() => navigateTo('product', product)}>
             <div className="relative overflow-hidden">
-                <div className="bg-gray-100 aspect-[3/4]">
+                <div className="bg-brand-subtle aspect-[3/4]">
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" />
                 </div>
                 
                 {/* Dynamic Badges */}
-                <div className="absolute top-3 right-0 left-0 px-3 flex justify-between z-10">
-                    <div className="flex flex-col items-start gap-y-2">
-                        {product.badges?.filter(b => b.type === 'sale').map((badge, index) => (
-                             <div key={index} className={`text-xs font-bold px-3 py-1 rounded-full shadow-md ${badgeStyles[badge.type] || badgeStyles.custom}`}>
-                                {badge.text}
-                            </div>
-                        ))}
-                    </div>
-                     <div className="flex flex-col items-end gap-y-2">
-                        {product.badges?.filter(b => b.type !== 'sale' && b.type !== 'new').map((badge, index) => (
-                             <div key={index} className={`text-xs font-bold px-3 py-1 rounded-full shadow-md ${badgeStyles[badge.type] || badgeStyles.custom}`}>
-                                {badge.text}
-                            </div>
-                        ))}
-                    </div>
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-y-2 z-10">
+                    {product.badges?.map((badge, index) => (
+                         <div key={index} className={`text-xs font-bold px-3 py-1 rounded-full shadow-md ${badgeStyles[badge.type] || badgeStyles.custom}`}>
+                            {badge.text}
+                        </div>
+                    ))}
                 </div>
                 
                 {/* Hover Actions */}
                 <div className="absolute bottom-3 right-3 left-3 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     <div className="flex items-center justify-center gap-3">
-                         <button onClick={handleAddToCart} className="bg-white rounded-full p-3 shadow-md hover:bg-brand-dark hover:text-white transition-all transform hover:scale-110" aria-label="Add to cart"><ShoppingBagIcon size="sm" /></button>
-                         <button onClick={handleOpenQuickView} className="bg-white rounded-full p-3 shadow-md hover:bg-brand-dark hover:text-white transition-all transform hover:scale-110" aria-label="Quick view"><EyeIcon size="sm" /></button>
+                         <button onClick={handleAddToCart} className="bg-brand-bg rounded-full p-3 shadow-md hover:bg-brand-dark hover:text-brand-bg transition-all transform hover:scale-110" aria-label="Add to cart"><ShoppingBagIcon size="sm" /></button>
+                         <button onClick={handleOpenQuickView} className="bg-brand-bg rounded-full p-3 shadow-md hover:bg-brand-dark hover:text-brand-bg transition-all transform hover:scale-110" aria-label="Quick view"><EyeIcon size="sm" /></button>
                     </div>
                 </div>
             </div>
@@ -112,14 +106,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 
                 <div className="flex justify-center items-baseline gap-2 mb-1">
                     <span className="font-bold text-base text-brand-primary">{product.price} ج.م</span>
-                    {product.oldPrice && <span className="line-through text-gray-400 text-sm">{product.oldPrice} ج.م</span>}
+                    {product.oldPrice && <span className="line-through text-brand-text-light text-sm">{product.oldPrice} ج.م</span>}
                 </div>
                 
                 <PromoDisplay />
                 
                 <div className="flex justify-center gap-1.5 h-5 mt-auto">
                     {product.colors.slice(0, 5).map(color => (
-                        <span key={color} className="w-5 h-5 rounded-full border border-black/10" style={{ backgroundColor: color }}></span>
+                        <span key={color} className="w-5 h-5 rounded-full border border-brand-border/50" style={{ backgroundColor: color }}></span>
                     ))}
                 </div>
             </div>

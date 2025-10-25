@@ -4,8 +4,8 @@ import { ShoppingBagIcon } from '../icons';
 const InstagramImage = ({ src }: { src: string }) => (
     <div className="group relative overflow-hidden rounded-lg aspect-square">
         <img src={src} alt="منشور انستغرام" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center p-4">
-            <a href="#" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black text-white text-sm font-bold py-2 px-4 rounded-full flex items-center gap-2" aria-label="عرض المنتج">
+        <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/50 transition-all duration-300 flex items-center justify-center p-4">
+            <a href="#" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-brand-dark text-brand-bg text-sm font-bold py-2 px-4 rounded-full flex items-center gap-2" aria-label="عرض المنتج">
                 <ShoppingBagIcon size="sm" />
                 <span>عرض المنتج</span>
             </a>
@@ -28,7 +28,7 @@ export const InstagramSection = () => (
             </div>
 
             <div className="mt-12">
-                <a href="#" className="bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all active:scale-95 inline-flex items-center gap-2">
+                <a href="#" className="bg-brand-dark text-brand-bg font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all active:scale-95 inline-flex items-center gap-2">
                     <i className="fa-brands fa-instagram"></i>
                     تابعنا على انستغرام
                 </a>

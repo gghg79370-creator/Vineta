@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { SearchIcon, UserIcon, HeartIcon, ChevronDownIcon, ShoppingBagIcon, Bars3Icon, CompareIcon, SparklesIcon, MoonIcon, SunIcon, MagicIcon } from '../icons';
 import { useAppState } from '../../state/AppState';
@@ -22,10 +20,11 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
     const prevCartCountRef = useRef(cartCount);
     
     const [isScrolled, setIsScrolled] = useState(false);
-    const isHomePage = activePage === 'home';
-
+    
     const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
     const themeDropdownRef = useRef<HTMLDivElement>(null);
+    const [headerSearchTerm, setHeaderSearchTerm] = useState('');
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -41,7 +40,7 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
+            setIsScrolled(window.scrollY > 10);
         };
         
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -56,24 +55,23 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
     useEffect(() => {
         if (cartCount > prevCartCountRef.current) {
             setIsCartAnimating(true);
-            const timer = setTimeout(() => setIsCartAnimating(false), 500); // Match animation duration
+            const timer = setTimeout(() => setIsCartAnimating(false), 600); // Match animation duration
             return () => clearTimeout(timer);
         }
         prevCartCountRef.current = cartCount;
     }, [cartCount]);
     
-    const isOpaque = isScrolled || !isHomePage;
+    const isHomePage = activePage === 'home';
+    const isTransparent = !isScrolled && isHomePage;
     
-    const headerClasses = `sticky top-0 z-50 transition-all duration-300 ${isOpaque ? 'header-scrolled shadow-sm' : 'bg-transparent'}`;
+    const headerClasses = `sticky top-0 z-50 transition-all duration-300 ${isTransparent ? 'header-on-hero border-b border-transparent' : 'bg-brand-bg/80 backdrop-blur-lg shadow-sm border-b border-brand-border/10'}`;
     const innerContainerHeight = 'h-20';
     
-    const textColorClass = isOpaque ? 'text-brand-dark' : 'text-white';
-    const iconColorClass = isOpaque ? 'text-brand-text' : 'text-white';
-    const logoColorClass = isOpaque ? 'text-brand-dark' : 'text-white';
-    const badgeBorderClass = isOpaque ? 'border-brand-bg' : 'border-white';
-    
-    const iconButtonClasses = `relative p-2 rounded-full transition-all active:scale-90 ${iconColorClass} hover:bg-black/10`;
-    const badgeClasses = `absolute -top-1 -right-1 bg-brand-sale text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 ${badgeBorderClass}`;
+    const textColorClass = isTransparent ? 'text-white text-shadow-on-hero' : 'text-brand-text';
+    const logoColorClass = isTransparent ? 'text-white' : 'text-brand-dark';
+    const iconButtonClasses = `relative p-2 rounded-full transition-colors ${textColorClass} ${isTransparent ? 'hover:bg-white/20' : 'hover:bg-brand-subtle'}`;
+    const mobileIconButtonClasses = `relative p-2 rounded-full transition-colors ${textColorClass} ${isTransparent ? 'hover:bg-white/10' : 'hover:bg-brand-subtle'}`;
+    const badgeClasses = `absolute -top-1 -right-1 bg-brand-sale text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 ${isTransparent ? 'border-transparent' : 'border-brand-bg'}`;
     
     const navLinks = [
         { label: 'الرئيسية', page: 'home' },
@@ -116,38 +114,67 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                     image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto.format&fit=crop',
                     title: 'عرض حصري',
                     subtitle: 'خصم 50% لفترة محدودة',
-                    buttonText: 'تسوقي العرض',
                     page: 'shop',
                     data: { onSale: 'true' }
                 }
             }
         },
+        { label: 'من نحن', page: 'about' },
         { label: 'المدونة', page: 'blog' },
-        { label: 'المصمم الذكي', page: 'style-me', isNew: true },
+        { label: 'جرّب بالذكاء الاصطناعي', page: 'ai-try-on', isNew: true },
         { label: 'اتصل بنا', page: 'contact' },
     ];
     
-    const buyThemeButtonClasses = isOpaque
-        ? 'bg-transparent border border-brand-dark text-brand-dark hover:bg-brand-dark hover:text-white'
-        : 'bg-white/20 border border-white/50 text-white hover:bg-white hover:text-brand-dark';
+    const handleHeaderSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (headerSearchTerm.trim()) {
+            navigateTo('search', { q: headerSearchTerm.trim() });
+            setHeaderSearchTerm('');
+        }
+    };
 
     return (
         <header className={headerClasses}>
             <div className="container mx-auto px-4">
-                <div className={`flex justify-between items-center ${innerContainerHeight}`}>
+                 {/* Mobile Header */}
+                <div className={`relative flex justify-between items-center ${innerContainerHeight} lg:hidden`}>
+                    <div className="flex items-center gap-1">
+                        <button onClick={() => setIsCartOpen(true)} className={`${mobileIconButtonClasses} ${isCartAnimating ? 'animate-cart-add' : ''}`} aria-label="Cart">
+                            <ShoppingBagIcon />
+                            {cartCount > 0 && <span className={badgeClasses}>{cartCount}</span>}
+                        </button>
+                        <button onClick={() => setIsSearchOpen(true)} className={mobileIconButtonClasses} aria-label="Search">
+                           <SearchIcon />
+                        </button>
+                    </div>
+
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <button onClick={() => navigateTo('home')}>
+                             <span className={`font-logo text-4xl font-bold logo-glow ${logoColorClass} tracking-wide`}>
+                                {theme.siteName}
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <button onClick={() => setIsMenuOpen(true)} className={mobileIconButtonClasses} aria-label="Menu">
+                            <Bars3Icon />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Desktop Header */}
+                <div className={`hidden lg:flex justify-between items-center ${innerContainerHeight}`}>
                    
                     <div className="flex items-center gap-2 lg:gap-4">
-                        <button onClick={() => setIsMenuOpen(true)} className={`${iconButtonClasses} lg:hidden`} aria-label="Menu">
-                            <Bars3Icon size="md" />
-                        </button>
                         <button onClick={() => navigateTo('home')} className="flex-shrink-0">
-                             <span className={`font-serif text-3xl md:text-4xl font-bold logo-glow ${logoColorClass}`}>
+                             <span className={`font-logo text-4xl font-bold logo-glow ${logoColorClass} tracking-wide`}>
                                 {theme.siteName}
                             </span>
                         </button>
                     </div>
 
-                    <nav className="hidden lg:flex justify-center items-center gap-8">
+                    <nav className="flex justify-center items-center gap-6">
                        {navLinks.map(link => (
                            <div key={link.label} className="relative group flex items-center h-full">
                                <button 
@@ -155,8 +182,8 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                                    className={`h-full font-semibold pb-1 flex items-center gap-1.5 nav-link transition-colors ${textColorClass} ${activePage === link.page ? 'active' : ''}`}
                                 >
                                    <span>{link.label}</span>
-                                   {link.isNew && <SparklesIcon className="w-4 h-4 text-yellow-400 animate-pulse"/>}
-                                   {link.megaMenu && <ChevronDownIcon className={`w-4 h-4 mr-1 transition-transform duration-300 group-hover:rotate-180 ${textColorClass}`} />}
+                                   {link.isNew && <SparklesIcon className="w-4 h-4 text-brand-onway animate-pulse"/>}
+                                   {link.megaMenu && <ChevronDownIcon className={`w-4 h-4 mr-1 transition-transform duration-300 group-hover:rotate-180 ${isTransparent ? 'text-white' : 'text-brand-dark'}`} />}
                                </button>
 
                                {link.megaMenu && (
@@ -180,13 +207,13 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                                                 ))}
                                                 <div className="group/promo relative rounded-lg overflow-hidden cursor-pointer" onClick={() => navigateTo(link.megaMenu.promo.page, link.megaMenu.promo.data)}>
                                                     <img src={link.megaMenu.promo.image} alt={link.megaMenu.promo.title} className="w-full h-full object-cover transition-transform duration-300 group-hover/promo:scale-105"/>
-                                                    <div className="absolute inset-0 bg-black/40"></div>
+                                                    <div className="absolute inset-0 bg-brand-dark/40"></div>
                                                     <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                                                         <h4 className="font-bold text-lg text-white text-shadow">{link.megaMenu.promo.title}</h4>
-                                                         <p className="text-sm text-gray-200 mb-4">{link.megaMenu.promo.subtitle}</p>
+                                                         <h4 className="font-bold text-lg text-brand-bg text-shadow-on-hero">{link.megaMenu.promo.title}</h4>
+                                                         <p className="text-sm text-brand-text-light mb-4">{link.megaMenu.promo.subtitle}</p>
                                                          <div className="text-right">
-                                                            <span className="inline-block bg-white text-brand-dark text-xs font-bold py-2 px-4 rounded-full group-hover/promo:scale-105 transition-transform duration-300">
-                                                                {link.megaMenu.promo.buttonText}
+                                                            <span className="inline-block bg-brand-bg text-brand-dark text-xs font-bold py-2 px-4 rounded-full group-hover/promo:scale-105 transition-transform duration-300">
+                                                                تسوقي العرض
                                                             </span>
                                                         </div>
                                                     </div>
@@ -197,18 +224,33 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                                )}
                            </div>
                        ))}
-                       <button onClick={() => navigateTo('home')} className={`font-bold py-2 px-5 rounded-full text-sm transition-colors duration-300 border ${buyThemeButtonClasses}`}>
-                           !شراء الثيم
-                       </button>
                     </nav>
                     
                     <div className="flex items-center justify-end gap-1 md:gap-2">
+                         <form onSubmit={handleHeaderSearchSubmit} className="relative group">
+                            <input 
+                                type="search"
+                                value={headerSearchTerm}
+                                onChange={(e) => setHeaderSearchTerm(e.target.value)}
+                                placeholder="بحث..."
+                                className={`border rounded-full py-2.5 pr-10 pl-4 text-sm w-44 focus:w-60 transition-all duration-300 focus:outline-none focus:ring-1 ${isTransparent ? 'bg-white/10 border-transparent text-white placeholder-gray-300 focus:bg-white/20 focus:border-white/20 focus:ring-white/20' : 'bg-brand-subtle border-brand-subtle focus:ring-brand-dark/50'}`}
+                            />
+                            <button type="submit" className={`absolute top-1/2 right-3 -translate-y-1/2 ${isTransparent ? 'text-gray-300 group-focus-within:text-white' : 'text-brand-text-light group-focus-within:text-brand-dark'}`}>
+                                <SearchIcon />
+                            </button>
+                        </form>
                         <div className="relative" ref={themeDropdownRef}>
-                            <button onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)} className={iconButtonClasses} aria-label="Change theme">
-                                {effectiveThemeMode === 'light' ? <SunIcon /> : <MoonIcon />}
+                            <button
+                                onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
+                                className={iconButtonClasses}
+                                aria-label="Change theme"
+                                aria-haspopup="true"
+                                aria-expanded={isThemeDropdownOpen}
+                            >
+                                {effectiveThemeMode === 'light' ? <SunIcon/> : <MoonIcon />}
                             </button>
                             {isThemeDropdownOpen && (
-                                <div className={`absolute left-0 mt-2 w-40 rounded-lg shadow-2xl border border-brand-border/50 p-2 z-10 animate-quick-fade-in-up ${isOpaque ? 'bg-brand-bg text-brand-text' : 'bg-brand-dark text-white'}`}>
+                                <div className={`absolute left-0 mt-2 w-40 rounded-lg shadow-2xl border border-brand-border/50 p-2 z-10 animate-quick-fade-in-up bg-brand-bg text-brand-text`}>
                                     <button
                                         onClick={() => { setThemeMode('light'); setIsThemeDropdownOpen(false); }}
                                         className={`w-full text-right flex items-center gap-3 p-2 rounded-md text-sm font-semibold transition-colors ${themeMode === 'light' ? 'bg-brand-subtle text-brand-dark' : 'hover:bg-brand-subtle'}`}
@@ -233,9 +275,6 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                                 </div>
                             )}
                         </div>
-                         <button onClick={() => setIsSearchOpen(true)} className={iconButtonClasses} aria-label="Search">
-                           <SearchIcon />
-                        </button>
                          <button onClick={() => navigateTo(currentUser ? 'account' : 'login')} className={iconButtonClasses} aria-label="Account">
                             <UserIcon />
                         </button>
@@ -252,7 +291,6 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                             {cartCount > 0 && <span className={badgeClasses}>{cartCount}</span>}
                         </button>
                     </div>
-
                 </div>
             </div>
         </header>

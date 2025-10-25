@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, HeroSlide, Review, SaleCampaign, AdminAnnouncement, Notification } from '../types';
 import { AdminLayout } from './components/layout/AdminLayout';
@@ -20,11 +21,12 @@ import AddCategoryPage from './pages/AddCategoryPage';
 import ContactMessagesPage from './pages/ContactMessagesPage';
 import InventoryPage from './pages/InventoryPage';
 import ReviewsPage from './pages/ReviewsPage';
-// FIX: Correctly import ThemeSettingsPage which was previously causing an error due to a truncated file.
 import ThemeSettingsPage from './pages/ThemeSettingsPage';
 import SaleCampaignsPage from './pages/SaleCampaignsPage';
 import AddSaleCampaignPage from './pages/AddSaleCampaignPage';
 import SubscribersPage from './pages/SubscribersPage';
+import PagesPage from './pages/PagesPage';
+import AddEditPage from './pages/AddEditPage';
 
 import { 
     allAdminProducts, 
@@ -34,6 +36,8 @@ import {
     allAdminMarketingCampaigns,
     allAdminBlogPosts,
     allAdminCategories,
+    allAdminSubscribers,
+    allAdminPages,
     AdminProduct,
     AdminOrder,
     AdminCustomer,
@@ -41,7 +45,7 @@ import {
     AdminBlogPost,
     AdminCategory,
     AdminVariant,
-    allAdminSubscribers,
+    AdminPage,
 } from './data/adminData';
 
 
@@ -68,6 +72,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
     const [customers, setCustomers] = useState(allAdminCustomers);
     const [discounts, setDiscounts] = useState(allAdminDiscounts);
     const [blogPosts, setBlogPosts] = useState(allAdminBlogPosts);
+    const [pages, setPages] = useState(allAdminPages);
     const [categories, setCategories] = useState(allAdminCategories);
     const [subscribers, setSubscribers] = useState(allAdminSubscribers);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -142,10 +147,38 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
                 data: product,
             });
         }, 15000);
+        
+        const customerTimer = setTimeout(() => {
+            const newCustomer: AdminCustomer = {
+                id: Math.floor(100 + Math.random() * 900),
+                name: 'عميل جديد',
+                email: `random${Date.now()}@example.com`,
+                phone: '',
+                avatar: `https://i.pravatar.cc/150?u=${Date.now()}`,
+                registeredDate: new Date().toISOString().split('T')[0],
+                orderCount: 0,
+                totalSpent: 0,
+                status: 'Active',
+                shippingAddress: '',
+                billingAddress: '',
+                tags: [],
+                notes: [],
+            };
+            setCustomers(prev => [newCustomer, ...prev]);
+            addNotification({
+                type: 'review', // Just re-using an icon type for demo
+                title: 'عميل جديد!',
+                message: `سجل عميل جديد: ${newCustomer.email}`,
+                link: 'customerDetail',
+                data: newCustomer,
+            });
+        }, 25000);
+
 
         return () => {
             clearTimeout(orderTimer);
             clearTimeout(stockTimer);
+            clearTimeout(customerTimer);
         };
     }, []);
 
@@ -168,7 +201,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
 
     const handleSaveProduct = (product: AdminProduct) => {
         if(product.id === 0){ // New product
-            const newProduct = { ...product, id: products.length + 100 };
+            const newProduct = { ...product, id: Date.now() };
             setProducts(prev => [newProduct, ...prev]);
         } else { // Edit product
             setProducts(prev => prev.map(p => p.id === product.id ? product : p));
@@ -214,7 +247,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
 
     const handleSaveDiscount = (discount: AdminDiscount) => {
         if(discount.id === 0) {
-            setDiscounts(prev => [{...discount, id: discounts.length + 1}, ...prev]);
+            setDiscounts(prev => [{...discount, id: Date.now()}, ...prev]);
         } else {
             setDiscounts(prev => prev.map(d => d.id === discount.id ? discount : d));
         }
@@ -236,6 +269,19 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
     
     const handleDeletePost = (postId: number) => {
         setBlogPosts(prev => prev.filter(p => p.id !== postId));
+    };
+
+    const handleSavePage = (page: AdminPage) => {
+        if (page.id === 0) {
+            setPages(prev => [{ ...page, id: Date.now() }, ...prev]);
+        } else {
+            setPages(prev => prev.map(p => p.id === page.id ? page : p));
+        }
+        navigate('pages');
+    };
+
+    const handleDeletePage = (pageId: number) => {
+        setPages(prev => prev.filter(p => p.id !== pageId));
     };
     
     const handleSaveCategory = (category: AdminCategory) => {
@@ -292,7 +338,7 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
     const renderPage = () => {
         switch (activePage) {
             // Dashboard
-            case 'dashboard': return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
+            case 'dashboard': return <DashboardPage navigate={navigate} products={products} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
             
             // Catalog
             case 'products': return <ProductsPage navigate={navigate} products={products} onDeleteProducts={handleDeleteProducts} onPublishProducts={handlePublishProducts} onDuplicateProduct={handleDuplicateProduct} />;
@@ -336,16 +382,21 @@ const AdminDashboard = ({ currentUser, heroSlides, setHeroSlides, announcements:
             
             // Online Store
             case 'theme': return <ThemeSettingsPage heroSlides={heroSlides} setHeroSlides={setHeroSlides} announcements={appAnnouncements} onAnnouncementsUpdate={setAppAnnouncements} />;
-
-            // Other
-            case 'analytics': return <AnalyticsPage orders={orders} products={products} customers={customers} />;
+            
+            // Content Management
             case 'content': return <BlogPostsPage navigate={navigate} blogPosts={blogPosts} onDeletePost={handleDeletePost}/>;
             case 'addBlogPost': return <AddBlogPostPage navigate={navigate} onSave={handleSavePost} />;
             case 'editBlogPost': return <AddBlogPostPage navigate={navigate} onSave={handleSavePost} postToEdit={pageData} />;
+            case 'pages': return <PagesPage navigate={navigate} pages={pages} onDeletePage={handleDeletePage} />;
+            case 'addPage': return <AddEditPage navigate={navigate} onSave={handleSavePage} />;
+            case 'editPage': return <AddEditPage navigate={navigate} onSave={handleSavePage} pageToEdit={pageData} />;
+
+            // Other
+            case 'analytics': return <AnalyticsPage orders={orders} products={products} customers={customers} />;
             case 'messages': return <ContactMessagesPage />;
             case 'settings': return <SettingsPage />;
 
-            default: return <DashboardPage navigate={navigate} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
+            default: return <DashboardPage navigate={navigate} products={products} recentOrders={orders.slice(0, 5)} lowStockProducts={products.filter(p => p.variants.some(v => v.stock > 0 && v.stock <= 10)).slice(0, 4)} orders={orders} customers={customers} currentUser={currentUser} setupTasks={setupTasks} onToggleTask={handleToggleSetupTask} />;
         }
     };
 

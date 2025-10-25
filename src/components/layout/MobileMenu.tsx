@@ -46,9 +46,10 @@ export const MobileMenu = ({ isOpen, setIsOpen, navigateTo, currentUser }: Mobil
                         <SubMenu title="الرئيسية"><button onClick={() => handleNavigate('home')} className="block py-1 hover:text-brand-primary">الرئيسية 1</button></SubMenu>
                         <SubMenu title="المتجر"><button onClick={() => handleNavigate('shop')} className="block py-1 hover:text-brand-primary">قائمة المنتجات</button></SubMenu>
                         <SubMenu title="المنتجات"><button onClick={() => handleNavigate('product', allProducts[0])} className="block py-1 hover:text-brand-primary">منتج بسيط</button></SubMenu>
+                        <button onClick={() => handleNavigate('about')} className="w-full text-right block py-4 font-bold text-lg hover:text-brand-primary">من نحن</button>
                         <button onClick={() => handleNavigate('blog')} className="w-full text-right block py-4 font-bold text-lg hover:text-brand-primary">المدونة</button>
-                        <button onClick={() => handleNavigate('style-me')} className="w-full flex justify-between items-center py-4 font-bold text-lg text-brand-primary hover:text-opacity-80">
-                            <span>المصمم الذكي</span>
+                        <button onClick={() => handleNavigate('ai-try-on')} className="w-full flex justify-between items-center py-4 font-bold text-lg text-brand-primary hover:text-opacity-80">
+                            <span>جرّب بالذكاء الاصطناعي</span>
                             <SparklesIcon />
                         </button>
                         <SubMenu title="صفحات"><button onClick={() => handleNavigate('faq')} className="block py-1 hover:text-brand-primary">الأسئلة الشائعة</button></SubMenu>

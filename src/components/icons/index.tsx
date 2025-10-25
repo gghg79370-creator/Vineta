@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 interface IconProps {
@@ -18,6 +16,14 @@ const sizeClasses = {
 const getClasses = ({ className, size = 'md', color }: IconProps): string => {
     return [sizeClasses[size], color, className].filter(Boolean).join(' ');
 };
+
+export const MagicWandIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c.238.19.477.386.714.582A12.001 12.001 0 0118 10.5c0 1.258-.223 2.47-.64 3.633m-7.234-9.333c1.03-.493 2.126-.745 3.234-.745 5.248 0 9.5 3.358 9.5 7.5s-4.252 7.5-9.5 7.5S3.5 17.642 3.5 13.5c0-1.89.439-3.666 1.21-5.228" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a2.25 2.25 0 002.25-2.25v-5.714a2.25 2.25 0 00-2.25-2.25H9.75" />
+    </svg>
+);
+
 
 export const GlobeAltIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -223,7 +229,6 @@ export const EyeIcon: React.FC<IconProps> = (props) => (
     </svg>
 );
 
-// FIX: Added EyeSlashIcon for use in ThemeSettingsPage.
 export const EyeSlashIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={getClasses(props)} aria-hidden="true" focusable="false">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" />
@@ -326,29 +331,12 @@ export const GridViewIcon: React.FC<IconProps & { columns: number }> = ({ column
 
 export const GridView4Icon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
-        <rect x="1" y="2" width="2.5" height="16" rx="1" />
-        <rect x="5.5" y="2" width="2.5" height="16" rx="1" />
-        <rect x="10" y="2" width="2.5" height="16" rx="1" />
-        <rect x="14.5" y="2" width="2.5" height="16" rx="1" />
-    </svg>
-);
-export const GridView3Icon: React.FC<IconProps> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
-        <rect x="1.5" y="2" width="4" height="16" rx="1" />
-        <rect x="8" y="2" width="4" height="16" rx="1" />
-        <rect x="14.5" y="2" width="4" height="16" rx="1" />
-    </svg>
-);
-export const GridView2Icon: React.FC<IconProps> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
-        <rect x="2" y="2" width="7" height="16" rx="1" />
-        <rect x="11" y="2" width="7" height="16" rx="1" />
+        <path d="M1 3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3Zm8 0a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V3Z"/>
     </svg>
 );
 export const ListLayoutIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} viewBox="0 0 20 20" fill="currentColor">
-        <rect x="2" y="5" width="16" height="4" rx="1.5" />
-        <rect x="2" y="11" width="16" height="4" rx="1.5" />
+       <path fillRule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
     </svg>
 );
 export const FilterSlidersIcon: React.FC<IconProps> = (props) => (
@@ -538,5 +526,11 @@ export const CameraIcon: React.FC<IconProps> = (props) => (
 export const InformationCircleIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true" focusable="false">
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+export const CreditCardIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15A2.25 2.25 0 002.25 6.75v10.5A2.25 2.25 0 004.5 19.5z" />
     </svg>
 );

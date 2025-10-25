@@ -25,12 +25,12 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
     };
 
     const icons = {
-        success: <CheckCircleIcon className="text-green-500" />,
-        error: <XCircleIcon className="text-red-500" />,
-        info: <CheckCircleIcon className="text-blue-500" />,
+        success: <CheckCircleIcon className="text-brand-instock" />,
+        error: <XCircleIcon className="text-brand-sale" />,
+        info: <CheckCircleIcon className="text-brand-cta" />,
     };
 
-    const baseClasses = "w-full max-w-sm bg-brand-bg shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden transition-all duration-300 ease-in-out";
+    const baseClasses = "w-full max-w-sm bg-brand-bg shadow-lg rounded-lg pointer-events-auto ring-1 ring-brand-dark ring-opacity-5 overflow-hidden transition-all duration-300 ease-in-out";
     const animationClasses = isExiting ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0';
 
     return (
@@ -46,7 +46,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onRemove }) => {
                     <div className="mr-auto flex-shrink-0 flex">
                         <button
                             onClick={handleRemove}
-                            className="bg-transparent rounded-md inline-flex text-brand-text-light hover:text-brand-text focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="bg-transparent rounded-md inline-flex text-brand-text-light hover:text-brand-text focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
                         >
                             <span className="sr-only">Close</span>
                             <CloseIcon size="sm" />

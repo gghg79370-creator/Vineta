@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
     HomeIcon, ShoppingBagIcon, CubeIcon, UsersIcon, ChartBarIcon, TagIcon, 
@@ -90,7 +91,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ activePage, setActivePa
     const catalogPages = ['products', 'categories', 'inventory', 'reviews'];
     const onlineStorePages = ['theme'];
     const marketingPages = ['marketing', 'saleCampaigns', 'subscribers'];
-    const contentPages = ['content', 'blog', 'pages'];
+    const contentPages = ['content', 'blog', 'pages', 'addBlogPost', 'editBlogPost', 'addPage', 'editPage'];
 
     const isPageActive = (pages: string[]) => pages.some(p => activePage.startsWith(p));
     
@@ -132,8 +133,9 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ activePage, setActivePa
                     <NavItem icon={<></>} label="المشتركون" page="subscribers" isSubItem {...navItemProps} />
                 </NavGroup>
                 
-                 <NavGroup title="المحتوى" icon={<DocumentTextIcon size="sm" />} initialOpen={isPageActive(contentPages)} isCollapsed={isCollapsed}>
+                 <NavGroup title="إدارة المحتوى" icon={<DocumentTextIcon size="sm" />} initialOpen={isPageActive(contentPages)} isCollapsed={isCollapsed}>
                     <NavItem icon={<></>} label="المدونة" page="content" isSubItem {...navItemProps} />
+                    <NavItem icon={<></>} label="الصفحات" page="pages" isSubItem {...navItemProps} />
                 </NavGroup>
 
                 <NavGroup title="المتجر الإلكتروني" icon={<PaintBrushIcon size="sm" />} initialOpen={isPageActive(onlineStorePages)} isCollapsed={isCollapsed}>

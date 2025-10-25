@@ -19,13 +19,13 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
     const { wishlist, compareList } = state;
     const wishlistIds = useMemo(() => wishlist.map(item => item.id), [wishlist]);
 
-    const [activeTab, setActiveTab] = useState('new-arrivals');
+    const [activeTab, setActiveTab] = useState('trending');
     const [isLoading, setIsLoading] = useState(false);
     
     const tabs = [
-        { id: 'new-arrivals', name: 'وصل حديثاً' },
-        { id: 'best-sellers', name: 'الأكثر مبيعاً' },
+        { id: 'trending', name: 'رائج' },
         { id: 'on-sale', name: 'تخفيضات' },
+        { id: 'top-sellers', name: 'الأكثر مبيعاً' },
     ];
 
     useEffect(() => {
@@ -38,11 +38,11 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
 
     const activeProducts = useMemo(() => {
         switch(activeTab) {
-            case 'new-arrivals': 
-                return products.filter(p => p.badges?.some(b => b.type === 'new')).slice(0, 8);
+            case 'trending': 
+                return products.filter(p => p.badges?.some(b => b.type === 'trending')).slice(0, 8);
             case 'on-sale': 
                 return products.filter(p => !!p.oldPrice).slice(0, 8);
-            case 'best-sellers': 
+            case 'top-sellers': 
                 return [...products].sort((a, b) => (b.soldIn24h || 0) - (a.soldIn24h || 0)).slice(0, 8);
             default: 
                 return [];
@@ -50,25 +50,24 @@ export const TabbedProductSection: React.FC<TabbedProductSectionProps> = (props)
     }, [activeTab, products]);
 
     return (
-        <section id="shop-preview" className="py-16 bg-brand-subtle">
+        <section id="shop-preview" className="py-16 bg-brand-bg">
             <div className="container mx-auto px-4">
-                 <div className="text-center mb-12">
-                    <h2 className="text-4xl font-extrabold text-brand-dark">أحدث مجموعاتنا</h2>
-                    <p className="text-brand-text-light mt-2 max-w-2xl mx-auto">تحقق مما هو جديد، وما هو رائج، وما هو معروض للبيع.</p>
-                </div>
                 <div className="flex justify-center items-center mb-10">
-                    <div className="bg-surface p-2 rounded-full flex justify-center items-center gap-2 shadow-sm">
+                    <div className="flex justify-center items-center gap-4 md:gap-8">
                         {tabs.map(tab => (
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`text-base md:text-lg font-bold py-2.5 px-4 md:px-6 rounded-full transition-all duration-300 focus:outline-none
+                                className={`relative text-lg md:text-xl font-bold py-2 px-2 transition-colors duration-300 focus:outline-none
                                     ${activeTab === tab.id 
-                                        ? 'bg-brand-primary/10 text-brand-primary' 
+                                        ? 'text-brand-dark' 
                                         : 'text-brand-text-light hover:text-brand-dark'}`
                                 }
                             >
-                                {tab.name}
+                                <span>{tab.name}</span>
+                                {activeTab === tab.id && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-sale"></span>
+                                )}
                             </button>
                         ))}
                     </div>

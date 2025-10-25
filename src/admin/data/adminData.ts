@@ -1,5 +1,6 @@
-// Admin-specific interfaces
-import { Review } from '../../../types';
+
+
+import { Review, Badge } from '../../types';
 
 export interface AdminVariant {
     id: number;
@@ -30,7 +31,7 @@ export interface AdminProduct {
     weight: number;
     weightUnit: 'kg' | 'g';
     reviews: Review[];
-    badges?: { text: string; type: string }[];
+    badges?: Badge[];
 }
 
 
@@ -182,20 +183,31 @@ export interface AdminHeroSlide {
     status: 'Visible' | 'Hidden';
 }
 
+export interface AdminPage {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    status: 'Published' | 'Hidden';
+    lastModified: string;
+    seoTitle: string;
+    seoDescription: string;
+}
+
 // Mock Data
 export const allAdminProducts: AdminProduct[] = [
     { id: 1, name: 'بنطلون مزيج الكتان', image: 'https://i.ibb.co/bFqfL4N/pdp-main.png', images: ['https://i.ibb.co/3Wf1yqf/pdp-thumb-1.png', 'https://i.ibb.co/bFqfL4N/pdp-main.png', 'https://i.ibb.co/GvxB2YF/pdp-thumb-2.png'], sku: 'AD1FSSE0YR', price: '60.00', compareAtPrice: '80.00', stock: 15, status: 'Published', category: 'women', tags:['ملابس', 'بنطلون', 'كتان', 'صيف', 'كاجوال', 'واسع الساق', 'رائج'], description: 'Elegant linen-blend trousers.', unitsSold: 120, variants: [{id: 101, options: {Size: 'M', Color: 'Beige'}, sku: 'AD1-M-BE', price: '60.00', stock: 15, inventoryHistory: []}], seoTitle: 'Linen Blend Trousers', seoDescription: 'Comfortable and stylish linen blend trousers for summer.', weight: 0.5, weightUnit: 'kg', reviews: [
         { id: 1, author: "إميلي ر.", rating: 4, date: "3 مارس 2025", text: "مذهل للغاية!", image: "https://randomuser.me/api/portraits/women/4.jpg", status: 'Approved' },
         { id: 2, author: "جيمس ل.", rating: 5, date: "3 مارس 2025", text: "أحببته!", image: "https://randomuser.me/api/portraits/men/7.jpg", status: 'Approved' },
         { id: 3, author: "مستخدم", rating: 3, date: "4 مارس 2025", text: "هذا تعليق قيد المراجعة.", image: "https://randomuser.me/api/portraits/men/10.jpg", status: 'Pending' },
-    ], badges: [{ text: 'خصم 25%', type: 'sale' }]},
+    ], badges: [{ text: 'خصم ٢٠٪', type: 'sale' }]},
     { id: 2, name: 'بلوزة بأكمام طويلة', image: 'https://images.unsplash.com/photo-1581655353564-df123a164d16?q=80&w=1974&auto=format&fit=crop', images:[], sku: 'VIN-BL-002', price: '180.00', stock: 8, status: 'Published', category: 'women', tags:['بلوزة', 'أساسي', 'نسائي', 'قطن', 'أكمام طويلة', 'جديد', 'ملابس', 'كاجوال'], description: 'A stylish long-sleeve blouse.', unitsSold: 95, variants: [{id: 102, options: {Size: 'S'}, sku: 'VIN-BL-S', price: '180.00', stock: 8, inventoryHistory: []}], seoTitle: '', seoDescription: '', weight: 0.3, weightUnit: 'kg', reviews: [{ id: 5, author: "سارة ك.", rating: 4, date: "6 مارس 2025", text: "الخامة جيدة ولكن المقاس كان صغيرًا بعض الشيء.", image: "https://randomuser.me/api/portraits/women/12.jpg", status: 'Pending' }], badges: [{ text: 'جديد', type: 'new' }] },
-    { id: 3, name: 'بنطلون جينز عصري', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1974&auto=format&fit=crop', images:[], sku: 'VIN-JN-003', price: '320.00', stock: 0, status: 'Published', category: 'women', tags:['جينز', 'بنطلون', 'نسائي', 'دينيم', 'عصري', 'ملابس', 'كاجوال'], description: 'Modern and comfortable jeans.', unitsSold: 250, variants: [], seoTitle: '', seoDescription: '', weight: 0.7, weightUnit: 'kg', reviews: [], badges: [] },
-    { id: 4, name: 'قميص رجالي كلاسيكي', image: 'https://images.unsplash.com/photo-1596755094514-7e724d082a93?q=80&w=1974&auto=format&fit=crop', images:[], sku: 'VIN-SH-004', price: '250.00', compareAtPrice: '300.00', stock: 30, status: 'Draft', category: 'men', tags:['قميص', 'رجالي', 'كلاسيكي', 'قطن', 'عمل', 'ملابس', 'رسمي'], description: 'Classic men shirt.', unitsSold: 75, variants: [], seoTitle: '', seoDescription: '', weight: 0.4, weightUnit: 'kg', reviews: [], badges: [{ text: 'خصم 17%', type: 'sale' }] },
+    { id: 3, name: 'بنطلون جينز عصري', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1974&auto=format&fit=crop', images:[], sku: 'VIN-JN-003', price: '320.00', stock: 0, status: 'Published', category: 'women', tags:['جينز', 'بنطلون', 'نسائي', 'دينيم', 'عصري', 'ملابس', 'كاجوال'], description: 'Modern and comfortable jeans.', unitsSold: 250, variants: [], seoTitle: '', seoDescription: '', weight: 0.7, weightUnit: 'kg', reviews: [], badges: [{ text: 'جديد', type: 'new' }] },
+    { id: 4, name: 'قميص رجالي كلاسيكي', image: 'https://images.unsplash.com/photo-1596755094514-7e724d082a93?q=80&w=1974&auto=format&fit=crop', images:[], sku: 'VIN-SH-004', price: '250.00', compareAtPrice: '300.00', stock: 30, status: 'Draft', category: 'men', tags:['قميص', 'رجالي', 'كلاسيكي', 'قطن', 'عمل', 'ملابس', 'رسمي'], description: 'Classic men shirt.', unitsSold: 75, variants: [], seoTitle: '', seoDescription: '', weight: 0.4, weightUnit: 'kg', reviews: [], badges: [{ text: 'خصم ١٧٪', type: 'sale' }] },
     { id: 5, name: 'جاكيت جلدي أنيق', image: 'https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?q=80&w=1992&auto=format&fit=crop', images:[], sku: 'VIN-JK-005', price: '450.00', stock: 5, status: 'Published', category: 'men', tags:['جاكيت', 'جلد', 'للجنسين', 'شتاء', 'رائج', 'ملابس'], description: 'A sleek leather jacket.', unitsSold: 180, variants: [], seoTitle: '', seoDescription: '', weight: 1.2, weightUnit: 'kg', reviews: [
         { id: 4, author: "أحمد", rating: 5, date: "5 مارس 2025", text: "جودة ممتازة، أوصي به بشدة.", image: "https://randomuser.me/api/portraits/men/11.jpg", status: 'Approved' },
         { id: 6, author: "علي حسن", rating: 4, date: "8 مارس 2025", text: "جاكيت رائع لكن التوصيل تأخر قليلاً.", image: "https://randomuser.me/api/portraits/men/15.jpg", status: 'Pending' }
-    ], badges: [{ text: 'رائج', type: 'trending' }] },
+    ], badges: [{ text: 'رائج', type: 'trending' }, { text: 'VIP', type: 'vip' }] },
 ];
 
 export const allAdminCustomers: AdminCustomer[] = [
@@ -282,4 +294,37 @@ export const allAdminMessages: AdminMessage[] = [
 export const allAdminHeroSlides: AdminHeroSlide[] = [
     { id: 1, bgImage: 'https://images.unsplash.com/photo-1517036324233-1c3cf7b246a4?q=80&w=1974&auto=format&fit=crop', title: 'تألقي بشكل لم يسبق له مثيل', subtitle: 'اكتشفي أحدث مجموعاتنا الصيفية', buttonText: 'تسوقي الآن', page: 'shop', status: 'Visible' },
     { id: 2, bgImage: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop', title: 'تخفيضات نهاية الموسم', subtitle: 'خصم يصل إلى 50% على منتجات مختارة', buttonText: 'اكتشفي العروض', page: 'shop', status: 'Visible' },
+];
+
+export const allAdminPages: AdminPage[] = [
+    {
+        id: 1,
+        title: 'من نحن',
+        slug: 'about-us',
+        content: '<h2>قصتنا</h2><p>تأسست فينيتا عام 2024...</p>',
+        status: 'Published',
+        lastModified: '2024-08-15',
+        seoTitle: 'من نحن | Vineta',
+        seoDescription: 'تعرف على قصة Vineta وفريقنا.'
+    },
+    {
+        id: 2,
+        title: 'سياسة الخصوصية',
+        slug: 'privacy-policy',
+        content: '<h2>سياسة الخصوصية</h2><p>نحن نحترم خصوصيتك...</p>',
+        status: 'Published',
+        lastModified: '2024-08-10',
+        seoTitle: 'سياسة الخصوصية | Vineta',
+        seoDescription: 'اقرأ كيف نتعامل مع بياناتك.'
+    },
+    {
+        id: 3,
+        title: 'صفحة هبوط قادمة',
+        slug: 'coming-soon',
+        content: '<h1>قريباً...</h1>',
+        status: 'Hidden',
+        lastModified: '2024-08-20',
+        seoTitle: 'قريبا',
+        seoDescription: ''
+    }
 ];

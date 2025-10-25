@@ -1,10 +1,10 @@
-
 import React from 'react';
-import { Product, Filters, User, HeroSlide, SaleCampaign } from './types';
+import { Product, Filters, User, HeroSlide, SaleCampaign, Variant } from './types';
 import { allProducts } from './data/products';
 
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
+import AboutPage from './pages/AboutPage';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -22,7 +22,8 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import SearchPage from './pages/SearchPage';
 import BlogListPage from './pages/BlogListPage';
 import BlogPostPage from './pages/BlogPostPage';
-import StyleMePage from './pages/StyleMePage';
+import AiTryOnPage from './pages/AiTryOnPage';
+import SettingsPage from './pages/SettingsPage';
 
 
 interface RouterProps {
@@ -43,6 +44,7 @@ interface RouterProps {
     onLogout: () => void;
     onLogin: (user: User) => void;
     onProductView: () => void;
+    openNotifyMeModal: (product: Product, variant: Variant | null) => void;
 }
 
 export const Router: React.FC<RouterProps> = ({
@@ -63,13 +65,16 @@ export const Router: React.FC<RouterProps> = ({
     onLogout,
     onLogin,
     onProductView,
+    openNotifyMeModal,
 }) => {
     const commonProps = { navigateTo, addToCart, openQuickView };
 
     const pageComponents: { [key: string]: React.ReactNode } = {
         home: <HomePage {...commonProps} heroSlides={heroSlides} saleCampaigns={saleCampaigns} />,
-        shop: <ShopPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} currentPage={shopPage} setCurrentPage={setShopPage} />,
-        product: <ProductDetailPage {...commonProps} product={pageData || allProducts[0]} setIsAskQuestionOpen={setIsAskQuestionOpen} onProductView={onProductView} />,
+        // FIX: The `ShopPage` component expects `shopPage` and `setShopPage` props, but was being passed `currentPage` and `setCurrentPage`.
+        shop: <ShopPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} shopPage={shopPage} setShopPage={setShopPage} />,
+        about: <AboutPage navigateTo={navigateTo} />,
+        product: <ProductDetailPage {...commonProps} product={pageData || allProducts[0]} setIsAskQuestionOpen={setIsAskQuestionOpen} onProductView={onProductView} openNotifyMeModal={openNotifyMeModal} />,
         cart: <CartPage navigateTo={navigateTo} />,
         wishlist: <WishlistPage navigateTo={navigateTo} />,
         account: <AccountPage navigateTo={navigateTo} onLogout={onLogout} />,
@@ -86,10 +91,11 @@ export const Router: React.FC<RouterProps> = ({
         search: <SearchPage {...commonProps} setIsFilterOpen={setIsFilterOpen} filters={filters} setFilters={setFilters} />,
         blog: <BlogListPage navigateTo={navigateTo} />,
         blogPost: <BlogPostPage navigateTo={navigateTo} />,
-        'style-me': <StyleMePage navigateTo={navigateTo} addToCart={(product) => addToCart(product)} />,
+        'ai-try-on': <AiTryOnPage navigateTo={navigateTo} addToCart={addToCart} />,
+        settings: <SettingsPage navigateTo={navigateTo} />,
     };
 
-    const protectedPages = ['account', 'wishlist'];
+    const protectedPages = ['account', 'wishlist', 'settings'];
     const isProtectedRoute = protectedPages.includes(activePage) && !currentUser;
 
     React.useEffect(() => {

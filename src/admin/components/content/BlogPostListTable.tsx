@@ -21,7 +21,7 @@ const BlogPostListTable: React.FC<BlogPostListTableProps> = ({ posts, onEdit, on
     return (
         <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm text-right">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-admin-bg text-admin-text-secondary">
                     <tr>
                         <th className="px-5 py-3 font-semibold">العنوان</th>
                         <th className="px-5 py-3 font-semibold">المؤلف</th>
@@ -32,24 +32,24 @@ const BlogPostListTable: React.FC<BlogPostListTableProps> = ({ posts, onEdit, on
                 </thead>
                 <tbody className="divide-y divide-admin-border">
                     {posts.map(post => (
-                        <tr key={post.id} className="hover:bg-gray-50">
+                        <tr key={post.id} className="hover:bg-admin-bg">
                             <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
                                     <img src={post.featuredImage} alt={post.title} className="w-16 h-12 object-cover rounded-md"/>
-                                    <span className="font-semibold text-gray-800">{post.title}</span>
+                                    <span className="font-semibold text-admin-text-primary">{post.title}</span>
                                 </div>
                             </td>
-                            <td className="px-5 py-3 text-gray-500">{post.author}</td>
+                            <td className="px-5 py-3 text-admin-text-secondary">{post.author}</td>
                              <td className="px-5 py-3">
                                 <span className={`px-2 py-1 rounded-md text-xs font-bold ${getStatusClasses(post.status)}`}>
                                     {post.status === 'Published' ? 'منشور' : 'مسودة'}
                                 </span>
                             </td>
-                            <td className="px-5 py-3 text-gray-500">{post.publishDate}</td>
+                            <td className="px-5 py-3 text-admin-text-secondary">{post.publishDate}</td>
                             <td className="px-5 py-3 text-left">
                                 <div className="flex items-center gap-2 justify-end">
-                                    <button onClick={() => onEdit(post)} className="text-gray-400 hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
-                                    <button onClick={() => onDelete(post)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
+                                    <button onClick={() => onEdit(post)} className="text-admin-text-secondary hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
+                                    <button onClick={() => onDelete(post)} className="text-admin-text-secondary hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
                                 </div>
                             </td>
                         </tr>

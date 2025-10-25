@@ -53,6 +53,7 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
     const { currentUser } = state;
     const addToast = useToast();
     const [couponCode, setCouponCode] = useState('');
+    const [couponError, setCouponError] = useState('');
     const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<number | 'new'>(currentUser?.addresses.find(a => a.isDefault)?.id || 'new');
     const [useDifferentBilling, setUseDifferentBilling] = useState(false);
     const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<number | 'new'>(currentUser?.addresses.find(a => a.isDefault)?.id || 'new');
@@ -169,6 +170,7 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
     
     const handleApplyCoupon = (e: React.FormEvent) => {
         e.preventDefault();
+        setCouponError('');
         const codeToApply = couponCode.trim().toUpperCase();
         if (!codeToApply) return;
 
@@ -178,7 +180,7 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
             addToast(`تم تطبيق الكوبون "${codeToApply}"!`, 'success');
         } else {
             dispatch({ type: 'REMOVE_COUPON' });
-            addToast('كود الكوبون غير صالح.', 'error');
+            setCouponError('كود الكوبون غير صالح.');
         }
         setCouponCode('');
     };
@@ -246,6 +248,16 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                             </div>
                         )}
                         
+                         <h2 className="text-2xl font-bold mb-6 mt-8">ملاحظات الطلب (اختياري)</h2>
+                         <textarea
+                            name="order_note"
+                            placeholder="أضف ملاحظات حول طلبك، مثل تعليمات خاصة للتسليم."
+                            rows={4}
+                            value={state.orderNote}
+                            onChange={(e) => dispatch({ type: 'SET_ORDER_NOTE', payload: e.target.value })}
+                            className="w-full border p-3 rounded-lg border-brand-border bg-surface"
+                        ></textarea>
+
                         <div className="mt-8">
                             <h2 className="text-2xl font-bold mb-6">الدفع</h2>
                             <div className="space-y-3 bg-surface p-4 rounded-lg border">
@@ -263,20 +275,20 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                                     {paymentMethod === 'creditCard' && (
                                         <div className="mt-4 space-y-4 animate-fade-in pl-8">
                                             <div>
-                                                <input name="cardName" placeholder="الاسم على البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardName ? 'border-red-500' : 'border-brand-border'}`} />
+                                                <input name="cardName" placeholder="الاسم على البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardName ? 'border-red-500' : 'border-brand-border'}`} autoComplete="cc-name" />
                                                 {errors.cardName && <p className="text-red-500 text-xs mt-1">{errors.cardName}</p>}
                                             </div>
                                             <div>
-                                                <input name="cardNumber" placeholder="رقم البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardNumber ? 'border-red-500' : 'border-brand-border'}`} />
+                                                <input name="cardNumber" placeholder="رقم البطاقة" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardNumber ? 'border-red-500' : 'border-brand-border'}`} inputMode="numeric" autoComplete="cc-number" />
                                                 {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <input name="cardExpiry" placeholder="تاريخ الانتهاء (MM/YY)" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardExpiry ? 'border-red-500' : 'border-brand-border'}`} />
+                                                    <input name="cardExpiry" placeholder="تاريخ الانتهاء (MM/YY)" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardExpiry ? 'border-red-500' : 'border-brand-border'}`} inputMode="numeric" autoComplete="cc-exp" />
                                                     {errors.cardExpiry && <p className="text-red-500 text-xs mt-1">{errors.cardExpiry}</p>}
                                                 </div>
                                                 <div>
-                                                    <input name="cardCVC" placeholder="CVC" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardCVC ? 'border-red-500' : 'border-brand-border'}`} />
+                                                    <input name="cardCVC" placeholder="CVC" onChange={handleChange} className={`w-full border p-3 rounded-lg ${errors.cardCVC ? 'border-red-500' : 'border-brand-border'}`} inputMode="numeric" autoComplete="cc-csc" />
                                                     {errors.cardCVC && <p className="text-red-500 text-xs mt-1">{errors.cardCVC}</p>}
                                                 </div>
                                             </div>
@@ -289,14 +301,15 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                     <div>
                         <div className="bg-surface border border-brand-border p-6 rounded-lg lg:sticky top-28">
                             <h2 className="text-2xl font-bold mb-6">طلبك</h2>
-                            <form onSubmit={handleApplyCoupon} className="flex gap-2 mb-4">
+                            <form onSubmit={handleApplyCoupon} className="flex gap-2">
                                 <div className="relative flex-grow">
                                     <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light"><CouponIcon size="sm"/></div>
                                     <input type="text" placeholder="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-surface border border-brand-border rounded-full py-3 pr-11 pl-4"/>
                                 </div>
                                 <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-6 rounded-full text-sm">تطبيق</button>
                             </form>
-                            <div className="space-y-3 border-b border-brand-border pb-4 max-h-60 overflow-y-auto">
+                            {couponError && <p className="text-red-500 text-xs mt-2 px-2">{couponError}</p>}
+                            <div className="space-y-3 border-b border-brand-border pb-4 mt-4 max-h-60 overflow-y-auto">
                                 {cartItems.map(item => (
                                     <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
@@ -327,7 +340,7 @@ const CheckoutPage = ({ navigateTo }: CheckoutPageProps) => {
                                 <span>الإجمالي:</span><span className="text-brand-dark">{finalTotal.toFixed(2)} ج.م</span>
                             </div>
                              <button type="submit" disabled={isLoading} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 mt-6 min-h-[48px] flex items-center justify-center transition-transform active:scale-98">
-                                {isLoading ? <Spinner /> : 'تأكيد الطلب'}
+                                {isLoading ? <Spinner /> : <><LockClosedIcon size="sm"/> <span className="mr-2">تأكيد الطلب</span></>}
                             </button>
                         </div>
                     </div>

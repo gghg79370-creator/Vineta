@@ -12,13 +12,45 @@ interface CartPageProps {
     navigateTo: (pageName: string, data?: any) => void;
 }
 
+const ConfirmationModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+}> = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
+    return (
+        <div
+            className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in"
+            onClick={onClose}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+            aria-describedby="confirmation-message"
+        >
+            <div className="bg-brand-bg w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <h3 id="confirmation-title" className="text-xl font-bold text-brand-dark mb-2">{title}</h3>
+                <p id="confirmation-message" className="text-brand-text-light mb-6">{message}</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <button onClick={onClose} className="bg-brand-subtle text-brand-dark font-bold py-3 rounded-full hover:bg-brand-border">إلغاء</button>
+                    <button onClick={onConfirm} className="bg-brand-sale text-white font-bold py-3 rounded-full hover:bg-opacity-90">تأكيد</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const CartPage = ({ navigateTo }: CartPageProps) => {
     const { state, dispatch, cartSubtotal, discountAmount, finalTotal } = useAppState();
     const { currentUser } = state;
     const addToast = useToast();
     const [couponCode, setCouponCode] = useState('');
+    const [couponError, setCouponError] = useState('');
     const [orderNote, setOrderNote] = useState(state.orderNote || '');
     const [isNoteEditing, setIsNoteEditing] = useState(false);
+    const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
 
     const cartItems = useMemo((): CartItem[] => {
         return state.cart.map(cartDetail => {
@@ -51,8 +83,16 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
         dispatch({ type: 'UPDATE_CART_ITEM_QUANTITY', payload: { id, selectedSize: size, selectedColor: color, quantity: newQuantity } });
     };
 
-    const handleRemoveItem = (id: number, size: string, color: string) => {
-        dispatch({ type: 'REMOVE_FROM_CART', payload: { id, selectedSize: size, selectedColor: color } });
+    const handleRemoveItemClick = (item: CartItem) => {
+        setItemToRemove(item);
+    };
+
+    const confirmRemoveItem = () => {
+        if (itemToRemove) {
+            dispatch({ type: 'REMOVE_FROM_CART', payload: { id: itemToRemove.id, selectedSize: itemToRemove.selectedSize, selectedColor: itemToRemove.selectedColor } });
+            addToast(`تمت إزالة "${itemToRemove.name}" من السلة.`, 'success');
+            setItemToRemove(null);
+        }
     };
     
     const handleMoveToWishlist = (item: CartItem) => {
@@ -65,12 +105,13 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
         if (!isInWishlist) {
             dispatch({ type: 'TOGGLE_WISHLIST', payload: item.id });
         }
-        handleRemoveItem(item.id, item.selectedSize, item.selectedColor);
+        dispatch({ type: 'REMOVE_FROM_CART', payload: { id: item.id, selectedSize: item.selectedSize, selectedColor: item.selectedColor } });
         addToast(`${item.name} تم نقله إلى قائمة الرغبات.`, 'success');
     };
     
     const handleApplyCoupon = (e: React.FormEvent) => {
         e.preventDefault();
+        setCouponError('');
         const codeToApply = couponCode.trim().toUpperCase();
         if (!codeToApply) return;
 
@@ -80,14 +121,14 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
             addToast(`تم تطبيق الكوبون "${codeToApply}"!`, 'success');
         } else {
             dispatch({ type: 'REMOVE_COUPON' });
-            addToast('كود الكوبون غير صالح.', 'error');
+            setCouponError('كود الكوبون غير صالح.');
         }
         setCouponCode('');
     };
 
     const handleSaveNote = () => {
         dispatch({ type: 'SET_ORDER_NOTE', payload: orderNote });
-        addToast('تم حفظ ملاحظة الطلب.', 'success');
+        addToast('تم حفظ رسالة الهدية.', 'success');
         setIsNoteEditing(false);
     };
 
@@ -123,6 +164,13 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
 
     return (
         <div className="bg-brand-subtle">
+            <ConfirmationModal
+                isOpen={!!itemToRemove}
+                onClose={() => setItemToRemove(null)}
+                onConfirm={confirmRemoveItem}
+                title="إزالة المنتج"
+                message={`هل أنت متأكد أنك تريد إزالة "${itemToRemove?.name}" من سلة التسوق؟`}
+            />
             <Breadcrumb items={breadcrumbItems} navigateTo={navigateTo} title="عربة التسوق" />
             <div className="container mx-auto px-4 py-12">
                 {cartItems.length > 0 ? (
@@ -148,16 +196,16 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                                         <span className="text-gray-300">|</span>
                                                     </>
                                                 )}
-                                                <button onClick={() => handleRemoveItem(item.id, item.selectedSize, item.selectedColor)} className="flex items-center gap-1 hover:text-brand-sale"><CloseIcon size="sm" /> <span>إزالة</span></button>
+                                                <button onClick={() => handleRemoveItemClick(item)} className="flex items-center gap-1 hover:text-brand-sale"><CloseIcon size="sm" /> <span>إزالة</span></button>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-span-1 text-center font-semibold">{item.price} ج.م</div>
                                     <div className="col-span-1 flex justify-center">
                                         <div className="flex items-center border border-brand-border rounded-full bg-white w-28">
-                                            <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} className="p-2 text-gray-500 disabled:opacity-50" disabled={item.quantity <= 1}><MinusIcon size="sm" /></button>
+                                            <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} className="p-2 text-gray-500 disabled:opacity-50 hover:bg-gray-100 rounded-full transition-colors" disabled={item.quantity <= 1}><MinusIcon size="sm" /></button>
                                             <span className="px-2 font-bold text-sm flex-1 text-center">{item.quantity}</span>
-                                            <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-2 text-gray-500"><PlusIcon size="sm" /></button>
+                                            <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"><PlusIcon size="sm" /></button>
                                         </div>
                                     </div>
                                     <div className="col-span-1 text-right font-bold text-brand-dark">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</div>
@@ -168,14 +216,17 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border lg:sticky top-28 space-y-4">
                                 <h2 className="text-xl font-bold mb-4">ملخص الطلب</h2>
                                 
-                                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                                    <div className="relative flex-grow">
-                                        <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light"><CouponIcon size="sm" /></div>
-                                        <input type="text" placeholder="رمز الكوبون" aria-label="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-white border border-brand-border rounded-full py-3 pr-11 pl-4" />
-                                    </div>
-                                    <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-6 rounded-full text-sm">تطبيق</button>
-                                </form>
-                                
+                                <div>
+                                    <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                                        <div className="relative flex-grow">
+                                            <div className="absolute top-1/2 right-4 -translate-y-1/2 text-brand-text-light"><CouponIcon size="sm" /></div>
+                                            <input type="text" placeholder="رمز الكوبون" aria-label="رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className={`w-full bg-white border rounded-full py-3 pr-11 pl-4 ${couponError ? 'border-brand-sale' : 'border-brand-border'}`} />
+                                        </div>
+                                        <button type="submit" className="bg-brand-dark text-white font-bold py-3 px-6 rounded-full text-sm">تطبيق</button>
+                                    </form>
+                                    {couponError && <p className="text-red-500 text-xs mt-2 px-2">{couponError}</p>}
+                                </div>
+
                                 <div className="space-y-2 py-4 border-b border-t">
                                     <div className="flex justify-between"><span>المجموع الفرعي:</span><span className="font-semibold">{cartSubtotal.toFixed(2)} ج.م</span></div>
                                     <div className="flex justify-between"><span>الشحن:</span><span className="font-semibold text-brand-instock">مجاني</span></div>
@@ -192,17 +243,19 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                 
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center">
-                                        <label className="flex items-center gap-2 font-semibold">
+                                        <label className="flex items-center gap-2 font-semibold cursor-pointer">
                                             <input type="checkbox" checked={state.giftWrap} onChange={(e) => dispatch({ type: 'SET_GIFT_WRAP', payload: e.target.checked })} className="h-4 w-4 rounded border-brand-border text-brand-dark focus:ring-brand-dark" />
                                             <GiftIcon size="sm" /> <span>تغليف كهدية (+10.00 ج.م)</span>
                                         </label>
                                     </div>
-                                    <div>
+                                    {state.giftWrap && (
+                                    <div className="animate-fade-in">
                                         {isNoteEditing ? (
-                                            <div className="space-y-2">
-                                                <textarea placeholder="تعليمات للبائع..." rows={3} value={orderNote} onChange={(e) => setOrderNote(e.target.value)} className="w-full border border-brand-border rounded-lg p-2"></textarea>
+                                            <div className="space-y-2 pt-2">
+                                                <label className="text-sm font-semibold text-brand-text-light">رسالة الهدية:</label>
+                                                <textarea placeholder="اكتب رسالتك هنا..." rows={3} value={orderNote} onChange={(e) => setOrderNote(e.target.value)} className="w-full border border-brand-border rounded-lg p-2"></textarea>
                                                 <div className="flex gap-2">
-                                                    <button onClick={handleSaveNote} className="flex-1 text-xs bg-brand-dark text-white rounded-full py-1.5 font-semibold">حفظ</button>
+                                                    <button onClick={handleSaveNote} className="flex-1 text-xs bg-brand-dark text-white rounded-full py-1.5 font-semibold">حفظ الرسالة</button>
                                                     <button onClick={() => setIsNoteEditing(false)} className="flex-1 text-xs bg-gray-200 text-gray-700 rounded-full py-1.5 font-semibold">إلغاء</button>
                                                 </div>
                                             </div>
@@ -210,12 +263,13 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                             <button onClick={() => setIsNoteEditing(true)} className="w-full text-right flex items-center justify-between text-sm font-semibold p-2 rounded-lg hover:bg-gray-50">
                                                 <div className="flex items-center gap-2">
                                                     <NoteIcon size="sm" />
-                                                    <span>{state.orderNote ? 'تعديل الملاحظة' : 'إضافة ملاحظة للطلب'}</span>
+                                                    <span>{state.orderNote ? 'تعديل رسالة الهدية' : 'إضافة رسالة هدية'}</span>
                                                 </div>
                                                 <PencilIcon size="sm" />
                                             </button>
                                         )}
                                     </div>
+                                    )}
                                 </div>
 
                                 <button onClick={() => navigateTo('checkout')} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 mt-4 flex items-center justify-center gap-2 transition-transform active:scale-98">

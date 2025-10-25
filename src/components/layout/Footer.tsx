@@ -11,16 +11,16 @@ const FooterSection: React.FC<{ title: string; children: React.ReactNode; }> = (
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="py-4 border-b border-brand-border md:border-none md:p-0">
+        <div className="py-4 border-b border-brand-border last:border-b-0 md:border-none md:p-0">
             <button
                 className="w-full flex justify-between items-center md:hidden"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
             >
-                <h4 className="font-bold text-lg text-brand-dark">{title}</h4>
-                {isOpen ? <MinusIcon /> : <PlusIcon />}
+                <h4 className="font-bold text-base text-brand-dark">{title}</h4>
+                {isOpen ? <MinusIcon size="sm" /> : <PlusIcon size="sm" />}
             </button>
-            <h4 className="font-bold text-lg mb-4 text-brand-dark hidden md:block">{title}</h4>
+            <h4 className="font-bold text-base mb-4 text-brand-dark hidden md:block">{title}</h4>
             <div className={`pt-4 md:pt-0 ${isOpen ? 'block animate-fade-in' : 'hidden'} md:block`}>
                 {children}
             </div>
@@ -45,10 +45,10 @@ export const Footer = ({ navigateTo }: FooterProps) => {
     };
 
     return (
-    <footer className="bg-surface text-brand-text border-t border-brand-border">
+    <footer className="bg-brand-subtle text-brand-text border-t border-brand-border">
         <div className="container mx-auto px-4">
             {/* Top part */}
-            <div className="flex justify-between items-center py-8 border-b border-brand-border">
+            <div className="flex flex-col-reverse md:flex-row justify-between items-center py-8 md:border-b md:border-brand-border gap-6 md:gap-0">
                 <div className="flex gap-2">
                     <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="X"><i className="fa-brands fa-x-twitter" /></a>
                     <a href="#" className="w-9 h-9 flex items-center justify-center border border-brand-border rounded-full text-brand-text-light hover:bg-brand-dark hover:text-brand-bg hover:border-brand-dark transition-colors" aria-label="LinkedIn"><i className="fa-brands fa-linkedin-in" /></a>
@@ -60,19 +60,19 @@ export const Footer = ({ navigateTo }: FooterProps) => {
             
             {/* Main content for Desktop */}
             <div className="hidden md:grid grid-cols-1 md:grid-cols-12 gap-8 py-12 text-right">
-                <div className="md:col-span-4">
+                <div className="md:col-span-3">
                      <FooterSection title="اتصل بنا">
                         <ul className="space-y-4 text-sm">
-                            <li className="flex items-start gap-3"><MapPinIcon size="sm" className="mt-1 flex-shrink-0"/><span>شارع ياران، بانشبول، نيو ساوث ويلز 2196، 123 أستراليا</span></li>
-                            <li className="flex items-start gap-3"><PhoneIcon size="sm" className="mt-1 flex-shrink-0"/><span>1245 8342 (64)</span></li>
-                            <li className="flex items-start gap-3"><EnvelopeIcon size="sm" className="mt-1 flex-shrink-0"/><span>support@example.com</span></li>
+                            <li className="flex items-start gap-3"><MapPinIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>شارع ياران، بانشبول، نيو ساوث ويلز 2196، 123 أستراليا</span></li>
+                            <li className="flex items-start gap-3"><PhoneIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>1245 8342 (64)</span></li>
+                            <li className="flex items-start gap-3"><EnvelopeIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>support@example.com</span></li>
                         </ul>
                         <button className="text-sm font-semibold mt-4 hover:text-brand-primary"><u>احصل على الاتجاهات</u></button>
                     </FooterSection>
                 </div>
-                 <div className="md:col-span-3">
+                 <div className="md:col-span-4">
                      <FooterSection title="اشترك في النشرة الإخبارية">
-                        <p className="text-sm leading-relaxed mb-4">ندعوك لقراءة آخر الأخبار والعروض والأحداث حول شركتنا. نعدك بعدم إرسال رسائل غير مرغوب فيها إلى بريدك الوارد.</p>
+                        <p className="text-sm leading-relaxed mb-4 text-brand-text-light">ندعوك لقراءة آخر الأخبار والعروض والأحداث حول شركتنا. نعدك بعدم إرسال رسائل غير مرغوب فيها إلى بريدك الوارد.</p>
                         <form onSubmit={handleNewsletterSubmit} className="relative">
                             <label htmlFor="newsletter-email-footer" className="sr-only">عنوان البريد الإلكتروني</label>
                             <input 
@@ -84,16 +84,16 @@ export const Footer = ({ navigateTo }: FooterProps) => {
                                 className="w-full bg-brand-bg border border-brand-border rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                 required
                             />
-                            <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 bg-brand-dark text-white rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
                                 <i className="fas fa-arrow-left" aria-hidden="true"></i>
                             </button>
                         </form>
                     </FooterSection>
                  </div>
-                 <div className="md:col-span-2">
+                 <div className="md:col-span-2 md:col-start-9">
                     <FooterSection title="من نحن">
                         <ul className="space-y-3 text-sm">
-                            <li><button className="hover:text-brand-primary transition-colors">من نحن</button></li>
+                            <li><button onClick={() => navigateTo('about')} className="hover:text-brand-primary transition-colors">من نحن</button></li>
                             <li><button onClick={() => navigateTo('contact')} className="hover:text-brand-primary transition-colors">اتصل بنا</button></li>
                             <li><button className="hover:text-brand-primary transition-colors">متجرنا</button></li>
                             <li><button className="hover:text-brand-primary transition-colors">قصتنا</button></li>
@@ -117,14 +117,14 @@ export const Footer = ({ navigateTo }: FooterProps) => {
             <div className="md:hidden py-4">
                 <FooterSection title="اتصل بنا">
                     <ul className="space-y-4 text-sm">
-                        <li className="flex items-start gap-3"><MapPinIcon size="sm" className="mt-1 flex-shrink-0"/><span>شارع ياران، بانشبول، نيو ساوث ويلز 2196، 123 أستراليا</span></li>
-                        <li className="flex items-start gap-3"><PhoneIcon size="sm" className="mt-1 flex-shrink-0"/><span>1245 8342 (64)</span></li>
-                        <li className="flex items-start gap-3"><EnvelopeIcon size="sm" className="mt-1 flex-shrink-0"/><span>support@example.com</span></li>
+                        <li className="flex items-start gap-3"><MapPinIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>شارع ياران، بانشبول، نيو ساوث ويلز 2196، 123 أستراليا</span></li>
+                        <li className="flex items-start gap-3"><PhoneIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>1245 8342 (64)</span></li>
+                        <li className="flex items-start gap-3"><EnvelopeIcon size="sm" className="mt-1 flex-shrink-0 text-brand-text-light"/><span>support@example.com</span></li>
                     </ul>
                     <button className="text-sm font-semibold mt-4 hover:text-brand-primary"><u>احصل على الاتجاهات</u></button>
                 </FooterSection>
                 <FooterSection title="اشترك في النشرة الإخبارية">
-                     <p className="text-sm leading-relaxed mb-4">ندعوك لقراءة آخر الأخبار والعروض والأحداث حول شركتنا. نعدك بعدم إرسال رسائل غير مرغوب فيها إلى بريدك الوارد.</p>
+                     <p className="text-sm leading-relaxed mb-4 text-brand-text-light">ندعوك لقراءة آخر الأخبار والعروض والأحداث حول شركتنا. نعدك بعدم إرسال رسائل غير مرغوب فيها إلى بريدك الوارد.</p>
                         <form onSubmit={handleNewsletterSubmit} className="relative">
                             <label htmlFor="newsletter-email-footer-mobile" className="sr-only">عنوان البريد الإلكتروني</label>
                             <input 
@@ -136,14 +136,14 @@ export const Footer = ({ navigateTo }: FooterProps) => {
                                 className="w-full bg-brand-bg border border-brand-border rounded-full py-3 pr-6 pl-12 focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                 required
                             />
-                            <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
+                            <button type="submit" aria-label="Subscribe to newsletter" className="absolute top-1/2 -translate-y-1/2 left-1.5 w-10 h-10 bg-brand-dark text-white rounded-full flex items-center justify-center hover:opacity-80 transition-opacity">
                                 <i className="fas fa-arrow-left" aria-hidden="true"></i>
                             </button>
                         </form>
                 </FooterSection>
                 <FooterSection title="من نحن">
                     <ul className="space-y-3 text-sm">
-                        <li><button className="hover:text-brand-primary transition-colors">من نحن</button></li>
+                        <li><button onClick={() => navigateTo('about')} className="hover:text-brand-primary transition-colors">من نحن</button></li>
                         <li><button onClick={() => navigateTo('contact')} className="hover:text-brand-primary transition-colors">اتصل بنا</button></li>
                         <li><button className="hover:text-brand-primary transition-colors">متجرنا</button></li>
                         <li><button className="hover:text-brand-primary transition-colors">قصتنا</button></li>
@@ -165,7 +165,7 @@ export const Footer = ({ navigateTo }: FooterProps) => {
                  <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="absolute left-4 -top-5 bg-surface w-10 h-10 flex items-center justify-center border border-brand-border rounded-md hover:shadow-md transition-shadow" aria-label="العودة إلى الأعلى">
                     <i className="fa-solid fa-arrow-up"></i>
                 </button>
-                <div className="flex flex-col md:flex-row justify-between items-center py-6 gap-4">
+                <div className="flex flex-col md:flex-row-reverse justify-between items-center py-6 gap-4">
                      <p className="text-sm text-brand-text-light text-center md:text-right">&copy; حقوق النشر {new Date().getFullYear()} بواسطة {theme.siteName}. جميع الحقوق محفوظة.</p>
                     <div className="flex gap-2 justify-center flex-wrap">
                         <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/payment_icons/shop-b8098cb155d36b80145a27f6735e2365.svg" alt="Shop Pay" className="h-6"/>

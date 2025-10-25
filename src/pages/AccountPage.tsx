@@ -1,7 +1,6 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ordersData } from '../data/orders';
-import { Order, User, Address, Product, TrackingEvent, TodoItem } from '../types';
+import { Order, User, Address, Product, TrackingEvent, TodoItem, PaymentMethod } from '../types';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { 
     UserIcon, 
@@ -26,7 +25,8 @@ import {
     Cog6ToothIcon,
     ChevronDownIcon,
     CameraIcon,
-    GridViewIcon
+    GridViewIcon,
+    CreditCardIcon,
 } from '../components/icons';
 import { useAppState } from '../state/AppState';
 import { useToast } from '../hooks/useToast';
@@ -64,7 +64,12 @@ const OrderCard: React.FC<{ order: Order, isExpanded: boolean, onToggle: () => v
 
     return (
         <div className="bg-white border border-brand-border rounded-xl overflow-hidden transition-all duration-300">
-            <div className="p-4 cursor-pointer hover:bg-brand-subtle" onClick={onToggle}>
+            <button
+                onClick={onToggle}
+                className="w-full text-right p-4 cursor-pointer hover:bg-brand-subtle"
+                aria-expanded={isExpanded}
+                aria-controls={`order-details-${order.id}`}
+            >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                         <div>
@@ -91,10 +96,10 @@ const OrderCard: React.FC<{ order: Order, isExpanded: boolean, onToggle: () => v
                         <ChevronDownIcon className={`w-6 h-6 text-brand-text-light transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                 </div>
-            </div>
+            </button>
 
             {isExpanded && (
-                <div className="p-4 md:p-6 border-t border-brand-border bg-brand-subtle/50 animate-fade-in">
+                <div id={`order-details-${order.id}`} className="p-4 md:p-6 border-t border-brand-border bg-brand-subtle/50 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                         <div className="md:col-span-3">
                             <h4 className="font-bold text-md mb-3 text-brand-dark">المنتجات ({order.items.length})</h4>
@@ -138,7 +143,12 @@ const OrderGridCard: React.FC<{ order: Order, isExpanded: boolean, onToggle: () 
 
     return (
         <div className="bg-white border border-brand-border rounded-xl overflow-hidden transition-all duration-300">
-            <div className="p-4 cursor-pointer hover:bg-brand-subtle" onClick={onToggle}>
+            <button
+                onClick={onToggle}
+                className="w-full text-right p-4 cursor-pointer hover:bg-brand-subtle"
+                aria-expanded={isExpanded}
+                aria-controls={`order-grid-details-${order.id}`}
+            >
                 <div className="flex justify-between items-start">
                     <p className="font-bold text-brand-primary text-sm">{order.id}</p>
                     <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold ${statusClasses[translatedStatus]}`}>
@@ -151,9 +161,9 @@ const OrderGridCard: React.FC<{ order: Order, isExpanded: boolean, onToggle: () 
                     <div className="flex justify-between"><span className="text-brand-text-light">الإجمالي:</span><span className="font-bold text-brand-dark">{order.total} ج.م</span></div>
                     <div className="flex justify-between"><span className="text-brand-text-light">المنتجات:</span><span className="font-semibold text-brand-dark">{order.items.length}</span></div>
                 </div>
-            </div>
+            </button>
             {isExpanded && (
-                <div className="p-4 border-t border-brand-border bg-brand-subtle/50 animate-fade-in">
+                <div id={`order-grid-details-${order.id}`} className="p-4 border-t border-brand-border bg-brand-subtle/50 animate-fade-in">
                     <h4 className="font-bold text-sm mb-2 text-brand-dark">المنتجات</h4>
                     <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                         {order.items.map((item, index) => (
@@ -528,12 +538,115 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
         )
     );
     
+    const PaymentMethodsContent = () => {
+        const { state, dispatch } = useAppState();
+        const { currentUser } = state;
+        const { paymentMethods = [] } = currentUser || {};
+        const addToast = useToast();
+        const [isAdding, setIsAdding] = useState(false);
+        const [newCard, setNewCard] = useState({ cardType: 'visa' as 'visa' | 'mastercard' | 'amex', last4: '', expiryMonth: '', expiryYear: '', isDefault: false });
+        const [cardToDelete, setCardToDelete] = useState<PaymentMethod | null>(null);
+
+        const handleSaveNewCard = () => {
+            if (newCard.last4.length === 4 && newCard.expiryMonth.length === 2 && newCard.expiryYear.length === 4) {
+                dispatch({ type: 'ADD_PAYMENT_METHOD', payload: newCard });
+                addToast('تمت إضافة البطاقة بنجاح!', 'success');
+                setIsAdding(false);
+                setNewCard({ cardType: 'visa', last4: '', expiryMonth: '', expiryYear: '', isDefault: false });
+            } else {
+                addToast('الرجاء إدخال تفاصيل بطاقة صالحة.', 'error');
+            }
+        };
+
+        const confirmDelete = () => {
+            if (cardToDelete) {
+                dispatch({ type: 'DELETE_PAYMENT_METHOD', payload: cardToDelete.id });
+                addToast('تم حذف البطاقة بنجاح.', 'success');
+                setCardToDelete(null);
+            }
+        };
+
+        const cardIcons: { [key: string]: React.ReactNode } = {
+            visa: <svg className="w-full h-full" viewBox="0 0 75 25"><path d="M72.1 24.3a2.5 2.5 0 01-2.4-2.4c0-1.3 1-2.4 2.4-2.4h2.5V.6h-6.2c-5.5 0-8.8 2.3-8.8 7.5 0 3.1 1.7 5.2 4.1 6.3 1.1.5 1.5.8 1.5 1.2 0 .6-.7.9-1.6.9-1.5 0-2.8-.4-4.1-.9l-.7-.3-1.4 5.9c1.4.5 3.3.9 5.3.9 5.8 0 9.1-2.4 9.1-7.8 0-4-2.8-6-6.6-7.3-1.1-.4-1.7-.7-1.7-1.2 0-.4.5-.8 1.4-.8.9 0 2.2.3 3.1.6l.4.2 1.3-5.4zM32.1.6h-8.8l-5.8 23.7h8.8l1.1-5.1h5.8l.6 5.1h8.1L32.1.6zm-3.6 13.8h-4.3l2.2-9.7h-.1l2.2 9.7zM20.2 24.3l5-23.7h-7.6L14 13.1h-.1L10.3.6H2.9l5 23.7h7.5l-.2-1.1h5zM56.3.6h-6.8l-2.6 12.3c-.2.9-.4 1.7-.6 2.6h-.1c-.2-.9-.4-1.7-.6-2.6L43.1.6h-6.8l5.4 23.7h6.6L56.3.6z" fill="#1A1F71"/></svg>,
+            mastercard: <svg className="w-full h-full" viewBox="0 0 32 20"><circle cx="8" cy="10" r="8" fill="#F9A000"/><circle cx="24" cy="10" r="8" fill="#EB001B"/><path d="M16 10a8 8 0 01-5.1-1.7A8 8 0 0016 2a8 8 0 00-5.1 1.7A8 8 0 0116 10z" fill="#FF5F00"/></svg>,
+            amex: <svg className="w-full h-full" viewBox="0 0 32 20"><rect width="32" height="20" rx="2" fill="#0077c8"/><path d="M16 10h-4v4h4v-4zm-2-2h-4v2h4v-2zm2-2h-4v2h4v-2zm2 2h-2v2h2v-2zm-4-2h2v2h-2v-2z" fill="#fff"/></svg>
+        };
+
+        return (
+            <div>
+                <h2 className="text-2xl font-bold mb-6 text-brand-dark">طرق الدفع</h2>
+                <div className="space-y-4">
+                    {paymentMethods.map(card => (
+                        <div key={card.id} className={`border p-4 rounded-xl flex items-center justify-between transition-all ${card.isDefault ? 'border-brand-primary' : 'border-brand-border'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-8 flex items-center justify-center rounded-md bg-gray-100 p-1">{cardIcons[card.cardType]}</div>
+                                <div>
+                                    <p className="font-bold text-brand-dark">{card.cardType.charAt(0).toUpperCase() + card.cardType.slice(1)} تنتهي بـ {card.last4}</p>
+                                    <p className="text-sm text-brand-text-light">تنتهي في {card.expiryMonth}/{card.expiryYear}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {card.isDefault && <span className="text-xs bg-brand-primary text-white font-semibold px-2 py-0.5 rounded-full">افتراضي</span>}
+                                {!card.isDefault && <button onClick={() => dispatch({type: 'SET_DEFAULT_PAYMENT_METHOD', payload: card.id})} className="text-sm font-semibold text-green-600 hover:underline">تعيين كافتراضي</button>}
+                                <button onClick={() => setCardToDelete(card)} className="text-sm font-semibold text-brand-sale hover:underline">حذف</button>
+                            </div>
+                        </div>
+                    ))}
+                    {!isAdding && <button onClick={() => setIsAdding(true)} className="w-full border-2 border-dashed border-brand-border rounded-lg p-4 text-brand-text-light hover:border-brand-primary hover:text-brand-primary transition-colors flex items-center justify-center gap-2 font-semibold"><PlusIcon/> إضافة طريقة دفع جديدة</button>}
+                </div>
+
+                {isAdding && (
+                    <div className="mt-6 p-6 border rounded-lg bg-brand-subtle/50 animate-fade-in">
+                        <h3 className="font-bold text-lg mb-4">إضافة بطاقة جديدة</h3>
+                        <div className="space-y-4">
+                             <input type="text" placeholder="آخر 4 أرقام" maxLength={4} value={newCard.last4} onChange={e => setNewCard({...newCard, last4: e.target.value.replace(/\D/g,'')})} className="w-full border bg-surface p-2 rounded-lg border-brand-border" />
+                             <div className="grid grid-cols-2 gap-4">
+                                <input type="text" placeholder="شهر الانتهاء (MM)" maxLength={2} value={newCard.expiryMonth} onChange={e => setNewCard({...newCard, expiryMonth: e.target.value.replace(/\D/g,'')})} className="w-full border bg-surface p-2 rounded-lg border-brand-border" />
+                                <input type="text" placeholder="سنة الانتهاء (YYYY)" maxLength={4} value={newCard.expiryYear} onChange={e => setNewCard({...newCard, expiryYear: e.target.value.replace(/\D/g,'')})} className="w-full border bg-surface p-2 rounded-lg border-brand-border" />
+                             </div>
+                             <select value={newCard.cardType} onChange={e => setNewCard({...newCard, cardType: e.target.value as 'visa' | 'mastercard'})} className="w-full border bg-surface p-2 rounded-lg border-brand-border">
+                                <option value="visa">Visa</option>
+                                <option value="mastercard">Mastercard</option>
+                             </select>
+                             <label className="flex items-center gap-2"><input type="checkbox" checked={newCard.isDefault} onChange={e => setNewCard({...newCard, isDefault: e.target.checked})} className="h-4 w-4 rounded border-brand-border text-brand-dark focus:ring-brand-dark" /> تعيين كافتراضي</label>
+                             <div className="flex gap-2">
+                                <button onClick={() => setIsAdding(false)} className="flex-1 bg-surface border border-brand-border text-brand-dark font-bold py-2 rounded-full">إلغاء</button>
+                                <button onClick={handleSaveNewCard} className="flex-1 bg-brand-dark text-white font-bold py-2 rounded-full">حفظ البطاقة</button>
+                             </div>
+                        </div>
+                    </div>
+                )}
+                {cardToDelete && (
+                    <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 animate-fade-in" onClick={() => setCardToDelete(null)}>
+                        <div className="bg-brand-bg w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                            <h3 className="text-xl font-bold text-brand-dark mb-2">تأكيد الحذف</h3>
+                            <p className="text-brand-text-light mb-6">هل أنت متأكد أنك تريد حذف بطاقة {cardToDelete.cardType} التي تنتهي بـ {cardToDelete.last4}؟</p>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button onClick={() => setCardToDelete(null)} className="bg-brand-subtle text-brand-dark font-bold py-3 rounded-full hover:bg-brand-border">إلغاء</button>
+                                <button onClick={confirmDelete} className="bg-brand-sale text-white font-bold py-3 rounded-full hover:bg-opacity-90">نعم، حذف</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const PlannerContent = () => {
         const { state, dispatch } = useAppState();
         const { todos, wishlist } = state;
         const [newTodoText, setNewTodoText] = useState('');
         const [suggestions, setSuggestions] = useState<string[]>([]);
         const [isGenerating, setIsGenerating] = useState(false);
+        const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
+        const [editingTodoText, setEditingTodoText] = useState('');
+        const inputRef = useRef<HTMLInputElement>(null);
+
+        useEffect(() => {
+            if (editingTodoId !== null && inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, [editingTodoId]);
     
         const handleAddTodo = (e: React.FormEvent, text?: string) => {
             e.preventDefault();
@@ -551,6 +664,31 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
         
         const handleRemoveTodo = (id: number) => {
             dispatch({ type: 'REMOVE_TODO', payload: id });
+        };
+
+        const handleEditTodo = (todo: TodoItem) => {
+            setEditingTodoId(todo.id);
+            setEditingTodoText(todo.text);
+        };
+    
+        const handleCancelEdit = () => {
+            setEditingTodoId(null);
+            setEditingTodoText('');
+        };
+    
+        const handleSaveEdit = () => {
+            if (editingTodoId !== null && editingTodoText.trim()) {
+                dispatch({ type: 'UPDATE_TODO', payload: { id: editingTodoId, text: editingTodoText.trim() } });
+                handleCancelEdit();
+            }
+        };
+
+        const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') {
+                handleSaveEdit();
+            } else if (e.key === 'Escape') {
+                handleCancelEdit();
+            }
         };
 
         const getAiSuggestions = async () => {
@@ -625,14 +763,33 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
                     <div className="space-y-3">
                         {todos.map(todo => (
                              <div key={todo.id} className="flex items-center justify-between p-3 bg-brand-subtle rounded-lg">
-                                 <div className="flex items-center gap-3">
+                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <input type="checkbox" id={`task-${todo.id}`} className="sr-only task-input" checked={todo.completed} onChange={() => handleToggleTodo(todo.id)}/>
-                                    <label htmlFor={`task-${todo.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-brand-border bg-white">
+                                    <label htmlFor={`task-${todo.id}`} className="task-checkbox-label cursor-pointer flex items-center justify-center w-6 h-6 rounded-md border-2 border-brand-border bg-white flex-shrink-0">
                                          <svg className="task-checkbox-svg w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><polyline className="task-checkbox-path" points="20 6 9 17 4 12"></polyline></svg>
                                     </label>
-                                    <span className={`font-semibold ${todo.completed ? 'task-text-completed' : 'text-brand-dark'}`}>{todo.text}</span>
+                                    {editingTodoId === todo.id ? (
+                                        <input
+                                            ref={inputRef}
+                                            type="text"
+                                            value={editingTodoText}
+                                            onChange={(e) => setEditingTodoText(e.target.value)}
+                                            onBlur={handleSaveEdit}
+                                            onKeyDown={handleEditKeyDown}
+                                            className="font-semibold text-brand-dark bg-white border border-brand-primary rounded-md px-2 py-1 w-full"
+                                        />
+                                    ) : (
+                                        <span className={`font-semibold truncate ${todo.completed ? 'task-text-completed' : 'text-brand-dark'}`}>
+                                            {todo.text}
+                                        </span>
+                                    )}
                                  </div>
-                                 <button onClick={() => handleRemoveTodo(todo.id)} className="text-brand-text-light hover:text-brand-sale p-1"><TrashIcon size="sm" /></button>
+                                 <div className="flex items-center flex-shrink-0">
+                                    {editingTodoId !== todo.id && (
+                                        <button onClick={() => handleEditTodo(todo)} className="text-brand-text-light hover:text-brand-primary p-1"><PencilIcon size="sm" /></button>
+                                    )}
+                                    <button onClick={() => handleRemoveTodo(todo.id)} className="text-brand-text-light hover:text-brand-sale p-1"><TrashIcon size="sm" /></button>
+                                 </div>
                              </div>
                         ))}
                          {todos.length === 0 && !isGenerating && suggestions.length === 0 && (
@@ -733,7 +890,7 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard': return <DashboardContent />; case 'orders': return <OrdersContent />; case 'profile': return <AccountDetailsContent />;
-            case 'wishlist': return <WishlistContent />; case 'planner': return <PlannerContent />; case 'trackOrder': return <TrackOrderContent />; default: return <DashboardContent />;
+            case 'paymentMethods': return <PaymentMethodsContent />; case 'wishlist': return <WishlistContent />; case 'planner': return <PlannerContent />; case 'trackOrder': return <TrackOrderContent />; default: return <DashboardContent />;
         }
     };
     
@@ -759,6 +916,8 @@ const AccountPage = ({ navigateTo, onLogout }: AccountPageProps) => {
             { id: 'wishlist', label: 'قائمة رغباتي', icon: <HeartIcon size="sm" />, count: wishlist.length },
             { id: 'planner', label: 'مخطط التسوق', icon: <ClipboardCheckIcon size="sm" /> },
             { id: 'profile', label: 'تفاصيل الحساب', icon: <LockClosedIcon size="sm" /> },
+            { id: 'paymentMethods', label: 'طرق الدفع', icon: <CreditCardIcon size="sm" /> },
+            { id: 'settings', label: 'الإعدادات', icon: <Cog6ToothIcon size="sm" /> },
         ];
     
         if (currentUser?.isAdmin) {

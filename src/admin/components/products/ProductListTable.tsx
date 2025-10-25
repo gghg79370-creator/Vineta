@@ -57,6 +57,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                         className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"
                                         checked={isSelected}
                                         onChange={() => onSelectOne(product.id)}
+                                        aria-label={`Select product ${product.name}`}
                                     />
                                     <img src={product.image} alt={product.name} className="w-16 h-20 object-cover rounded-md"/>
                                 </div>
@@ -102,6 +103,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                     className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"
                                     onChange={onSelectAll}
                                     checked={products.length > 0 && selectedProducts.length === products.length}
+                                    aria-label="Select all products on this page"
                                 />
                             </th>
                             <th className="p-4 font-semibold text-right">المنتج</th>
@@ -123,6 +125,7 @@ export const ProductListTable: React.FC<ProductListTableProps> = ({ products, se
                                             className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"
                                             checked={selectedProducts.includes(product.id)}
                                             onChange={() => onSelectOne(product.id)}
+                                            aria-label={`Select product ${product.name}`}
                                         />
                                     </td>
                                     <td className="p-4">

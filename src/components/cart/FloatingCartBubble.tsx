@@ -41,14 +41,14 @@ export const FloatingCartBubble: React.FC<FloatingCartBubbleProps> = ({ onClick 
     return (
         <button
             onClick={onClick}
-            className={`fixed bottom-8 right-8 z-[60] bg-brand-primary text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg transform transition-all duration-300 hover:scale-110
+            className={`fixed bottom-8 right-8 z-[60] bg-brand-primary text-brand-bg w-16 h-16 rounded-full flex items-center justify-center shadow-lg transform transition-all duration-300 hover:scale-110
                 animate-fade-in
                 ${isCartAnimating ? 'animate-cart-add' : ''}`}
             aria-label={`View cart (${cartCount} items)`}
         >
             <ShoppingBagIcon size="lg" />
             {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-brand-dark text-white text-xs w-6 h-6 flex items-center justify-center rounded-full font-bold border-2 border-white">
+                <span className="absolute -top-1 -right-1 bg-brand-dark text-brand-bg text-xs w-6 h-6 flex items-center justify-center rounded-full font-bold border-2 border-brand-bg">
                     {cartCount}
                 </span>
             )}

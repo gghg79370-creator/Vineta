@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { AdminOrder } from '../../data/adminData';
 
@@ -33,11 +31,12 @@ export const OrderListTable: React.FC<OrderListTableProps> = ({ orders, selected
                                 checked={selectedOrders.includes(order.id)}
                                 onChange={() => onSelectOne(order.id)}
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label={`Select order ${order.id}`}
                             />
-                            <div className="flex-1" onClick={() => onView(order)}>
+                            <div className="flex-1">
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
-                                        <p className="font-bold text-admin-accent">{order.id}</p>
+                                        <button onClick={() => onView(order)} className="font-bold text-admin-accent hover:underline">{order.id}</button>
                                         <p className="text-xs text-gray-500">{order.date}</p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-md text-xs font-bold ${statusClasses[order.status]}`}>
@@ -53,7 +52,7 @@ export const OrderListTable: React.FC<OrderListTableProps> = ({ orders, selected
                     </div>
                 ))}
             </div>
-
+            
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto -mx-5">
                 <table className="w-full text-sm text-right">
@@ -65,6 +64,7 @@ export const OrderListTable: React.FC<OrderListTableProps> = ({ orders, selected
                                     className="rounded border-gray-300 text-admin-accent focus:ring-admin-accent/50"
                                     onChange={onSelectAll}
                                     checked={orders.length > 0 && selectedOrders.length === orders.length}
+                                    aria-label="Select all orders on this page"
                                 />
                             </th>
                             <th className="px-5 py-3 font-semibold">رقم الطلب</th>
@@ -77,7 +77,7 @@ export const OrderListTable: React.FC<OrderListTableProps> = ({ orders, selected
                     </thead>
                     <tbody className="divide-y divide-gray-200/80">
                         {orders.map(order => (
-                            <tr key={order.id} onClick={() => onView(order)} className={`hover:bg-gray-50 cursor-pointer ${selectedOrders.includes(order.id) ? 'bg-admin-accent/5' : ''}`}>
+                            <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.includes(order.id) ? 'bg-admin-accent/5' : ''}`}>
                                  <td className="p-4">
                                     <input
                                         type="checkbox"
@@ -85,9 +85,12 @@ export const OrderListTable: React.FC<OrderListTableProps> = ({ orders, selected
                                         checked={selectedOrders.includes(order.id)}
                                         onChange={() => onSelectOne(order.id)}
                                         onClick={(e) => e.stopPropagation()}
+                                        aria-label={`Select order ${order.id}`}
                                     />
                                 </td>
-                                <td className="px-5 py-4 font-semibold text-admin-accent">{order.id}</td>
+                                <td className="px-5 py-4 font-semibold text-admin-accent">
+                                    <button onClick={() => onView(order)} className="hover:underline">{order.id}</button>
+                                </td>
                                 <td className="px-5 py-4 text-gray-500">{order.date}</td>
                                 <td className="px-5 py-4 font-semibold">{order.customer.name}</td>
                                 <td className="px-5 py-4">{order.total} ج.م</td>

@@ -68,7 +68,7 @@ const EmailVerificationPage = ({ navigateTo }: EmailVerificationPageProps) => {
                 <p className="text-brand-text-light mb-8">لقد أرسلنا رمزًا مكونًا من 6 أرقام إلى بريدك الإلكتروني.</p>
                  
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
+                    <div className="bg-brand-sale/10 border border-brand-sale/50 text-brand-sale px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
                         <span className="block sm:inline">{error}</span>
                     </div>
                 )}
@@ -96,7 +96,7 @@ const EmailVerificationPage = ({ navigateTo }: EmailVerificationPageProps) => {
                     <button 
                         type="submit" 
                         disabled={loading || otp.join('').length < 6}
-                        className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 flex items-center justify-center"
+                        className="w-full bg-brand-dark text-brand-bg font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition disabled:opacity-50 flex items-center justify-center"
                     >
                         {loading ? 'جار التحقق...' : 'تحقق'}
                     </button>

@@ -11,7 +11,7 @@ interface KpiCardProps {
 
 export const KpiCard: React.FC<KpiCardProps> = ({ title, value, change, changeType, icon }) => {
     const isIncrease = changeType === 'increase';
-    const changeColor = isIncrease ? 'text-green-500' : 'text-red-500';
+    const changeColor = isIncrease ? 'text-brand-instock' : 'text-brand-sale';
 
     return (
         <div className="bg-admin-card-bg p-5 rounded-xl border border-admin-border" style={{ boxShadow: 'var(--admin-shadow)' }}>

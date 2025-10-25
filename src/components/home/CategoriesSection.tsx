@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 
 const categoriesData = [
-    { name: 'Clothes', image: 'https://images.unsplash.com/photo-1617114912953-e718525b3433?q=80&w=1964&auto=format&fit=crop', page: 'shop', style: 'dark' },
-    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1591561938959-1e39b9b0f6a4?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light' },
-    { name: 'Sportwear', image: 'https://images.unsplash.com/photo-1548690312-e3b511d5b111?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light' },
+    { name: 'ملابس', image: 'https://images.unsplash.com/photo-1617114912953-e718525b3433?q=80&w=1964&auto=format&fit=crop', page: 'shop', style: 'dark', data: { categories: 'women' } },
+    { name: 'وصل حديثاً', image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'جديد' } },
+    { name: 'إكسسوارات', image: 'https://images.unsplash.com/photo-1591561938959-1e39b9b0f6a4?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { categories: 'accessories' } },
+    { name: 'ملابس رياضية', image: 'https://images.unsplash.com/photo-1548690312-e3b511d5b111?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'ملابس رياضية' } },
 ];
 
 export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: string, data?: any) => void }) => {
@@ -42,16 +43,16 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
     const getButtonClasses = (style: 'dark' | 'light') => {
         const baseClasses = "font-bold py-4 px-10 text-lg rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105";
         if (style === 'dark') {
-            return `${baseClasses} bg-black text-white hover:bg-gray-800`;
+            return `${baseClasses} bg-brand-dark text-brand-bg hover:bg-opacity-90`;
         }
-        return `${baseClasses} bg-surface text-black hover:bg-gray-100`;
+        return `${baseClasses} bg-surface text-brand-dark hover:bg-brand-subtle`;
     };
 
     return (
         <section className="relative w-full group">
             <div 
                 ref={scrollContainerRef}
-                className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide md:grid md:grid-cols-3"
+                className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide md:grid md:grid-cols-4"
             >
                 {categoriesData.map((category, index) => (
                     <div 
@@ -59,10 +60,10 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
                         className="relative flex-shrink-0 w-full md:w-auto h-[70vh] md:h-[85vh] snap-center group/card overflow-hidden"
                     >
                         <img src={category.image} alt={category.name} className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${activeIndex === index ? 'scale-110' : 'scale-100'} md:scale-100 md:group-hover/card:scale-110`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                         <div className={`absolute bottom-12 w-full flex justify-center transition-all duration-500 ease-out ${activeIndex === index ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-8'} md:opacity-100 md:translate-y-0`}>
                             <button 
-                                onClick={() => navigateTo(category.page)}
+                                onClick={() => navigateTo(category.page, category.data)}
                                 className={getButtonClasses(category.style as 'dark' | 'light')}
                             >
                                 <span className="flex items-center gap-3">
@@ -96,7 +97,7 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`w-2.5 h-2.5 rounded-full transition-all duration-300 
-                            ${activeIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}
+                            ${activeIndex === index ? 'bg-brand-bg scale-125' : 'bg-brand-bg/50 hover:bg-brand-bg/80'}
                         `}
                         aria-label={`Go to slide ${index + 1}`}
                     />

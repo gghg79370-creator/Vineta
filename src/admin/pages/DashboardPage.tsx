@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KpiCard } from '../components/ui/KpiCard';
 import { AdminOrder, AdminProduct, AdminCustomer } from '../data/adminData';
 import { Card } from '../components/ui/Card';
 import SalesChart from '../components/analytics/SalesChart';
-import { ShoppingBagIcon, StarIcon, CurrencyDollarIcon, UsersIcon, PencilIcon, ChevronDownIcon } from '../../components/icons';
+import { ShoppingBagIcon, StarIcon, CurrencyDollarIcon, UsersIcon, PencilIcon, ChevronDownIcon, UserIcon, SparklesIcon } from '../../components/icons';
 import { User } from '../../types';
+import { GoogleGenAI } from "@google/genai";
 
 interface SetupTask {
     id: string;
@@ -25,7 +26,7 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }
     const progress = (completedCount / tasks.length) * 100;
 
     return (
-        <Card title="">
+        <Card>
             <div className="p-0">
                 <div className="flex justify-between items-center cursor-pointer p-5" onClick={() => setIsOpen(!isOpen)}>
                     <div>
@@ -35,7 +36,7 @@ const SetupGuide: React.FC<SetupGuideProps> = ({ tasks, onToggleTask, navigate }
                             <div className="bg-admin-accent h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
-                    <ChevronDownIcon className={`w-6 h-6 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDownIcon className={`w-6 h-6 text-admin-text-secondary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
                 {isOpen && (
                     <div className="px-5 pb-5 animate-fade-in">
@@ -71,6 +72,7 @@ interface DashboardPageProps {
     recentOrders: AdminOrder[];
     lowStockProducts: AdminProduct[];
     orders: AdminOrder[];
+    products: AdminProduct[];
     customers: AdminCustomer[];
     currentUser: User | null;
     setupTasks: SetupTask[];
@@ -101,12 +103,15 @@ const ActivityFeed = () => {
     )
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, lowStockProducts, orders, customers, currentUser, setupTasks, onToggleTask }) => {
+const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, lowStockProducts, orders, products, customers, currentUser, setupTasks, onToggleTask }) => {
+
+    const [aiSummary, setAiSummary] = useState('');
+    const [isGeneratingSummary, setIsGeneratingSummary] = useState(true);
 
     const statusClasses: { [key: string]: string } = {
-        'Delivered': 'bg-green-100 text-green-800',
-        'On the way': 'bg-amber-100 text-amber-800',
-        'Cancelled': 'bg-red-100 text-red-800',
+        'Delivered': 'bg-brand-instock/10 text-brand-instock',
+        'On the way': 'bg-brand-onway/10 text-brand-onway',
+        'Cancelled': 'bg-brand-sale/10 text-brand-sale',
     };
     const statusTranslations: { [key: string]: string } = { 'Delivered': 'تم التوصيل', 'On the way': 'قيد التوصيل', 'Cancelled': 'تم الإلغاء' };
     
@@ -116,6 +121,41 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     
     const userRole = currentUser?.role || 'Administrator';
+    
+    useEffect(() => {
+        const getAiSummary = async () => {
+            setIsGeneratingSummary(true);
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+                const topProduct = [...products]
+                    .sort((a, b) => (b.unitsSold || 0) - (a.unitsSold || 0))[0]?.name || 'N/A';
+                
+                const newCustomersToday = customers.filter(c => new Date(c.registeredDate).toDateString() === new Date().toDateString()).length;
+
+                const prompt = `أنت كبير محللي البيانات في متجر أزياء إلكتروني. قم بتحليل بيانات اليوم التالية وقدم ملخصًا موجزًا وثاقبًا باللغة العربية في 3-4 نقاط. سلط الضوء على الاتجاهات الرئيسية والنجاحات ومجالات التحسين.
+    البيانات:
+    - إجمالي الإيرادات: ${totalRevenue.toFixed(2)} ج.م
+    - إجمالي الطلبات: ${totalOrders}
+    - عملاء جدد اليوم: ${newCustomersToday}
+    - المنتج الأكثر مبيعًا: ${topProduct}
+
+    كن موجزًا ومباشرًا. ابدأ بـ "ملخص اليوم:"`;
+
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: prompt,
+                });
+
+                setAiSummary(response.text);
+            } catch (error) {
+                console.error("Error generating AI summary:", error);
+                setAiSummary("تعذر إنشاء الملخص. يرجى المحاولة مرة أخرى لاحقًا.");
+            } finally {
+                setIsGeneratingSummary(false);
+            }
+        };
+        getAiSummary();
+    }, [orders, customers, products, totalRevenue, totalOrders]);
 
 
     return (
@@ -163,32 +203,43 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {recentOrders.map(order => (
-                                        <tr key={order.id} className="border-t border-admin-border">
-                                            <td className="px-5 py-4">
-                                                <button onClick={() => navigate('orderDetail', order)} className="font-semibold text-admin-accent hover:underline">{order.id}</button>
-                                            </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <img src={customers.find(c => c.id === order.customerId)?.avatar} alt={order.customer.name} className="w-8 h-8 rounded-full" />
-                                                    <span>{order.customer.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-5 py-4">{order.total} ج.م</td>
-                                            <td className="px-5 py-4">
-                                                <span className={`px-2 py-1 rounded-md text-xs font-bold ${statusClasses[order.status]}`}>
-                                                    {statusTranslations[order.status]}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-4 text-admin-text-secondary">{order.date}</td>
-                                        </tr>
-                                    ))}
+                                    {recentOrders.map(order => {
+                                        const customer = customers.find(c => c.id === order.customerId);
+                                        return (
+                                            <tr key={order.id} className="border-t border-admin-border">
+                                                <td className="px-5 py-4">
+                                                    <button onClick={() => navigate('orderDetail', order)} className="font-semibold text-admin-accent hover:underline">{order.id}</button>
+                                                </td>
+                                                <td className="px-5 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        {customer ? (
+                                                            <img src={customer.avatar} alt={order.customer.name} className="w-8 h-8 rounded-full" />
+                                                        ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-admin-bg flex items-center justify-center">
+                                                               <UserIcon size="sm" className="text-admin-text-secondary" />
+                                                            </div>
+                                                        )}
+                                                        <span>{order.customer.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-4">{order.total} ج.م</td>
+                                                <td className="px-5 py-4">
+                                                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${statusClasses[order.status]}`}>
+                                                        {statusTranslations[order.status]}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-4 text-admin-text-secondary">{order.date}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
                         {/* Mobile List */}
                         <div className="md:hidden space-y-4">
-                             {recentOrders.map(order => (
+                             {recentOrders.map(order => {
+                                const customer = customers.find(c => c.id === order.customerId);
+                                return (
                                 <div key={order.id} onClick={() => navigate('orderDetail', order)} className="p-4 bg-admin-bg/50 rounded-lg border border-admin-border">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
@@ -201,19 +252,39 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <img src={customers.find(c => c.id === order.customerId)?.avatar} alt={order.customer.name} className="w-8 h-8 rounded-full" />
+                                            {customer ? (
+                                                <img src={customer.avatar} alt={order.customer.name} className="w-8 h-8 rounded-full" />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-admin-bg flex items-center justify-center">
+                                                   <UserIcon size="sm" className="text-admin-text-secondary" />
+                                                </div>
+                                            )}
                                             <span className="text-sm font-semibold">{order.customer.name}</span>
                                         </div>
                                         <p className="font-bold">{order.total} ج.م</p>
                                     </div>
                                 </div>
-                             ))}
+                                );
+                             })}
                         </div>
                     </Card>
                 </div>
 
                 {/* Side column */}
                 <div className="space-y-8">
+                     <Card title="رؤى الذكاء الاصطناعي" icon={<SparklesIcon />}>
+                        {isGeneratingSummary ? (
+                            <div className="space-y-2 animate-pulse">
+                                <div className="h-4 bg-admin-bg rounded w-full"></div>
+                                <div className="h-4 bg-admin-bg rounded w-5/6"></div>
+                                <div className="h-4 bg-admin-bg rounded w-3/4"></div>
+                            </div>
+                        ) : (
+                            <div className="text-sm text-admin-text-secondary whitespace-pre-wrap leading-relaxed">
+                                {aiSummary}
+                            </div>
+                        )}
+                    </Card>
                      <Card title="موجز الأنشطة">
                         <ActivityFeed />
                      </Card>
@@ -233,10 +304,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ navigate, recentOrders, l
                                     </div>
                                     <div className="text-right flex items-center gap-2">
                                         <div>
-                                            <p className="font-bold text-red-500 text-lg">{totalStock}</p>
+                                            <p className="font-bold text-brand-sale text-lg">{totalStock}</p>
                                             <p className="text-xs text-admin-text-secondary">في المخزن</p>
                                         </div>
-                                        <button onClick={() => navigate('editProduct', product)} className="text-gray-400 hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}>
+                                        <button onClick={() => navigate('editProduct', product)} className="text-admin-text-secondary hover:text-admin-accent p-1" aria-label={`Edit ${product.name}`}>
                                             <PencilIcon size="sm"/>
                                         </button>
                                     </div>

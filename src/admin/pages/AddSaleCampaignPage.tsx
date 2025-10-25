@@ -25,12 +25,14 @@ const AddSaleCampaignPage: React.FC<AddSaleCampaignPageProps> = ({ navigate, onS
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        // @ts-ignore
-        const isChecked = e.target.checked;
-        if (type === 'checkbox') {
-            setCampaign(prev => ({...prev, [name]: isChecked ? 'Active' : 'Draft' }));
+        const key = name as keyof typeof campaign;
+
+        if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
+            if (key === 'status') {
+                setCampaign(prev => ({...prev, status: e.target.checked ? 'Active' : 'Draft' }));
+            }
         } else {
-            setCampaign(prev => ({ ...prev, [name]: value }));
+            setCampaign(prev => ({ ...prev, [key]: value }));
         }
     };
 
@@ -44,14 +46,11 @@ const AddSaleCampaignPage: React.FC<AddSaleCampaignPageProps> = ({ navigate, onS
         onSave(campaignData);
     };
     
-    // FIX: The FormInput component definition was truncated and incorrect.
-    // It is now fully defined to be used within the component.
     const FormInput = ({ label, name, ...props }: {label: string; name: keyof typeof campaign} & React.InputHTMLAttributes<HTMLInputElement>) => (
         <div>
             <label className="admin-form-label">{label}</label>
             <input
                 name={name}
-                // @ts-ignore
                 value={campaign[name]}
                 onChange={handleChange}
                 className="admin-form-input"

@@ -47,7 +47,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
             <div className="flex items-center justify-between h-full px-4 md:px-6 lg:px-8">
                 {/* Left side: Mobile Toggle & Page Title */}
                 <div className="flex items-center gap-2">
-                    <button onClick={toggleSidebar} className="p-2 -mr-2 rounded-full text-admin-text-secondary hover:bg-admin-bg md:hidden">
+                    <button onClick={toggleSidebar} className="p-2 -mr-2 rounded-full text-admin-text-secondary hover:bg-admin-bg md:hidden" aria-label="Open sidebar">
                         <Bars3Icon />
                     </button>
                     <div className="hidden md:block">
@@ -67,10 +67,16 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ currentUser, toggleSid
                     </div>
                     
                     <div className="relative" ref={panelRef}>
-                        <button onClick={() => setIsPanelOpen(prev => !prev)} className="relative p-2 rounded-full text-admin-text-secondary hover:bg-admin-bg hover:text-admin-text-primary">
+                        <button 
+                            onClick={() => setIsPanelOpen(prev => !prev)} 
+                            className="relative p-2 rounded-full text-admin-text-secondary hover:bg-admin-bg hover:text-admin-text-primary"
+                            aria-haspopup="true"
+                            aria-expanded={isPanelOpen}
+                            aria-label={`View notifications (${unreadCount} unread)`}
+                        >
                             <BellIcon />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-admin-card-bg">
+                                <span className="absolute top-1.5 right-1.5 w-4 h-4 text-xs bg-admin-accent text-brand-bg rounded-full flex items-center justify-center border-2 border-admin-card-bg">
                                 </span>
                             )}
                         </button>

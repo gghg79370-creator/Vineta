@@ -28,14 +28,14 @@ const MarketingPage: React.FC<MarketingPageProps> = ({ campaigns, navigate }) =>
             <Card title="الأتمتة">
                 <div className="space-y-3">
                     {allAdminAutomations.map(automation => (
-                        <div key={automation.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50">
+                        <div key={automation.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-admin-bg">
                             <div className="flex items-center gap-4">
                                 <div className="bg-admin-accent/10 text-admin-accent p-2 rounded-lg">
                                     <SparklesIcon />
                                 </div>
                                 <div>
                                     <p className="font-semibold">{automation.name}</p>
-                                    <p className="text-sm text-gray-500">{automation.trigger}</p>
+                                    <p className="text-sm text-admin-text-secondary">{automation.trigger}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">

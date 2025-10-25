@@ -1,10 +1,53 @@
+
 import React, { useState } from 'react';
 import { allAdminTeamMembers, AdminTeamMember } from '../data/adminData';
 import TeamSettings from '../components/settings/TeamSettings';
 import ThemeSettings from '../components/settings/ThemeSettings';
 import LocalizationSettings from '../components/settings/LocalizationSettings';
 import InviteMemberModal from '../components/modals/InviteMemberModal';
-import { UsersIcon, PaintBrushIcon, GlobeAltIcon } from '../../components/icons';
+import { UsersIcon, PaintBrushIcon, GlobeAltIcon, CreditCardIcon, TruckIcon } from '../../components/icons';
+
+const PaymentSettings = () => (
+    <div>
+        <h3 className="text-xl font-bold text-admin-text-primary">إعدادات الدفع</h3>
+        <p className="text-admin-text-secondary mt-1 text-sm">إدارة بوابات الدفع وتكوين خيارات الدفع.</p>
+        <div className="mt-6 space-y-4">
+             <div className="p-4 border rounded-lg flex justify-between items-center">
+                <span className="font-semibold">الدفع عند الاستلام</span>
+                <button className="text-sm font-bold text-admin-accent hover:underline">تكوين</button>
+            </div>
+            <div className="p-4 border rounded-lg flex justify-between items-center">
+                <span className="font-semibold">Stripe</span>
+                <button className="text-sm font-bold text-admin-accent hover:underline">تفعيل</button>
+            </div>
+             <div className="p-4 border rounded-lg flex justify-between items-center">
+                <span className="font-semibold">PayPal</span>
+                <button className="text-sm font-bold text-admin-accent hover:underline">تفعيل</button>
+            </div>
+        </div>
+    </div>
+);
+
+const ShippingSettings = () => (
+    <div>
+        <h3 className="text-xl font-bold text-admin-text-primary">الشحن والتوصيل</h3>
+        <p className="text-admin-text-secondary mt-1 text-sm">إدارة مناطق الشحن، والأسعار، وخيارات التوصيل.</p>
+        <div className="mt-6">
+            <button className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg">إضافة منطقة شحن</button>
+        </div>
+    </div>
+);
+
+const TaxSettings = () => (
+     <div>
+        <h3 className="text-xl font-bold text-admin-text-primary">الضرائب</h3>
+        <p className="text-admin-text-secondary mt-1 text-sm">تكوين قواعد الضرائب والمناطق.</p>
+         <div className="mt-6 p-4 border rounded-lg">
+            <p className="font-semibold">مصر</p>
+            <p className="text-sm text-admin-text-secondary mt-1">14% ضريبة القيمة المضافة مطبقة على جميع الطلبات.</p>
+        </div>
+    </div>
+);
 
 const SettingsPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('team');
@@ -26,6 +69,9 @@ const SettingsPage: React.FC = () => {
 
     const tabs = [
         { id: 'team', label: 'الفريق والأذونات', icon: <UsersIcon size="sm"/> },
+        { id: 'payments', label: 'الدفع', icon: <CreditCardIcon size="sm"/> },
+        { id: 'shipping', label: 'الشحن', icon: <TruckIcon size="sm"/> },
+        { id: 'taxes', label: 'الضرائب', icon: <span className="font-bold text-lg w-5 text-center">%</span> },
         { id: 'theme', label: 'المظهر', icon: <PaintBrushIcon size="sm"/> },
         { id: 'localization', label: 'اللغة والمنطقة', icon: <GlobeAltIcon size="sm" /> },
     ];
@@ -34,6 +80,12 @@ const SettingsPage: React.FC = () => {
         switch (activeTab) {
             case 'team':
                 return <TeamSettings teamMembers={teamMembers} onInvite={() => setIsInviteModalOpen(true)} />;
+            case 'payments':
+                return <PaymentSettings />;
+            case 'shipping':
+                return <ShippingSettings />;
+            case 'taxes':
+                return <TaxSettings />;
             case 'theme':
                 return <ThemeSettings />;
             case 'localization':

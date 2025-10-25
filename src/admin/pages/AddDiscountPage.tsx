@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { AdminDiscount } from '../data/adminData';
@@ -22,11 +23,8 @@ const AddDiscountPage: React.FC<AddDiscountPageProps> = ({ navigate, onSave, dis
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        const isCheckbox = type === 'checkbox';
-        // @ts-ignore
-        const val = isCheckbox ? (e.target.checked ? 'Active' : 'Inactive') : value;
-        setDiscount(prev => ({ ...prev, [name]: val }));
+        const { name, value } = e.target;
+        setDiscount(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSave = () => {
@@ -47,10 +45,11 @@ const AddDiscountPage: React.FC<AddDiscountPageProps> = ({ navigate, onSave, dis
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                 <h1 className="text-2xl font-bold text-admin-text-primary">{isEditMode ? 'تعديل الخصم' : 'إنشاء خصم'}</h1>
                  <div className="flex items-center gap-3 w-full md:w-auto">
                     <button 
                         onClick={() => navigate('discounts')}
-                        className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors w-full md:w-auto justify-center">
+                        className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-admin-bg transition-colors w-full md:w-auto justify-center">
                         إلغاء
                     </button>
                     <button onClick={handleSave} className="bg-admin-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover transition-colors w-full md:w-auto justify-center">
@@ -105,7 +104,7 @@ const AddDiscountPage: React.FC<AddDiscountPageProps> = ({ navigate, onSave, dis
                                 <input type="date" name="startDate" value={discount.startDate} onChange={handleChange} className="admin-form-input"/>
                             </div>
                              <div>
-                                <label className="admin-form-label">تاريخ الانتهاء</label>
+                                <label className="admin-form-label">تاريخ الانتهاء (اختياري)</label>
                                 <input type="date" name="endDate" value={discount.endDate} onChange={handleChange} className="admin-form-input"/>
                             </div>
                         </div>

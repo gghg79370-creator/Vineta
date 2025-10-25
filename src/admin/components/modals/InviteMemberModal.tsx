@@ -61,7 +61,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({ isOpen, onClose, 
                     </div>
                 </div>
                 <div className="p-4 bg-admin-bg flex justify-end gap-3 rounded-b-lg">
-                    <button onClick={onClose} className="bg-admin-card-bg border border-admin-border text-admin-text-primary px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700">إلغاء</button>
+                    <button onClick={onClose} className="bg-admin-card-bg border border-admin-border text-admin-text-primary px-4 py-2 rounded-lg font-semibold hover:bg-admin-bg">إلغاء</button>
                     <button onClick={handleSave} className="bg-admin-accent text-white px-4 py-2 rounded-lg font-semibold hover:bg-admin-accentHover">إرسال دعوة</button>
                 </div>
             </div>

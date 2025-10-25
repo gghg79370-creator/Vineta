@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AdminDiscount } from '../../data/adminData';
 import { PencilIcon, TrashIcon } from '../../../components/icons';
@@ -26,36 +27,36 @@ const DiscountListTable: React.FC<DiscountListTableProps> = ({ discounts, onEdit
     return (
         <div className="overflow-x-auto -mx-5">
             <table className="w-full text-sm text-right">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-admin-bg text-admin-text-secondary">
                     <tr>
-                        <th className="p-4 font-semibold">الكود</th>
-                        <th className="p-4 font-semibold">النوع</th>
-                        <th className="p-4 font-semibold">القيمة</th>
-                        <th className="p-4 font-semibold">الحالة</th>
-                        <th className="p-4 font-semibold">الاستخدام</th>
-                        <th className="p-4 font-semibold"></th>
+                        <th className="px-5 py-3 font-semibold">الكود</th>
+                        <th className="px-5 py-3 font-semibold">النوع</th>
+                        <th className="px-5 py-3 font-semibold">القيمة</th>
+                        <th className="px-5 py-3 font-semibold">الحالة</th>
+                        <th className="px-5 py-3 font-semibold">الاستخدام</th>
+                        <th className="px-5 py-3 font-semibold"></th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200/80">
+                <tbody className="divide-y divide-admin-border">
                     {discounts.map(discount => (
-                        <tr key={discount.id} className="hover:bg-gray-50">
-                            <td className="p-4 font-semibold text-admin-accent">{discount.code}</td>
-                            <td className="p-4 text-gray-500">{typeTranslations[discount.type]}</td>
-                            <td className="p-4 font-semibold">
+                        <tr key={discount.id} className="hover:bg-admin-bg">
+                            <td className="px-5 py-4 font-semibold text-admin-accent">{discount.code}</td>
+                            <td className="px-5 py-4 text-admin-text-secondary">{typeTranslations[discount.type]}</td>
+                            <td className="px-5 py-4 font-semibold">
                                 {discount.type === 'Percentage' ? `${discount.value}%` : `${discount.value.toFixed(2)} ج.م`}
                             </td>
-                            <td className="p-4">
+                            <td className="px-5 py-4">
                                  <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusClasses(discount.status)}`}>
                                     {statusTranslations[discount.status]}
                                 </span>
                             </td>
-                            <td className="p-4 text-gray-500">
+                            <td className="px-5 py-4 text-admin-text-secondary">
                                 {discount.usageCount} {discount.usageLimit ? `/ ${discount.usageLimit}` : ''}
                             </td>
-                            <td className="p-4 text-left">
+                            <td className="px-5 py-4 text-left">
                                 <div className="flex items-center gap-2 justify-end">
-                                    <button onClick={() => onEdit(discount)} className="text-gray-400 hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
-                                    <button onClick={() => onDelete(discount)} className="text-gray-400 hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
+                                    <button onClick={() => onEdit(discount)} className="text-admin-text-secondary hover:text-admin-accent p-1"><PencilIcon size="sm"/></button>
+                                    <button onClick={() => onDelete(discount)} className="text-admin-text-secondary hover:text-red-500 p-1"><TrashIcon size="sm"/></button>
                                 </div>
                             </td>
                         </tr>

@@ -46,19 +46,19 @@ export const MobileBottomNav = ({
             onClick: () => navigateTo('shop')
         },
         { 
-            id: 'account', 
-            label: 'حسابي', 
-            icon: 'fa-solid fa-user', 
-            isActive: activePage === 'account' || activePage === 'login',
-            onClick: () => navigateTo(currentUser ? 'account' : 'login')
-        },
-        { 
             id: 'wishlist', 
             label: 'الرغبات', 
             icon: 'fa-solid fa-heart', 
             isActive: activePage === 'wishlist',
             onClick: () => navigateTo('wishlist'),
             count: wishlistCount
+        },
+        { 
+            id: 'account', 
+            label: 'حسابي', 
+            icon: 'fa-solid fa-user', 
+            isActive: activePage === 'account' || activePage === 'login',
+            onClick: () => navigateTo(currentUser ? 'account' : 'login')
         },
         { 
             id: 'cart', 
@@ -71,28 +71,28 @@ export const MobileBottomNav = ({
     ];
 
     return (
-        <footer className="fixed bottom-0 right-0 left-0 bg-brand-bg shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 rounded-t-2xl border-t border-brand-border/50 h-16">
-            <nav className="flex justify-around items-start pt-2 h-full">
+        <footer className="fixed bottom-0 right-0 left-0 bg-brand-bg shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-40 h-20 border-t border-brand-border/50">
+            <nav className="flex justify-around items-center h-full">
                 {navItems.map(item => {
                     const isActive = item.isActive;
                     return (
                         <button 
                             key={item.id} 
                             onClick={item.onClick} 
-                            className={`flex flex-col items-center gap-1 transition-all duration-300 ease-out relative w-16
-                                ${isActive ? 'text-brand-primary' : 'text-brand-text-light'}
+                            className={`flex flex-col items-center justify-center gap-1 transition-colors duration-200 relative w-16 h-full
+                                ${isActive ? 'text-brand-dark' : 'text-brand-text-light'}
                                 active:scale-95 ${item.id === 'cart' && isCartAnimating ? 'animate-cart-add' : ''}`}
                             aria-current={isActive ? 'page' : undefined}
                         >
-                            <div className={`relative w-12 h-8 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-brand-primary/10' : ''}`}>
-                                <i className={`${item.icon} text-xl w-6 text-center`} aria-hidden="true"></i>
-                                {item.count && item.count > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 bg-brand-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                            <div className="relative">
+                                <i className={`${item.icon} text-2xl w-6 text-center`} aria-hidden="true"></i>
+                                {item.count !== undefined && item.count > 0 && (
+                                    <span className="absolute -top-1.5 -right-2.5 bg-brand-sale text-brand-bg text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold">
                                         {item.count}
                                     </span>
                                 )}
                             </div>
-                            <span className={`text-xs transition-all duration-300 ${isActive ? 'font-extrabold' : 'font-bold'}`}>{item.label}</span>
+                            <span className={`text-xs font-bold`}>{item.label}</span>
                         </button>
                     );
                 })}

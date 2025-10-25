@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 
 interface Category {
@@ -15,12 +16,12 @@ const categoriesData: Category[] = [
     },
     {
         name: 'الرجال',
-        image: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?q=80&w=2070&auto.format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?q=80&w=2070&auto=format&fit=crop',
         page: 'shop',
     },
     {
         name: 'الأطفال',
-        image: 'https://images.unsplash.com/photo-1605501221489-2757ae800342?q=80&w=1974&auto.format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1605501221489-2757ae800342?q=80&w=1974&auto=format&fit=crop',
         page: 'shop',
     },
     {
@@ -42,9 +43,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, navigateTo }) => 
         aria-label={`تسوق ${category.name}`}
     >
         <img src={category.image} alt={category.name} className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" aria-hidden="true"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/60 via-brand-dark/20 to-transparent" aria-hidden="true"></div>
         <div className="absolute bottom-6 w-full flex justify-center">
-             <div className="bg-white/80 backdrop-blur-md text-brand-dark font-bold py-3 px-8 rounded-full shadow-md group-hover:bg-brand-dark group-hover:text-white transition-all duration-300 group-hover:scale-105 transform">
+             <div className="bg-brand-bg/80 backdrop-blur-md text-brand-dark font-bold py-3 px-8 rounded-full shadow-md group-hover:bg-brand-dark group-hover:text-brand-bg transition-all duration-300 group-hover:scale-105 transform">
                 <span className="text-base whitespace-nowrap">{category.name}</span>
             </div>
         </div>

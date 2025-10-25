@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect, useCallback, ReactNode } from 'react';
 import { ChevronRightIcon } from '../icons';
 
@@ -87,10 +88,10 @@ export const Carousel: React.FC<CarouselProps> = ({ items, renderItem, title }) 
             <div className="flex justify-between items-center mb-6">
                 {title && <h3 className="font-bold text-lg">{title}</h3>}
                 <div className="flex gap-2" style={{ marginLeft: title ? 'auto' : '0' }}>
-                    <button onClick={() => scrollByPage('left')} disabled={!canScrollLeft} className="bg-gray-200 rounded-full p-2 hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rotate-180 active:scale-90">
+                    <button onClick={() => scrollByPage('left')} disabled={!canScrollLeft} className="bg-brand-subtle rounded-full p-2 hover:bg-brand-border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed rotate-180 active:scale-90">
                         <ChevronRightIcon size="sm" />
                     </button>
-                    <button onClick={() => scrollByPage('right')} disabled={!canScrollRight} className="bg-gray-200 rounded-full p-2 hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-90">
+                    <button onClick={() => scrollByPage('right')} disabled={!canScrollRight} className="bg-brand-subtle rounded-full p-2 hover:bg-brand-border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-90">
                         <ChevronRightIcon size="sm" />
                     </button>
                 </div>

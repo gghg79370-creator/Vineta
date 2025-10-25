@@ -1,16 +1,18 @@
 
+
 import React from 'react';
 
 interface CardProps {
-    title: string;
+    title?: string;
     children: React.ReactNode;
     actions?: React.ReactNode;
     icon?: React.ReactNode;
+    className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ title, children, actions, icon }) => {
+export const Card: React.FC<CardProps> = ({ title, children, actions, icon, className }) => {
     return (
-        <div className="bg-admin-card-bg rounded-xl border border-admin-border" style={{ boxShadow: 'var(--admin-shadow)' }}>
+        <div className={`bg-admin-card-bg rounded-xl border border-admin-border ${className}`} style={{ boxShadow: 'var(--admin-shadow)' }}>
             {title && (
                 <div className="p-4 md:p-5 border-b border-admin-border flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -20,7 +22,7 @@ export const Card: React.FC<CardProps> = ({ title, children, actions, icon }) =>
                     {actions && <div>{actions}</div>}
                 </div>
             )}
-            <div className="p-4 md:p-5">
+            <div className={`p-4 md:p-5 ${!title ? '' : 'pt-0'}`}>
                 {children}
             </div>
         </div>

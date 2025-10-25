@@ -35,7 +35,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in">
             <div className="bg-admin-card-bg w-full max-w-md rounded-2xl shadow-lg transform transition-all duration-300 animate-fade-in-up">
                 <div className="p-6 text-center">
-                    <div className="w-16 h-16 bg-red-100 text-red-600 mx-auto rounded-full flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 bg-admin-accent-light text-admin-accent mx-auto rounded-full flex items-center justify-center mb-4">
                         <TrashIcon size="lg" />
                     </div>
                     <h2 className="text-2xl font-bold text-admin-text-primary">{title}</h2>
@@ -45,7 +45,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
                     {isConfirmationRequired && (
                         <div className="mt-4 text-right">
                             <label className="text-sm font-medium text-admin-text-primary">
-                                للتأكيد، اكتب "<span className="font-bold text-red-600">{confirmationText}</span>" أدناه:
+                                للتأكيد، اكتب "<span className="font-bold text-admin-accent">{confirmationText}</span>" أدناه:
                             </label>
                             <input 
                                 type="text"
@@ -58,13 +58,13 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
                     )}
                 </div>
                 <div className="p-4 bg-admin-bg rounded-b-2xl grid grid-cols-2 gap-3">
-                    <button onClick={onClose} className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <button onClick={onClose} className="bg-admin-card-bg border border-admin-border text-admin-text-primary font-bold py-2 px-4 rounded-lg hover:bg-admin-bg">
                         إلغاء
                     </button>
                     <button 
                         onClick={handleConfirm} 
                         disabled={isConfirmDisabled}
-                        className="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-admin-accent text-brand-bg font-bold py-2 px-4 rounded-lg hover:bg-admin-accentHover disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         نعم, احذف
                     </button>

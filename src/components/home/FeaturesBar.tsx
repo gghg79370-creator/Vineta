@@ -32,7 +32,7 @@ export const FeaturesBar = () => {
 
     return (
         <div id="features" className="bg-brand-subtle py-16 border-y">
-            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                 {features.map((feature, index) => (
                     <FeatureCard 
                         key={index}

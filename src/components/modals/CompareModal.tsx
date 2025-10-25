@@ -1,8 +1,6 @@
-
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { Product } from '../../types';
-import { CloseIcon, StarIcon, CheckCircleIcon, XCircleIcon, ShoppingBagIcon, SparklesIcon, ArrowLongRightIcon } from '../icons';
+import { CloseIcon, StarIcon, CheckCircleIcon, XCircleIcon, ShoppingBagIcon, SparklesIcon } from '../icons';
 import { useAppState } from '../../state/AppState';
 import { allProducts } from '../../data/products';
 import { GoogleGenAI } from "@google/genai";
@@ -14,7 +12,7 @@ interface CompareModalProps {
     navigateTo: (pageName: string, data?: Product) => void;
 }
 
-export const CompareModal = ({ isOpen, onClose, navigateTo }: CompareModalProps) => {
+export const CompareModal: React.FC<CompareModalProps> = ({ isOpen, onClose, navigateTo }) => {
     const { state, dispatch } = useAppState();
 
     // AI summary states
@@ -79,6 +77,8 @@ ${productsToCompare}
 
     const clearCompare = () => {
         compareList.forEach(p => dispatch({ type: 'REMOVE_FROM_COMPARE', payload: p.id }));
+        setShowSummary(false);
+        setAiSummary('');
     }
 
     const addToCart = (product: Product) => {
@@ -104,8 +104,8 @@ ${productsToCompare}
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300" onClick={onClose}>
-            <div className="bg-brand-bg w-full max-w-4xl rounded-2xl shadow-lg flex flex-col animate-fade-in-up" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-opacity duration-300 animate-fade-in" onClick={onClose}>
+            <div className="bg-brand-bg w-full max-w-4xl rounded-2xl shadow-lg flex flex-col animate-fade-in-up max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 <div className="p-5 flex justify-between items-center border-b border-brand-border flex-shrink-0">
                     <h2 className="font-bold text-lg text-brand-dark">مقارنة المنتجات ({compareList.length}/4)</h2>
                      <button onClick={onClose} className="p-1 hover:bg-brand-subtle rounded-full"><CloseIcon /></button>
@@ -136,11 +136,32 @@ ${productsToCompare}
                             <p className="text-brand-text-light">قائمة المقارنة الخاصة بك فارغة حاليًا.</p>
                         </div>
                     )}
+
+                    {showSummary && (
+                        <div className="mt-6 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 animate-fade-in">
+                            <h4 className="font-bold text-lg mb-3 flex items-center gap-2 text-indigo-800">
+                                <SparklesIcon />
+                                ملخص المقارنة من Vinnie
+                            </h4>
+                            {isGeneratingSummary ? (
+                                <div className="min-h-[100px] flex items-center justify-center">
+                                    <Spinner color="text-indigo-600" />
+                                </div>
+                            ) : (
+                                <p className="text-sm text-indigo-900 leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="p-4 bg-brand-subtle border-t border-brand-border flex-shrink-0 flex justify-center gap-4">
-                     <button onClick={onClose} className="bg-surface border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-brand-subtle">
-                        مقارنة
+                     <button 
+                        onClick={generateAiComparison} 
+                        disabled={compareList.length < 2 || isGeneratingSummary}
+                        className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2 px-6 rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                        <SparklesIcon />
+                        <span>مقارنة بالذكاء الاصطناعي</span>
                     </button>
                     <button onClick={clearCompare} className="bg-surface border border-brand-border text-brand-dark font-bold py-2 px-6 rounded-full hover:bg-brand-subtle">
                         مسح الكل

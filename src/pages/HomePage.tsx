@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product, HeroSlide, SaleCampaign } from '../types';
 import { HeroSection } from '../components/home/HeroSection';
@@ -17,11 +18,12 @@ import { useToast } from '../hooks/useToast';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import { BrandPromiseSection } from '../components/home/BrandPromiseSection';
+import { FashionReelsSection } from '../components/home/FashionReelsSection';
 
 
 interface HomePageProps {
     navigateTo: (pageName: string, data?: Product) => void;
-    addToCart: (product: Product) => void;
+    addToCart: (product: Product, options?: { quantity?: number; selectedSize?: string; selectedColor?: string }) => void;
     openQuickView: (product: Product) => void;
     heroSlides: HeroSlide[];
     saleCampaigns: SaleCampaign[];
@@ -29,7 +31,7 @@ interface HomePageProps {
 
 const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampaigns }: HomePageProps) => {
     const { state, dispatch } = useAppState();
-    const { currentUser, compareList } = state;
+    const { currentUser, compareList, wishlist } = state;
     const addToast = useToast();
 
     const toggleWishlist = (product: Product) => {
@@ -72,34 +74,54 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
 
     return (
         <>
+            {/* 1. Hero Section */}
             <div className="-mt-20">
-                <HeroSection navigateTo={navigateTo} heroSlides={heroSlides} />
+                <HeroSection 
+                    navigateTo={navigateTo} 
+                    products={allProducts}
+                    addToCart={addToCart}
+                    toggleWishlist={toggleWishlist}
+                    wishlistItems={wishlist.map(item => item.id)}
+                />
             </div>
             
+            {/* 2. Categories Section */}
             <CategoriesSection navigateTo={navigateTo} />
+
+            {/* 3. Tabbed Product Section */}
             <TabbedProductSection {...commonProductProps} />
+
+            {/* 4. Fashion Reels Section */}
+            <FashionReelsSection
+                navigateTo={navigateTo}
+                addToCart={addToCart}
+                toggleWishlist={toggleWishlist}
+            />
             
+            {/* 5. AI Recommendations Section */}
             <AiRecommendationsSection {...commonProductProps} />
 
+            {/* 6. Countdown Sale Section */}
             {saleCampaigns.filter(c => c.status === 'Active').map(campaign => (
                 <CountdownSaleSection key={campaign.id} campaign={campaign} navigateTo={navigateTo} />
             ))}
             
+            {/* 7. VIP Picks Section */}
+            <TrendingProductsSection
+                title="اختيارات VIP"
+                products={vipPicks}
+                navigateTo={navigateTo}
+                addToCart={addToCart}
+                openQuickView={openQuickView}
+                addToCompare={addToCompare}
+                toggleWishlist={toggleWishlist}
+                isCarousel
+            />
+
+            {/* 8. Featured Product Section */}
             <FeaturedProductSection navigateTo={navigateTo} />
-            
-            <div className="bg-brand-subtle">
-                <TrendingProductsSection
-                    title="اختيارات VIP"
-                    products={vipPicks}
-                    navigateTo={navigateTo}
-                    addToCart={addToCart}
-                    openQuickView={openQuickView}
-                    addToCompare={addToCompare}
-                    toggleWishlist={toggleWishlist}
-                    isCarousel
-                />
-            </div>
-            
+
+            {/* 9. Trending Products Section */}
             <div className="bg-white">
                 <TrendingProductsSection
                     title="المنتجات الرائجة"
@@ -117,10 +139,16 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
                 </div>
             </div>
 
-
+            {/* 10. Inspired By You Section */}
             <InspiredByYouSection navigateTo={navigateTo} />
+
+            {/* 11. Testimonials Section */}
             <TestimonialsSection navigateTo={navigateTo} />
+
+            {/* 12. Brand Promise Section */}
             <BrandPromiseSection />
+
+            {/* 13. Recently Viewed Section */}
             <RecentlyViewedSection
                 title="المنتجات التي تمت مشاهدتها مؤخرًا"
                 navigateTo={navigateTo}
@@ -129,8 +157,14 @@ const HomePage = ({ navigateTo, addToCart, openQuickView, heroSlides, saleCampai
                 addToCompare={commonProductProps.addToCompare}
                 toggleWishlist={toggleWishlist}
             />
+
+            {/* 14. Brand Logos */}
             <BrandLogos />
+
+            {/* 15. Instagram Section */}
             <InstagramSection />
+
+            {/* 16. Features Bar */}
             <FeaturesBar />
         </>
     );

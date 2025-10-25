@@ -1,6 +1,14 @@
+
+
 export interface WishlistItem {
     id: number;
     note: string;
+}
+
+export interface StockSubscription {
+    productId: number;
+    variantId?: number; // Optional for products without variants
+    email: string;
 }
 
 export interface HeroSlide {
@@ -14,6 +22,9 @@ export interface HeroSlide {
     buttonText: string;
     page: string;
     status: 'Visible' | 'Hidden';
+    productName?: string;
+    productPrice?: string;
+    productId?: number;
 }
 
 export interface Review {
@@ -36,6 +47,11 @@ export interface Variant {
   sku: string;
 }
 
+export interface Badge {
+  text: string;
+  type: 'new' | 'sale' | 'trending' | 'vip' | 'custom';
+}
+
 export interface Product {
     id: number;
     name: string;
@@ -49,7 +65,7 @@ export interface Product {
     sizes: string[];
     tags: string[];
     category: 'women' | 'men';
-    badges?: { text: string; type: 'new' | 'sale' | 'trending' | 'custom' }[];
+    badges?: Badge[];
     rating?: number;
     reviewCount?: number;
     reviews?: Review[];
@@ -99,6 +115,7 @@ export interface Filters {
   onSale: boolean;
   materials: string[];
   categories: string[];
+  tags: string[];
 }
 
 export interface OrderItem {
@@ -126,6 +143,15 @@ export interface Order {
     trackingHistory?: TrackingEvent[];
 }
 
+export interface PaymentMethod {
+    id: number;
+    cardType: 'visa' | 'mastercard' | 'amex';
+    last4: string;
+    expiryMonth: string;
+    expiryYear: string;
+    isDefault: boolean;
+}
+
 export interface User {
     id:string;
     name: string;
@@ -134,6 +160,7 @@ export interface User {
     isAdmin?: boolean;
     role?: 'Administrator' | 'Editor' | 'Support';
     addresses: Address[];
+    paymentMethods: PaymentMethod[];
 }
 
 export interface Address {

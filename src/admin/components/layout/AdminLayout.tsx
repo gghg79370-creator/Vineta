@@ -1,3 +1,4 @@
+
 import React, { useMemo, useEffect } from 'react';
 import { User, Notification } from '../../../types';
 import { Sidebar } from './Sidebar';
@@ -28,14 +29,18 @@ const breadcrumbMap: { [key: string]: { label: string; parent?: string } } = {
   saleCampaigns: { label: 'حملات التخفيضات', parent: 'marketing' },
   addSaleCampaign: { label: 'إضافة حملة', parent: 'saleCampaigns' },
   editSaleCampaign: { label: 'تعديل حملة', parent: 'saleCampaigns' },
+  subscribers: { label: 'المشتركون', parent: 'marketing' },
   
   theme: { label: 'تخصيص المظهر', parent: 'dashboard' },
 
   analytics: { label: 'التحليلات', parent: 'dashboard' },
   
-  content: { label: 'منشورات المدونة', parent: 'dashboard' },
+  content: { label: 'المدونة', parent: 'dashboard' },
   addBlogPost: { label: 'إضافة منشور', parent: 'content' },
   editBlogPost: { label: 'تعديل منشور', parent: 'content' },
+  pages: { label: 'الصفحات', parent: 'dashboard' },
+  addPage: { label: 'إضافة صفحة', parent: 'pages' },
+  editPage: { label: 'تعديل الصفحة', parent: 'pages' },
 
   messages: { label: 'الرسائل', parent: 'dashboard' },
   settings: { label: 'الإعدادات', parent: 'dashboard' },

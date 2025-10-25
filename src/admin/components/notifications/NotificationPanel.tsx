@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Notification } from '../../../types';
 import { ShoppingBagIcon, CubeIcon, StarIcon } from '../../../components/icons';
@@ -85,7 +86,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({ notifications, on
                 )}
             </div>
              <div className="p-2 bg-admin-bg rounded-b-xl text-center">
-                 <button onClick={onClearAll} className="text-xs font-semibold text-red-500 hover:underline">
+                 <button onClick={onClearAll} className="text-xs font-semibold text-admin-accent hover:underline">
                     مسح الكل
                 </button>
             </div>

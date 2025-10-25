@@ -7,7 +7,7 @@ interface RegisterPageProps {
     navigateTo: (pageName: string) => void;
 }
 
-const RegisterPage = ({ navigateTo }: RegisterPageProps) => {
+const RegisterPage: React.FC<RegisterPageProps> = ({ navigateTo }) => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -69,10 +69,10 @@ const RegisterPage = ({ navigateTo }: RegisterPageProps) => {
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
-                    className={`w-full border ${error ? 'border-red-500' : 'border-brand-border'} rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark/50`}
+                    className={`w-full border ${error ? 'border-brand-sale' : 'border-brand-border'} rounded-lg py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-brand-dark/50`}
                 />
             </div>
-            {error && <p className="text-red-500 text-xs mt-1 mr-1">{error}</p>}
+            {error && <p className="text-brand-sale text-xs mt-1 mr-1">{error}</p>}
         </div>
     );
 
@@ -93,13 +93,13 @@ const RegisterPage = ({ navigateTo }: RegisterPageProps) => {
                         <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} className="h-4 w-4 rounded border-brand-border text-brand-dark focus:ring-brand-dark" />
                         أوافق على <a href="#" className="underline font-semibold text-brand-primary">الشروط والأحكام</a>
                     </label>
-                    {errors.terms && <p className="text-red-500 text-xs mt-1 mr-1">{errors.terms}</p>}
+                    {errors.terms && <p className="text-brand-sale text-xs mt-1 mr-1">{errors.terms}</p>}
                 </div>
                  
                  <button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-transform disabled:opacity-50 flex items-center justify-center min-h-[48px] active:scale-98"
+                    className="w-full bg-brand-dark text-brand-bg font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-transform disabled:opacity-50 flex items-center justify-center min-h-[48px] active:scale-98"
                 >
                      {loading ? <Spinner /> : 'إنشاء حساب'}
                 </button>

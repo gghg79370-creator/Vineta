@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Product, Variant } from '../../types';
+import { PlusIcon } from '../icons';
 
 interface FrequentlyBoughtTogetherProps {
     mainProduct: Product;
@@ -16,21 +17,25 @@ const FbtProductCard: React.FC<{
     isMain: boolean;
 }> = ({ item, isSelected, onToggle, selectedVariant, onVariantChange, isMain }) => {
     const displayPrice = selectedVariant?.price || item.price;
+    const displayOldPrice = selectedVariant?.oldPrice || item.oldPrice;
     
     return (
         <div className="flex items-center gap-4">
-             <input type="checkbox" checked={isSelected} onChange={onToggle} className="w-5 h-5 rounded border-brand-border text-brand-primary focus:ring-brand-primary" />
+             <input type="checkbox" checked={isSelected} onChange={onToggle} className="w-5 h-5 rounded-md border-brand-border text-brand-sale focus:ring-brand-sale" />
              <div className="flex items-center gap-4 flex-1">
                 <img src={item.image} alt={item.name} className="w-20 h-24 object-cover rounded-lg" />
                 <div className="flex-1">
-                    <p className="font-semibold text-brand-dark">{isMain && <span className="text-sm font-normal text-brand-text-light">هذا المنتج: </span>}{item.name}</p>
-                    <p className="font-bold text-brand-dark">{displayPrice} ج.م</p>
+                    <p className="font-semibold text-brand-text">{isMain && <span className="text-sm font-normal text-brand-text-light">هذا المنتج: </span>}{item.name}</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="font-bold text-brand-text">{displayPrice} ج.م</p>
+                        {displayOldPrice && <p className="text-sm text-brand-text-light line-through">{displayOldPrice} ج.م</p>}
+                    </div>
                     {item.variants && item.variants.length > 0 && (
                         <div className="relative mt-2 max-w-[150px]">
                             <select
                                 value={selectedVariant?.id}
                                 onChange={(e) => onVariantChange(e.target.value)}
-                                className="w-full appearance-none bg-brand-subtle border border-brand-border rounded-md py-1 px-3 text-sm focus:ring-1 focus:ring-brand-primary"
+                                className="w-full appearance-none bg-brand-subtle border border-brand-border/50 rounded-md py-1 px-3 text-sm focus:ring-1 focus:ring-brand-primary"
                                 aria-label={`Select variant for ${item.name}`}
                             >
                                 {item.variants.map(v => (
@@ -49,7 +54,7 @@ const FbtProductCard: React.FC<{
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = ({ mainProduct, otherProducts, addToCart }) => {
     const allItems = useMemo(() => [mainProduct, ...otherProducts.filter(p => p.id !== mainProduct.id).slice(0, 2)], [mainProduct, otherProducts]);
     
-    const [selectedIds, setSelectedIds] = useState<number[]>(allItems.map(p => p.id));
+    const [selectedIds, setSelectedIds] = useState<number[]>([mainProduct.id, ...otherProducts.slice(0,1).map(p=>p.id)]);
     
     const [selectedVariants, setSelectedVariants] = useState<{ [productId: number]: Variant | null }>(() => {
         const initialState: { [productId: number]: Variant | null } = {};
@@ -101,27 +106,31 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     return (
         <div className="py-12 md:py-16">
             <div className="container mx-auto px-4">
-                 <div className="max-w-4xl mx-auto bg-surface p-6 rounded-2xl shadow-sm">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-center text-brand-dark mb-8">يُشترى معًا بشكل متكرر</h2>
-                    <div className="space-y-6">
+                 <div className="max-w-4xl mx-auto bg-brand-surface p-6 rounded-2xl shadow-sm border border-brand-border/50">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-center text-brand-text mb-8">يُشترى معًا بشكل متكرر</h2>
+                    
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                         {allItems.map((item, index) => (
-                           <FbtProductCard
-                                key={item.id}
-                                item={item}
-                                isSelected={selectedIds.includes(item.id)}
-                                onToggle={() => handleToggleItem(item.id)}
-                                selectedVariant={selectedVariants[item.id]}
-                                onVariantChange={(variantId) => handleVariantChange(item.id, variantId)}
-                                isMain={index === 0}
-                            />
+                            <React.Fragment key={item.id}>
+                                <FbtProductCard
+                                    item={item}
+                                    isSelected={selectedIds.includes(item.id)}
+                                    onToggle={() => handleToggleItem(item.id)}
+                                    selectedVariant={selectedVariants[item.id]}
+                                    onVariantChange={(variantId) => handleVariantChange(item.id, variantId)}
+                                    isMain={index === 0}
+                                />
+                                {index < allItems.length - 1 && <PlusIcon className="text-brand-text-light" />}
+                            </React.Fragment>
                         ))}
                     </div>
-                    <div className="border-t-2 border-dashed border-brand-border/50 mt-8 pt-6 text-center">
+
+                    <div className="border-t-2 border-dashed border-brand-border mt-8 pt-6 text-center">
                         <p className="text-brand-text-light">
                             {selectedItems.length > 0 ? `السعر الإجمالي:` : 'حدد المنتجات لإضافتها إلى السلة'}
                         </p>
                         <div className="flex justify-center items-baseline gap-3 my-2">
-                           <p className="font-extrabold text-3xl text-brand-primary">{totalPrice.toFixed(2)} ج.م</p>
+                           <p className="font-extrabold text-3xl text-brand-sale">{totalPrice.toFixed(2)} ج.م</p>
                            {totalOldPrice > totalPrice && <p className="text-xl text-brand-text-light line-through">{totalOldPrice.toFixed(2)} ج.م</p>}
                         </div>
                         <button

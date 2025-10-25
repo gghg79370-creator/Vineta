@@ -25,7 +25,7 @@ interface BottomModalProps {
 const BottomModal: React.FC<BottomModalProps> = ({ isOpen, onClose, title, children }) => {
     const titleId = `bottom-modal-title-${title.replace(/\s+/g, '-')}`;
     return (
-        <div className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isOpen ? 'bg-black/50' : 'bg-transparent pointer-events-none'}`} onClick={onClose}>
+        <div className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isOpen ? 'bg-[var(--backdrop)]' : 'bg-transparent pointer-events-none'}`} onClick={onClose}>
             <div 
                 className={`fixed bottom-0 right-0 left-0 bg-brand-bg rounded-t-2xl shadow-2xl p-6 transform transition-transform duration-400 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} 
                 onClick={e => e.stopPropagation()}
@@ -39,6 +39,36 @@ const BottomModal: React.FC<BottomModalProps> = ({ isOpen, onClose, title, child
         </div>
     );
 };
+
+const ConfirmationModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+}> = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
+    return (
+        <div
+            className="fixed inset-0 bg-black/60 z-[71] flex items-center justify-center p-4 animate-fade-in"
+            onClick={onClose}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+            aria-describedby="confirmation-message"
+        >
+            <div className="bg-brand-bg w-full max-w-sm rounded-2xl shadow-lg p-6 text-center animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <h3 id="confirmation-title" className="text-xl font-bold text-brand-dark mb-2">{title}</h3>
+                <p id="confirmation-message" className="text-brand-text-light mb-6">{message}</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <button onClick={onClose} className="bg-brand-subtle text-brand-dark font-bold py-3 rounded-full hover:bg-brand-border">إلغاء</button>
+                    <button onClick={onConfirm} className="bg-brand-sale text-white font-bold py-3 rounded-full hover:bg-opacity-90">تأكيد</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const RecommendationSkeleton = () => (
     <div className="flex-shrink-0 w-44 animate-skeleton-pulse snap-start">
@@ -62,6 +92,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
     const [activeModal, setActiveModal] = useState<null | 'gift' | 'note' | 'shipping'>(null);
     const [noteText, setNoteText] = useState(state.orderNote || '');
     const [couponCode, setCouponCode] = useState('');
+    const [couponError, setCouponError] = useState('');
     const [shippingEstimateAddress, setShippingEstimateAddress] = useState<string>(currentUser?.addresses.find(a => a.isDefault)?.id.toString() || '');
 
 
@@ -77,6 +108,8 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
     const [isGenerating, setIsGenerating] = useState(false);
     const [recommendationsFetched, setRecommendationsFetched] = useState(false);
 
+    const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
+
      useEffect(() => {
         if (cartSubtotal > prevSubtotalRef.current) {
             setIsSubtotalAnimating(true);
@@ -85,6 +118,12 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
         }
         prevSubtotalRef.current = cartSubtotal;
     }, [cartSubtotal]);
+    
+    useEffect(() => {
+        if (!isOpen) {
+            setCouponError('');
+        }
+    }, [isOpen]);
 
     const cartItems = useMemo((): CartItem[] => {
         return state.cart.map(cartDetail => {
@@ -147,8 +186,16 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
         dispatch({ type: 'UPDATE_CART_ITEM_QUANTITY', payload: { id, selectedSize: size, selectedColor: color, quantity: newQuantity } });
     };
 
-    const handleRemoveItem = (id: number, size: string, color: string) => {
-        dispatch({ type: 'REMOVE_FROM_CART', payload: { id, selectedSize: size, selectedColor: color } });
+    const handleRemoveItemClick = (item: CartItem) => {
+        setItemToRemove(item);
+    };
+
+    const confirmRemoveItem = () => {
+        if (itemToRemove) {
+            dispatch({ type: 'REMOVE_FROM_CART', payload: { id: itemToRemove.id, selectedSize: itemToRemove.selectedSize, selectedColor: itemToRemove.selectedColor } });
+            addToast(`تمت إزالة "${itemToRemove.name}" من السلة.`, 'success');
+            setItemToRemove(null);
+        }
     };
 
     const handleMoveToWishlist = (item: CartItem) => {
@@ -162,7 +209,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
         if (!isInWishlist) {
             dispatch({ type: 'TOGGLE_WISHLIST', payload: item.id });
         }
-        handleRemoveItem(item.id, item.selectedSize, item.selectedColor);
+        dispatch({ type: 'REMOVE_FROM_CART', payload: { id: item.id, selectedSize: item.selectedSize, selectedColor: item.selectedColor } });
         addToast(`${item.name} تم نقله إلى قائمة الرغبات.`, 'success');
     };
     
@@ -256,7 +303,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                     <img src={isAi ? item.product.image : item.image} alt={isAi ? item.product.name : item.name} className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105" />
                      {isAi && (
                         <>
-                        <div className="absolute top-2 left-2 bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <div className="absolute top-2 left-2 bg-brand-primary text-brand-bg text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                             <SparklesIcon size="sm" className="w-3 h-3"/>
                             اختيار AI
                         </div>
@@ -264,7 +311,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                             <div className="w-5 h-5 flex items-center justify-center text-brand-bg/80 bg-brand-dark/40 rounded-full">
                               <i className="fa-solid fa-circle-info text-xs"></i>
                             </div>
-                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-20 pointer-events-none">
+                            <div className="absolute bottom-full right-0 mb-2 w-48 bg-brand-dark text-brand-bg text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-20 pointer-events-none">
                                 {item.reason}
                             </div>
                         </div>
@@ -279,7 +326,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                     </div>
                     <button 
                         onClick={(e) => { e.stopPropagation(); addToCartHandler(isAi ? item.product : item); }} 
-                        className="w-full mt-2 bg-brand-dark text-white text-xs font-bold py-2 rounded-full hover:bg-opacity-90 transition-all active:scale-95"
+                        className="w-full mt-2 bg-brand-dark text-brand-bg text-xs font-bold py-2 rounded-full hover:bg-opacity-90 transition-all active:scale-95"
                     >
                         أضف للسلة
                     </button>
@@ -292,6 +339,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
 
     const handleApplyCoupon = (e?: React.FormEvent) => {
         e?.preventDefault();
+        setCouponError('');
         const codeToApply = couponCode.trim().toUpperCase();
         if (!codeToApply) return;
         
@@ -301,7 +349,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
             addToast(`تم تطبيق الكوبون "${codeToApply}"!`, 'success');
         } else {
             dispatch({ type: 'REMOVE_COUPON' });
-            addToast('كود الكوبون غير صالح.', 'error');
+            setCouponError('كود الكوبون غير صالح.');
         }
         setCouponCode('');
     };
@@ -324,13 +372,20 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
 
     const handleSaveNote = () => {
         dispatch({ type: 'SET_ORDER_NOTE', payload: noteText });
-        addToast('تم حفظ ملاحظة الطلب.', 'success');
+        addToast('تم حفظ رسالة الهدية.', 'success');
         setActiveModal(null);
     };
 
     return (
         <>
-            <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${shouldBeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
+            <ConfirmationModal
+                isOpen={!!itemToRemove}
+                onClose={() => setItemToRemove(null)}
+                onConfirm={confirmRemoveItem}
+                title="إزالة المنتج"
+                message={`هل أنت متأكد أنك تريد إزالة "${itemToRemove?.name}" من سلة التسوق؟`}
+            />
+            <div className={`fixed inset-0 bg-[var(--backdrop)] z-[60] transition-opacity duration-300 ${shouldBeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsOpen(false)}></div>
             <div 
                 className={`fixed top-0 left-0 h-full w-[90vw] max-w-md bg-brand-bg shadow-lg z-[60] ${getAnimationClass()}`}
                 role="dialog"
@@ -366,7 +421,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                     style={{ right: `calc(${shippingProgress}% - 16px)` }}
                                     aria-hidden="true"
                                 >
-                                    <ShippingIcon size="sm" className="text-white"/>
+                                    <ShippingIcon size="sm" className="text-brand-bg"/>
                                 </div>
                             </div>
                         </div>
@@ -380,7 +435,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                             <div>
                                                 <div className="flex justify-between items-start gap-2">
                                                     <p className="font-bold text-brand-dark text-sm leading-tight pr-2">{item.name}</p>
-                                                    <button onClick={() => handleRemoveItem(item.id, item.selectedSize, item.selectedColor)} className="text-brand-text-light hover:text-brand-sale flex-shrink-0 p-1 -mr-1"><CloseIcon size="sm"/></button>
+                                                    <button onClick={() => handleRemoveItemClick(item)} className="text-brand-text-light hover:text-brand-sale flex-shrink-0 p-1 -mr-1"><CloseIcon size="sm"/></button>
                                                 </div>
                                                 <p className="text-xs text-brand-text-light mt-1">{`اللون: ${item.selectedColor}, المقاس: ${item.selectedSize}`}</p>
                                                 {!state.wishlist.some(wishlistItem => wishlistItem.id === item.id) && (
@@ -392,9 +447,9 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                             
                                             <div className="flex justify-between items-center mt-auto pt-2">
                                                 <div className="flex items-center border border-brand-border rounded-full bg-surface">
-                                                    <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} className="p-1.5 text-brand-text-light transition-transform active:scale-90 disabled:opacity-50" disabled={item.quantity <= 1} aria-label="تقليل الكمية"><MinusIcon size="sm"/></button>
+                                                    <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} className="p-1.5 text-brand-text-light active:scale-90 disabled:opacity-50 hover:bg-brand-subtle rounded-full" disabled={item.quantity <= 1} aria-label="تقليل الكمية"><MinusIcon size="sm"/></button>
                                                     <span className="px-2 font-bold text-sm w-8 text-center tabular-nums">{item.quantity}</span>
-                                                    <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-1.5 text-brand-text-light transition-transform active:scale-90" aria-label="زيادة الكمية"><PlusIcon size="sm"/></button>
+                                                    <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-1.5 text-brand-text-light active:scale-90 hover:bg-brand-subtle rounded-full" aria-label="زيادة الكمية"><PlusIcon size="sm"/></button>
                                                 </div>
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-brand-dark font-bold text-base">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</span>
@@ -412,7 +467,7 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                 <p className="text-brand-text-light mb-6 max-w-xs mx-auto">يبدو أنك لم تقم بإضافة أي شيء إلى سلتك بعد. ابدأ التسوق الآن!</p>
                                 <button
                                     onClick={() => { setIsOpen(false); navigateTo('shop'); }}
-                                    className="bg-brand-dark text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all active:scale-95"
+                                    className="bg-brand-dark text-brand-bg font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all active:scale-95"
                                 >
                                     متابعة التسوق
                                 </button>
@@ -434,10 +489,10 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                     </div>
                                 </>
                             ) : !recommendationsFetched ? (
-                                <div className="text-center p-4 border-2 border-dashed rounded-lg bg-brand-subtle">
+                                <div className="text-center p-4 border-2 border-dashed rounded-lg bg-brand-primary/5">
                                     <h4 className="font-bold text-brand-dark">أكمل طلبك</h4>
                                     <p className="text-sm text-brand-text-light my-2">أكملي طلبك بقطع يشتريها الآخرون عادةً مع منتجاتك.</p>
-                                    <button onClick={getAiRecommendations} className="bg-brand-primary text-white font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:bg-opacity-90 transition-opacity active:scale-95">
+                                    <button onClick={getAiRecommendations} className="bg-brand-primary text-brand-bg font-bold py-2.5 px-6 rounded-full flex items-center justify-center gap-2 mx-auto hover:bg-opacity-90 transition-opacity active:scale-95">
                                         <SparklesIcon size="sm" />
                                         الحصول على توصيات AI
                                     </button>
@@ -460,15 +515,24 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
 
                     <div className="p-5 border-t border-brand-border space-y-4 bg-brand-subtle">
                          <div className="grid grid-cols-3 gap-2 text-center text-xs text-brand-text-light">
-                            <button onClick={() => setActiveModal('gift')} className={`flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle ${state.giftWrap ? 'text-brand-primary' : ''}`}><GiftIcon size="sm"/> <span>تغليف هدية</span></button>
-                            <button onClick={() => setActiveModal('note')} className={`flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle ${state.orderNote ? 'text-brand-primary' : ''}`}><NoteIcon size="sm"/> <span>ملاحظة</span></button>
+                            <button onClick={() => setActiveModal('gift')} className={`flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle ${state.giftWrap ? 'text-brand-primary font-bold' : ''}`}><GiftIcon size="sm"/> <span>تغليف هدية</span></button>
+                            <button 
+                                onClick={() => setActiveModal('note')}
+                                disabled={!state.giftWrap} 
+                                className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors ${state.giftWrap ? `hover:bg-brand-subtle ${state.orderNote ? 'text-brand-primary font-bold' : ''}` : 'text-brand-text-light/50 cursor-not-allowed'}`}>
+                                    <NoteIcon size="sm"/> <span>رسالة هدية</span>
+                            </button>
                             <button onClick={() => setActiveModal('shipping')} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-brand-subtle"><ShippingIcon size="sm"/> <span>الشحن</span></button>
                          </div>
                          
-                         <form className="flex gap-2" onSubmit={handleApplyCoupon}>
-                            <input type="text" placeholder="أدخل رمز الكوبون" aria-label="أدخل رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className="w-full bg-surface border border-brand-border rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-brand-dark" />
-                            <button type="submit" className="bg-brand-dark text-white font-bold py-2 px-6 rounded-full text-sm hover:bg-opacity-90 transition-all active:scale-95">تطبيق</button>
-                        </form>
+                         <div>
+                             <form className="flex gap-2" onSubmit={handleApplyCoupon}>
+                                <input type="text" placeholder="أدخل رمز الكوبون" aria-label="أدخل رمز الكوبون" value={couponCode} onChange={e => setCouponCode(e.target.value)} className={`w-full bg-surface border rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-1 ${couponError ? 'border-brand-sale ring-brand-sale/50' : 'border-brand-border focus:ring-brand-dark'}`} />
+                                <button type="submit" className="bg-brand-dark text-brand-bg font-bold py-2 px-6 rounded-full text-sm hover:bg-opacity-90 transition-all active:scale-95">تطبيق</button>
+                            </form>
+                            {couponError && <p className="text-brand-sale text-xs mt-2 px-2">{couponError}</p>}
+                         </div>
+
                         <div className="flex flex-wrap gap-2">
                              {exampleCoupons.map(code => (
                                 <button
@@ -521,8 +585,8 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                             <label htmlFor="drawer-terms" className="text-sm">أوافق على <a href="#" className="underline font-semibold">الشروط والأحكام</a></label>
                         </div>
                          <div className="grid grid-cols-2 gap-4">
-                             <button onClick={() => { navigateTo('checkout'); setIsOpen(false); }} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90 disabled:opacity-50 transition-transform active:scale-98" disabled={!agreedToTerms || cartItems.length === 0}>الدفع</button>
-                             <button onClick={() => { navigateTo('cart'); setIsOpen(false); }} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full transition-all duration-200 hover:bg-brand-dark hover:text-white active:scale-98">عرض السلة</button>
+                             <button onClick={() => { navigateTo('checkout'); setIsOpen(false); }} className="w-full bg-brand-dark text-brand-bg font-bold py-3 rounded-full hover:bg-opacity-90 disabled:opacity-50 transition-transform active:scale-98" disabled={!agreedToTerms || cartItems.length === 0}>الدفع</button>
+                             <button onClick={() => { navigateTo('cart'); setIsOpen(false); }} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full transition-all duration-200 hover:bg-brand-dark hover:text-brand-bg active:scale-98">عرض السلة</button>
                          </div>
                     </div>
                  </div>
@@ -532,16 +596,16 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
             <BottomModal isOpen={activeModal === 'gift'} onClose={() => setActiveModal(null)} title={state.giftWrap ? 'إزالة تغليف الهدية' : 'أضف تغليف هدية'}>
                 <p className="text-brand-text-light mb-4">{state.giftWrap ? 'هل أنت متأكد أنك تريد إزالة تغليف الهدية؟' : `سيتم تغليف المنتج بعناية. الرسوم فقط 10.00 ج.م. هل تريد تغليف الهدايا؟`}</p>
                 <div className="grid grid-cols-2 gap-4">
-                    <button onClick={handleAddGiftWrap} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90">{state.giftWrap ? 'نعم، إزالة' : 'أضف تغليف هدية'}</button>
-                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-white">إلغاء</button>
+                    <button onClick={handleAddGiftWrap} className="w-full bg-brand-dark text-brand-bg font-bold py-3 rounded-full hover:bg-opacity-90">{state.giftWrap ? 'نعم، إزالة' : 'أضف تغليف هدية'}</button>
+                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-brand-bg">إلغاء</button>
                 </div>
             </BottomModal>
 
-            <BottomModal isOpen={activeModal === 'note'} onClose={() => setActiveModal(null)} title="ملاحظة الطلب">
-                <textarea placeholder="تعليمات للبائع..." rows={5} value={noteText} onChange={(e) => setNoteText(e.target.value)} className="w-full border bg-surface border-brand-border rounded-lg p-3 mb-4 focus:ring-brand-dark focus:border-brand-dark"></textarea>
+            <BottomModal isOpen={activeModal === 'note'} onClose={() => setActiveModal(null)} title="إضافة رسالة هدية">
+                <textarea placeholder="اكتب رسالتك هنا..." rows={5} value={noteText} onChange={(e) => setNoteText(e.target.value)} className="w-full border bg-surface border-brand-border rounded-lg p-3 mb-4 focus:ring-brand-dark focus:border-brand-dark"></textarea>
                 <div className="grid grid-cols-2 gap-4">
-                    <button onClick={handleSaveNote} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90">حفظ</button>
-                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-white">إغلاق</button>
+                    <button onClick={handleSaveNote} className="w-full bg-brand-dark text-brand-bg font-bold py-3 rounded-full hover:bg-opacity-90">حفظ الرسالة</button>
+                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-brand-bg">إغلاق</button>
                 </div>
             </BottomModal>
 
@@ -568,8 +632,8 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                     )}
                 </div>
                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    <button onClick={() => setActiveModal(null)} className="w-full bg-brand-dark text-white font-bold py-3 rounded-full hover:bg-opacity-90">تقدير</button>
-                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-white">إغلاق</button>
+                    <button onClick={() => setActiveModal(null)} className="w-full bg-brand-dark text-brand-bg font-bold py-3 rounded-full hover:bg-opacity-90">تقدير</button>
+                    <button onClick={() => setActiveModal(null)} className="w-full bg-surface border border-brand-dark text-brand-dark font-bold py-3 rounded-full hover:bg-brand-dark hover:text-brand-bg">إغلاق</button>
                 </div>
             </BottomModal>
         </>
