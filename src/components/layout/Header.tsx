@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SearchIcon, UserIcon, HeartIcon, ChevronDownIcon, ShoppingBagIcon, Bars3Icon, CompareIcon, SparklesIcon, MoonIcon, SunIcon, MagicIcon } from '../icons';
+import { SearchIcon, ChevronDownIcon, ShoppingBagIcon, Bars3Icon, CompareIcon, SparklesIcon, MoonIcon, SunIcon, MagicIcon } from '../icons';
 import { useAppState } from '../../state/AppState';
 
 interface HeaderProps {
@@ -111,7 +111,7 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                     }
                 ],
                 promo: {
-                    image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto.format&fit=crop',
+                    image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto=format&fit=crop',
                     title: 'عرض حصري',
                     subtitle: 'خصم 50% لفترة محدودة',
                     page: 'shop',
@@ -131,6 +131,11 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
             navigateTo('search', { q: headerSearchTerm.trim() });
             setHeaderSearchTerm('');
         }
+    };
+
+    const handleMobileThemeToggle = () => {
+        const newMode = effectiveThemeMode === 'light' ? 'dark' : 'light';
+        setThemeMode(newMode);
     };
 
     return (
@@ -156,7 +161,14 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                         </button>
                     </div>
                     
-                    <div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={handleMobileThemeToggle}
+                            className={mobileIconButtonClasses}
+                            aria-label="Change theme"
+                        >
+                            {effectiveThemeMode === 'light' ? <SunIcon/> : <MoonIcon />}
+                        </button>
                         <button onClick={() => setIsMenuOpen(true)} className={mobileIconButtonClasses} aria-label="Menu">
                             <Bars3Icon />
                         </button>
@@ -276,10 +288,10 @@ export const Header = ({ navigateTo, setIsCartOpen, setIsMenuOpen, setIsSearchOp
                             )}
                         </div>
                          <button onClick={() => navigateTo(currentUser ? 'account' : 'login')} className={iconButtonClasses} aria-label="Account">
-                            <UserIcon />
+                            <i className="fa-regular fa-user text-2xl w-6 text-center"></i>
                         </button>
                          <button onClick={() => navigateTo('wishlist')} className={`${iconButtonClasses} hidden md:flex`} aria-label="Wishlist">
-                            <HeartIcon />
+                            <i className="fa-regular fa-heart text-2xl w-6 text-center"></i>
                             {wishlistCount > 0 && <span className={badgeClasses}>{wishlistCount}</span>}
                         </button>
                         <button onClick={() => navigateTo('compare')} className={`${iconButtonClasses} hidden md:flex`} aria-label="Compare">

@@ -27,8 +27,14 @@ const FbtProductCard: React.FC<{
                 <div className="flex-1">
                     <p className="font-semibold text-brand-text">{isMain && <span className="text-sm font-normal text-brand-text-light">هذا المنتج: </span>}{item.name}</p>
                     <div className="flex items-baseline gap-2">
-                        <p className="font-bold text-brand-text">{displayPrice} ج.م</p>
-                        {displayOldPrice && <p className="text-sm text-brand-text-light line-through">{displayOldPrice} ج.م</p>}
+                        {displayOldPrice ? (
+                            <>
+                                <p className="font-bold text-brand-sale">{displayPrice} ج.م</p>
+                                <p className="text-sm text-brand-text-light line-through">{displayOldPrice} ج.م</p>
+                            </>
+                        ) : (
+                            <p className="font-bold text-brand-text">{displayPrice} ج.م</p>
+                        )}
                     </div>
                     {item.variants && item.variants.length > 0 && (
                         <div className="relative mt-2 max-w-[150px]">

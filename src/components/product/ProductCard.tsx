@@ -1,5 +1,3 @@
-
-
 import React, { useMemo } from 'react';
 import { Product } from '../../types';
 import { EyeIcon, ShoppingBagIcon, FireIcon, SparklesIcon } from '../icons';
@@ -102,11 +100,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* Common Product Info */}
             <div className="p-4 flex flex-col flex-grow">
-                <p className="font-semibold text-sm text-brand-dark truncate mb-2 flex-grow">{product.name}</p>
+                <p className="font-semibold text-sm text-brand-dark line-clamp-2 mb-2 h-10">{product.name}</p>
                 
                 <div className="flex justify-center items-baseline gap-2 mb-1">
-                    <span className="font-bold text-base text-brand-primary">{product.price} ج.م</span>
-                    {product.oldPrice && <span className="line-through text-brand-text-light text-sm">{product.oldPrice} ج.م</span>}
+                    {product.oldPrice ? (
+                        <>
+                            <span className="font-extrabold text-lg text-brand-sale">{product.price} ج.م</span>
+                            <span className="line-through text-brand-text-light text-sm">{product.oldPrice} ج.م</span>
+                        </>
+                    ) : (
+                        <span className="font-bold text-lg text-brand-primary">{product.price} ج.م</span>
+                    )}
                 </div>
                 
                 <PromoDisplay />

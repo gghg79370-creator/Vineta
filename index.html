@@ -192,7 +192,8 @@
             'typing-bounce': 'typing-bounce 1s infinite',
             'tooltip-fade-in-out': 'tooltip-fade-in-out 4s ease-in-out 1s 1 forwards',
             'reel-progress': 'reel-progress-fill 6s linear forwards',
-          }
+          },
+          columnCount: { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 }
         }
       }
     }
@@ -672,6 +673,22 @@
     }
     .transform-origin-left {
         transform-origin: left;
+    }
+    .break-inside-avoid {
+      break-inside: avoid;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--brand-border);
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--brand-text-light);
     }
   </style>
 <script type="importmap">

@@ -316,7 +316,13 @@ export const ProductDetailPage = ({ product: initialProduct, navigateTo, addToCa
                         {product.brand && <p className="text-sm font-semibold text-brand-text-light uppercase tracking-wider">{product.brand}</p>}
                         <h1 className="text-3xl lg:text-4xl font-bold text-brand-dark my-2">{product.name}</h1>
                         <div className="flex items-center gap-3 mb-4"><StarIcon className="text-yellow-400"/><span className="font-bold">{product.rating || 0}</span><a href="#reviews" className="text-sm text-brand-text-light hover:underline">({product.reviewCount || 0} تقييمًا)</a></div>
-                        <div className="flex items-center gap-4 mb-5"><span className="text-4xl font-extrabold text-brand-primary">{displayPrice} ج.م</span>{displayOldPrice && <><span className="text-2xl text-brand-text-light line-through">{displayOldPrice} ج.م</span><span className="text-sm font-bold bg-brand-sale text-white px-3 py-1 rounded-md">{discountPercent}% OFF</span></>}</div>
+                        <div className="flex items-center gap-4 mb-5">
+                            <span className={`text-4xl font-extrabold ${displayOldPrice ? 'text-brand-sale' : 'text-brand-primary'}`}>{displayPrice} ج.م</span>
+                            {displayOldPrice && <>
+                                <span className="text-2xl text-brand-text-light line-through">{displayOldPrice} ج.م</span>
+                                <span className="text-sm font-bold bg-brand-sale text-white px-3 py-1 rounded-md">{discountPercent}% OFF</span>
+                            </>}
+                        </div>
                         
                         <div className="my-6 space-y-2 border-t pt-6">
                             <div className="flex items-center gap-3 text-sm">

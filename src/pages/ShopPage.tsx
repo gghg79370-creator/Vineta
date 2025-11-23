@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
 import { CollectionProductCard } from '../components/product/CollectionProductCard';
@@ -553,6 +553,11 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
             </div>
         );
     };
+    
+    const isMasonry = displayMode === 'grid-3' || displayMode === 'grid-4';
+    const gridContainerClasses = isMasonry 
+        ? `gap-6 ${displayMode === 'grid-4' ? 'column-count-2 md:column-count-4' : 'column-count-2 sm:column-count-3'}`
+        : `grid gap-x-4 gap-y-8 ${displayMode === 'list' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`;
 
     return (
     <div className="bg-brand-subtle">
@@ -614,37 +619,24 @@ const ShopPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filte
                     <ActiveFiltersBar />
                     
                     {isLoading ? (
-                        <div className={`grid ${
-                            displayMode === 'list' ? 'grid-cols-1' :
-                            displayMode === 'grid-4' ? 'grid-cols-2 md:grid-cols-4' :
-                            displayMode === 'grid-3' ? 'grid-cols-2 sm:grid-cols-3' :
-                            'grid-cols-1 md:grid-cols-2'
-                        } gap-x-4 gap-y-8`}>
+                        <div className={gridContainerClasses}>
                             {Array.from({ length: productsPerPage }).map((_, index) => <ProductCardSkeleton key={index} />)}
                         </div>
                     ) : currentProducts.length > 0 ? (
                         <>
-                            {displayMode === 'list' ? (
-                                <div className="space-y-4">
-                                    {currentProducts.map(product => <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
-                                </div>
-                            ) : (
-                                <div className={`grid ${
-                                    displayMode === 'grid-4' ? 'grid-cols-2 md:grid-cols-4' :
-                                    displayMode === 'grid-3' ? 'grid-cols-2 sm:grid-cols-3' :
-                                    'grid-cols-1 md:grid-cols-2'
-                                } gap-x-4 gap-y-8`}>
-                                    {currentProducts.map(product => 
-                                        displayMode === 'grid-2' ? (
-                                            <ProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />
-                                        ) : (
-                                            <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />
-                                        )
-                                    )}
-                                </div>
-                            )}
+                            <div className={gridContainerClasses}>
+                                {currentProducts.map(product => 
+                                    displayMode === 'list' ? (
+                                        <CollectionProductListCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />
+                                    ) : isMasonry ? (
+                                        <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />
+                                    ) : (
+                                        <ProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />
+                                    )
+                                )}
+                            </div>
 
-                            {!isLoading && hasMoreProducts && (
+                            {hasMoreProducts && (
                                 <div className="text-center mt-12">
                                     <button
                                         onClick={handleLoadMore}

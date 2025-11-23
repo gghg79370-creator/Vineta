@@ -17,6 +17,13 @@ const getClasses = ({ className, size = 'md', color }: IconProps): string => {
     return [sizeClasses[size], color, className].filter(Boolean).join(' ');
 };
 
+export const ArrowUturnLeftIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={getClasses(props)}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+    </svg>
+);
+
+
 export const MagicWandIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={getClasses(props)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c.238.19.477.386.714.582A12.001 12.001 0 0118 10.5c0 1.258-.223 2.47-.64 3.633m-7.234-9.333c1.03-.493 2.126-.745 3.234-.745 5.248 0 9.5 3.358 9.5 7.5s-4.252 7.5-9.5 7.5S3.5 17.642 3.5 13.5c0-1.89.439-3.666 1.21-5.228" />

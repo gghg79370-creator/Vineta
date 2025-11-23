@@ -452,8 +452,14 @@ export const CartDrawer = ({ isOpen, setIsOpen, navigateTo }: CartDrawerProps) =
                                                     <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-1.5 text-brand-text-light active:scale-90 hover:bg-brand-subtle rounded-full" aria-label="زيادة الكمية"><PlusIcon size="sm"/></button>
                                                 </div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-brand-dark font-bold text-base">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</span>
-                                                    {item.oldPrice && <span className="text-brand-text-light line-through text-xs">{item.oldPrice} ج.م</span>}
+                                                    {item.oldPrice ? (
+                                                        <>
+                                                            <span className="text-brand-sale font-bold text-base">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</span>
+                                                            <span className="text-brand-text-light line-through text-xs">{(parseFloat(item.oldPrice) * item.quantity).toFixed(2)} ج.م</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-brand-dark font-bold text-base">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

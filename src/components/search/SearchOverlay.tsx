@@ -158,7 +158,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
     };
     
     const clearFilters = () => {
-        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [] });
+        setFilters({ brands: [], colors: [], sizes: [], priceRange: { min: 0, max: 1000 }, rating: 0, onSale: false, materials: [], categories: [], tags: [] });
         addToast('تم مسح جميع الفلاتر.', 'success');
     };
     
@@ -169,7 +169,9 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                filters.priceRange.max < 1000 ||
                filters.rating > 0 ||
                filters.onSale ||
-               filters.materials.length > 0;
+               filters.materials.length > 0 ||
+               filters.categories.length > 0 ||
+               filters.tags.length > 0;
     }, [filters]);
 
     const getAiSearchResults = async (term: string) => {
@@ -247,34 +249,45 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
             
             const scoredProducts = allProducts.map(product => {
                 const name = product.name.toLowerCase();
+                const description = product.description?.toLowerCase() || '';
                 const tags = product.tags.map(t => t.toLowerCase());
                 const brand = product.brand?.toLowerCase() || '';
-    
                 let score = Infinity;
-    
+
+                // Score name (high priority)
                 if (name.includes(lowerCaseTerm)) {
-                    score = Math.min(score, 1);
-                    if (name === lowerCaseTerm) {
-                        score = Math.min(score, 0);
-                    }
+                    score = Math.min(score, name.startsWith(lowerCaseTerm) ? 0 : 5);
                 } else {
-                    const distance = levenshtein(lowerCaseTerm, name);
-                    if (distance / name.length < 0.4) {
-                        score = Math.min(score, 2 + distance);
+                    const nameDistance = levenshtein(lowerCaseTerm, name);
+                    if (nameDistance <= Math.max(1, Math.floor(name.length * 0.3))) {
+                        score = Math.min(score, 10 + nameDistance);
+                    }
+                }
+
+                // Score description (medium priority)
+                if (description.includes(lowerCaseTerm)) {
+                    score = Math.min(score, 20);
+                } else {
+                    const words = description.split(/\s+/);
+                    let minDescDistance = Infinity;
+                    for (const word of words) {
+                        const dist = levenshtein(lowerCaseTerm, word);
+                        if (dist <= Math.max(1, Math.floor(word.length * 0.3))) {
+                            minDescDistance = Math.min(minDescDistance, dist);
+                        }
+                    }
+                    if (minDescDistance !== Infinity) {
+                        score = Math.min(score, 25 + minDescDistance);
                     }
                 }
                 
-                if (tags.some(t => t.includes(lowerCaseTerm))) {
-                    score = Math.min(score, 10);
-                }
-    
-                if (brand.includes(lowerCaseTerm)) {
-                    score = Math.min(score, 12);
-                }
-    
+                // Score tags and brand
+                if (tags.some(t => t.includes(lowerCaseTerm))) score = Math.min(score, 15);
+                if (brand.includes(lowerCaseTerm)) score = Math.min(score, 18);
+
                 return { product, score };
             }).filter(({ score }) => score !== Infinity);
-    
+
             scoredProducts.sort((a, b) => a.score - b.score);
             
             const filtered = scoredProducts.map(item => item.product);
@@ -423,9 +436,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, setIsOpen,
                 </div>
                 <p className="font-semibold text-sm mt-2 truncate"><HighlightMatch text={product.name} query={query} /></p>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p>
-                    {onSale && product.oldPrice && (
-                        <p className="text-brand-text-light line-through text-xs">{product.oldPrice} ج.م</p>
+                    {onSale && product.oldPrice ? (
+                        <>
+                            <p className="text-brand-sale font-bold text-base">{product.price} ج.م</p>
+                            <p className="text-brand-text-light line-through text-xs">{product.oldPrice} ج.م</p>
+                        </>
+                    ) : (
+                        <p className="text-brand-primary font-bold text-sm">{product.price} ج.م</p>
                     )}
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CloseIcon, ChevronRightIcon, ChevronLeftIcon } from '../icons';
 
 interface ImageGalleryProps {
@@ -54,6 +54,12 @@ const Lightbox = ({ src, alt, onClose, onNext, onPrev, hasMultiple }: { src: str
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [images]);
 
   const openLightbox = (index: number) => {
     setActiveIndex(index);
@@ -62,45 +68,69 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   
   const handleNext = () => setActiveIndex((prev) => (prev + 1) % images.length);
   const handlePrev = () => setActiveIndex((prev) => (prev - 1 + images.length) % images.length);
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (imageContainerRef.current) {
+        const rect = imageContainerRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setZoomPosition({ x, y });
+    }
+  };
+  
+  const hasMultipleImages = images.length > 1;
 
   return (
     <div className="relative">
-      <div className="relative group rounded-xl overflow-hidden mb-4">
-        <div className="aspect-[4/5] bg-brand-subtle" onClick={() => openLightbox(activeIndex)}>
-            <img
-              key={images[activeIndex].src}
-              src={images[activeIndex].src}
-              alt={images[activeIndex].alt}
-              className="w-full h-full object-cover animate-quick-fade-in cursor-pointer"
-            />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_4fr] lg:gap-x-4">
 
-        {images.length > 1 && (
-            <>
-                <button onClick={handlePrev} className="absolute top-1/2 -translate-y-1/2 left-4 bg-white/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 hover:bg-white active:scale-95" aria-label="Previous Image">
-                    <ChevronLeftIcon />
-                </button>
-                <button onClick={handleNext} className="absolute top-1/2 -translate-y-1/2 right-4 bg-white/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 hover:bg-white active:scale-95" aria-label="Next Image">
-                    <ChevronRightIcon />
-                </button>
-            </>
-        )}
-      </div>
-
-      {images.length > 1 && (
-        <div className="grid grid-cols-5 gap-3">
-            {images.map((image, index) => (
+        {/* Thumbnails */}
+        {hasMultipleImages && (
+          <div className="order-last lg:order-first grid grid-cols-5 gap-3 lg:flex lg:flex-col lg:space-y-3 lg:gap-0 lg:max-h-[600px] lg:overflow-y-auto custom-scrollbar">
+              {images.map((image, index) => (
                 <button 
                     key={index} 
                     onClick={() => setActiveIndex(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${activeIndex === index ? 'border-brand-dark shadow-md' : 'border-transparent hover:border-brand-border'}`}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all w-full ${activeIndex === index ? 'border-brand-dark shadow-md' : 'border-transparent hover:border-brand-border'}`}
                     aria-label={`View image ${index + 1}`}
                 >
                     <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
                 </button>
-            ))}
+              ))}
+          </div>
+        )}
+        
+        {/* Main Image */}
+        <div className="relative group rounded-xl overflow-hidden mb-4 lg:mb-0 order-first lg:order-last">
+          <div 
+              ref={imageContainerRef}
+              onMouseMove={handleMouseMove}
+              className="aspect-[4/5] bg-brand-subtle cursor-zoom-in overflow-hidden" 
+              onClick={() => openLightbox(activeIndex)}
+              aria-label="View larger image"
+          >
+            <img
+              key={images[activeIndex].src}
+              src={images[activeIndex].src}
+              alt={images[activeIndex].alt}
+              className="w-full h-full object-cover animate-quick-fade-in transition-transform duration-200 ease-out group-hover:scale-[2.5]"
+              style={{ transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }}
+            />
+          </div>
+
+          {hasMultipleImages && (
+              <>
+                  <button onClick={handlePrev} className="absolute top-1/2 -translate-y-1/2 left-4 bg-white/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 hover:bg-white active:scale-95" aria-label="Previous Image">
+                      <ChevronLeftIcon />
+                  </button>
+                  <button onClick={handleNext} className="absolute top-1/2 -translate-y-1/2 right-4 bg-white/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 hover:bg-white active:scale-95" aria-label="Next Image">
+                      <ChevronRightIcon />
+                  </button>
+              </>
+          )}
         </div>
-      )}
+        
+      </div>
       
       {isLightboxOpen && (
         <Lightbox
@@ -109,7 +139,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           onClose={() => setIsLightboxOpen(false)}
           onNext={handleNext}
           onPrev={handlePrev}
-          hasMultiple={images.length > 1}
+          hasMultiple={hasMultipleImages}
         />
       )}
     </div>

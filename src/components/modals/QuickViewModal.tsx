@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Product } from '../../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Product, Variant } from '../../types';
 import { CloseIcon, ChevronRightIcon, PlusIcon, MinusIcon } from '../icons';
 import { SizeGuideModal } from './SizeGuideModal';
 
@@ -17,6 +17,16 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
     const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
     const [quantity, setQuantity] = useState(1);
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+
+    const selectedVariant = useMemo(() => {
+        if (!product || !product.variants || product.variants.length === 0) return null;
+        return product.variants.find(v => v.size === selectedSize && v.color === selectedColor) || null;
+    }, [product, selectedSize, selectedColor]);
+
+    const displayPrice = selectedVariant?.price || product?.price;
+    const displayOldPrice = selectedVariant?.oldPrice || product?.oldPrice;
+    const discountPercent = displayOldPrice && displayPrice ? Math.round(((parseFloat(displayOldPrice) - parseFloat(displayPrice)) / parseFloat(displayOldPrice)) * 100) : 0;
+
 
     useEffect(() => {
         if (product) {
@@ -92,9 +102,9 @@ export const QuickViewModal = ({ isOpen, product, onClose, addToCart, navigateTo
                 <div className="p-6 overflow-y-auto flex-grow">
                     <h2 className="text-2xl font-bold text-brand-dark">{product.name}</h2>
                     <div className="flex items-baseline gap-3 my-2">
-                        <span className="text-2xl font-extrabold text-brand-primary">{product.price} ج.م</span>
-                        {product.oldPrice && <span className="text-xl text-brand-text-light line-through">{product.oldPrice} ج.م</span>}
-                        {product.oldPrice && <span className="bg-brand-sale text-white text-xs font-bold px-2 py-1 rounded-md">20% OFF</span>}
+                        <span className={`text-2xl font-extrabold ${displayOldPrice ? 'text-brand-sale' : 'text-brand-primary'}`}>{displayPrice} ج.م</span>
+                        {displayOldPrice && <span className="text-xl text-brand-text-light line-through">{displayOldPrice} ج.م</span>}
+                        {displayOldPrice && discountPercent > 0 && <span className="bg-brand-sale text-white text-xs font-bold px-2 py-1 rounded-md">-{discountPercent}%</span>}
                     </div>
                     <p className="text-brand-text-light text-sm mb-4 leading-relaxed">{product.description}</p>
                     

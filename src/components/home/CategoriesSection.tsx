@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 
 const categoriesData = [
-    { name: 'ملابس', image: 'https://images.unsplash.com/photo-1617114912953-e718525b3433?q=80&w=1964&auto=format&fit=crop', page: 'shop', style: 'dark', data: { categories: 'women' } },
-    { name: 'وصل حديثاً', image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'جديد' } },
-    { name: 'إكسسوارات', image: 'https://images.unsplash.com/photo-1591561938959-1e39b9b0f6a4?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { categories: 'accessories' } },
-    { name: 'ملابس رياضية', image: 'https://images.unsplash.com/photo-1548690312-e3b511d5b111?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'ملابس رياضية' } },
+    { name: 'ملابس', icon: 'fa-solid fa-shirt', image: 'https://images.unsplash.com/photo-1617114912953-e718525b3433?q=80&w=1964&auto=format&fit=crop', page: 'shop', style: 'dark', data: { categories: 'women' } },
+    { name: 'وصل حديثاً', icon: 'fa-solid fa-star', image: 'https://images.unsplash.com/photo-1574281358313-946a3375a5a1?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'جديد' } },
+    { name: 'إكسسوارات', icon: 'fa-solid fa-gem', image: 'https://images.unsplash.com/photo-1591561938959-1e39b9b0f6a4?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { categories: 'accessories' } },
+    { name: 'ملابس رياضية', icon: 'fa-solid fa-person-running', image: 'https://images.unsplash.com/photo-1548690312-e3b511d5b111?q=80&w=1974&auto=format&fit=crop', page: 'shop', style: 'light', data: { tags: 'ملابس رياضية' } },
 ];
 
 export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: string, data?: any) => void }) => {
@@ -67,8 +67,8 @@ export const CategoriesSection = ({ navigateTo }: { navigateTo: (pageName: strin
                                 className={getButtonClasses(category.style as 'dark' | 'light')}
                             >
                                 <span className="flex items-center gap-3">
+                                    {category.icon && <i className={category.icon}></i>}
                                     {category.name}
-                                    {category.style === 'dark' && <i className="fa-solid fa-arrow-left"></i>}
                                 </span>
                             </button>
                         </div>

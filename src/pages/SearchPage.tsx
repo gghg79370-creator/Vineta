@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Filters } from '../types';
 import { allProducts } from '../data/products';
@@ -19,6 +17,34 @@ interface SearchPageProps {
     setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
+const levenshtein = (a: string, b: string): number => {
+    const an = a ? a.length : 0;
+    const bn = b ? b.length : 0;
+    if (an === 0) return bn;
+    if (bn === 0) return an;
+    const matrix = new Array(bn + 1);
+    for (let i = 0; i <= bn; ++i) {
+        matrix[i] = new Array(an + 1);
+    }
+    for (let i = 0; i <= bn; ++i) {
+        matrix[i][0] = i;
+    }
+    for (let j = 0; j <= an; ++j) {
+        matrix[0][j] = j;
+    }
+    for (let i = 1; i <= bn; ++i) {
+        for (let j = 1; j <= an; ++j) {
+            const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1, // deletion
+                matrix[i][j - 1] + 1, // insertion
+                matrix[i - 1][j - 1] + cost, // substitution
+            );
+        }
+    }
+    return matrix[bn][an];
+};
+
 const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, filters }: SearchPageProps) => {
     const { state, dispatch } = useAppState();
     const { compareList, wishlist, currentUser } = state;
@@ -33,7 +59,7 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, fil
     const productsPerPage = 12;
 
     const appliedFiltersCount = useMemo(() => {
-        const { brands, colors, sizes, priceRange, rating, onSale, materials, categories } = filters;
+        const { brands, colors, sizes, priceRange, rating, onSale, materials, categories, tags } = filters;
         return [
             brands.length > 0,
             colors.length > 0,
@@ -42,20 +68,61 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, fil
             rating > 0,
             onSale,
             materials.length > 0,
-            categories.length > 0
+            categories.length > 0,
+            tags.length > 0,
         ].filter(Boolean).length;
     }, [filters]);
 
     const filteredAndSortedProducts = useMemo(() => {
         if (!searchTerm) return [];
 
-        let products = allProducts.filter(p => {
-            const searchTermMatch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                p.brand?.toLowerCase().includes(searchTerm.toLowerCase());
-            if (!searchTermMatch) return false;
+        const lowerCaseTerm = searchTerm.toLowerCase();
 
-            // Apply global filters
+        // 1. Score all products and filter out non-matches
+        const scoredProducts = allProducts.map(product => {
+            const name = product.name.toLowerCase();
+            const description = product.description?.toLowerCase() || '';
+            const tags = product.tags.map(t => t.toLowerCase());
+            const brand = product.brand?.toLowerCase() || '';
+            let score = Infinity;
+
+            // Score name (high priority)
+            if (name.includes(lowerCaseTerm)) {
+                score = Math.min(score, name.startsWith(lowerCaseTerm) ? 0 : 5);
+            } else {
+                const nameDistance = levenshtein(lowerCaseTerm, name);
+                if (nameDistance <= Math.max(1, Math.floor(name.length * 0.3))) {
+                    score = Math.min(score, 10 + nameDistance);
+                }
+            }
+
+            // Score description (medium priority)
+            if (description.includes(lowerCaseTerm)) {
+                score = Math.min(score, 20);
+            } else {
+                const words = description.split(/\s+/);
+                let minDescDistance = Infinity;
+                for (const word of words) {
+                    const dist = levenshtein(lowerCaseTerm, word);
+                    if (dist <= Math.max(1, Math.floor(word.length * 0.3))) {
+                        minDescDistance = Math.min(minDescDistance, dist);
+                    }
+                }
+                if (minDescDistance !== Infinity) {
+                    score = Math.min(score, 25 + minDescDistance);
+                }
+            }
+            
+            // Score tags and brand
+            if (tags.some(t => t.includes(lowerCaseTerm))) score = Math.min(score, 15);
+            if (brand.includes(lowerCaseTerm)) score = Math.min(score, 18);
+
+            return { product, score };
+        }).filter(({ score }) => score !== Infinity);
+
+
+        // 2. Apply global filters
+        const globallyFiltered = scoredProducts.filter(({ product: p }) => {
             const brandMatch = filters.brands.length === 0 || (p.brand && filters.brands.includes(p.brand));
             const colorMatch = filters.colors.length === 0 || p.colors.some(c => filters.colors.includes(c));
             const sizeMatch = filters.sizes.length === 0 || p.sizes.some(s => filters.sizes.includes(s));
@@ -67,33 +134,25 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, fil
                 if (cat === 'accessories') return p.tags.includes('إكسسوارات');
                 return p.category === cat;
             });
-             return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch && categoryMatch;
+            return brandMatch && colorMatch && sizeMatch && priceMatch && saleMatch && ratingMatch && materialMatch && categoryMatch;
         });
 
-        switch (sortBy) {
-            case 'price-asc':
-                products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-                break;
-            case 'price-desc':
-                products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-                break;
-            case 'newest':
-                products.sort((a, b) => b.id - a.id);
-                break;
-            case 'relevance':
-            default:
-                // Basic relevance sorting (name match > brand > tags)
-                 products.sort((a, b) => {
-                    const aNameMatch = a.name.toLowerCase().includes(searchTerm.toLowerCase());
-                    const bNameMatch = b.name.toLowerCase().includes(searchTerm.toLowerCase());
-                    if (aNameMatch && !bNameMatch) return -1;
-                    if (!aNameMatch && bNameMatch) return 1;
-                    return 0;
-                });
-                break;
+        // 3. Sort the results
+        if (sortBy === 'relevance') {
+            globallyFiltered.sort((a, b) => a.score - b.score);
+        } else {
+            globallyFiltered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'price-asc': return parseFloat(a.product.price) - parseFloat(b.product.price);
+                    case 'price-desc': return parseFloat(b.product.price) - parseFloat(a.product.price);
+                    case 'newest': return b.product.id - a.product.id;
+                    case 'rating': return (b.product.rating || 0) - (a.product.rating || 0);
+                    default: return 0;
+                }
+            });
         }
-
-        return products;
+        
+        return globallyFiltered.map(item => item.product);
     }, [searchTerm, sortBy, filters]);
     
     useEffect(() => {
@@ -163,11 +222,11 @@ const SearchPage = ({ navigateTo, addToCart, openQuickView, setIsFilterOpen, fil
                 </div>
 
                 {isLoading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
+                    <div className="column-count-2 md:column-count-4 gap-6">
                         {Array.from({ length: 8 }).map((_, index) => <ProductCardSkeleton key={index} />)}
                     </div>
                 ) : currentProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
+                    <div className="column-count-2 md:column-count-4 gap-6">
                         {currentProducts.map(product => <CollectionProductCard key={product.id} product={product} navigateTo={navigateTo} addToCart={addToCart} openQuickView={openQuickView} compareList={compareList} addToCompare={addToCompare} wishlistItems={wishlistIds} toggleWishlist={toggleWishlist} />)}
                     </div>
                 ) : (

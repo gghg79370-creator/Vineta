@@ -200,7 +200,10 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-span-1 text-center font-semibold">{item.price} ج.م</div>
+                                    <div className={`col-span-1 text-center font-bold ${item.oldPrice ? 'text-brand-sale' : 'text-brand-dark'}`}>
+                                        {item.price} ج.م
+                                        {item.oldPrice && <p className="text-xs text-brand-text-light line-through font-normal">{item.oldPrice} ج.م</p>}
+                                    </div>
                                     <div className="col-span-1 flex justify-center">
                                         <div className="flex items-center border border-brand-border rounded-full bg-white w-28">
                                             <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity - 1)} className="p-2 text-gray-500 disabled:opacity-50 hover:bg-gray-100 rounded-full transition-colors" disabled={item.quantity <= 1}><MinusIcon size="sm" /></button>
@@ -208,7 +211,7 @@ const CartPage = ({ navigateTo }: CartPageProps) => {
                                             <button onClick={() => handleQuantityChange(item.id, item.selectedSize, item.selectedColor, item.quantity + 1)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"><PlusIcon size="sm" /></button>
                                         </div>
                                     </div>
-                                    <div className="col-span-1 text-right font-bold text-brand-dark">{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</div>
+                                    <div className={`col-span-1 text-right font-bold ${item.oldPrice ? 'text-brand-sale' : 'text-brand-dark'}`}>{(parseFloat(item.price) * item.quantity).toFixed(2)} ج.م</div>
                                 </div>
                             ))}
                         </div>

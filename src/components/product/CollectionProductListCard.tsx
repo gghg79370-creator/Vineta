@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Product } from '../../types';
 import { StarIcon, ShoppingBagIcon, CompareIcon, HeartIcon, EyeIcon } from '../icons';
@@ -71,8 +69,14 @@ export const CollectionProductListCard: React.FC<CollectionProductListCardProps>
                 <p className="text-sm text-brand-text-light leading-relaxed mb-4 line-clamp-3">{product.description}</p>
                 <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-brand-dark font-bold text-xl">{product.price} ج.م</span>
-                        {product.oldPrice && <span className="line-through text-brand-text-light">{product.oldPrice} ج.م</span>}
+                        {product.oldPrice ? (
+                            <>
+                                <span className="text-brand-sale font-extrabold text-2xl">{product.price} ج.م</span>
+                                <span className="line-through text-brand-text-light text-base">{product.oldPrice} ج.م</span>
+                            </>
+                        ) : (
+                            <span className="text-brand-dark font-bold text-xl">{product.price} ج.م</span>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => toggleWishlist(product)} className={`border rounded-full p-2.5 transition-colors ${isInWishlist ? 'text-red-500 border-red-500/50 bg-red-500/10' : 'border-brand-border hover:bg-brand-subtle'}`} aria-label="Toggle Wishlist">

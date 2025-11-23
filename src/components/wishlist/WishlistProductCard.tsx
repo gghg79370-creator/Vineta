@@ -100,7 +100,7 @@ export const WishlistProductCard: React.FC<ProductCardProps> = ({
 
             <div className="p-4 flex flex-col flex-grow">
                 <div onClick={(e) => { e.stopPropagation(); navigateTo('product', product)}}>
-                    <p className="font-semibold md:font-bold text-sm md:text-base text-brand-dark truncate mb-1 md:mb-2">{product.name}</p>
+                    <p className="font-semibold md:font-bold text-sm md:text-base text-brand-dark line-clamp-2 mb-1 md:mb-2 h-10 md:h-12">{product.name}</p>
                     <div className="flex justify-center items-baseline gap-2">
                         <span className="font-bold text-base text-brand-primary">{product.price} ج.م</span>
                         {product.oldPrice && <span className="line-through text-gray-400 text-xs">{product.oldPrice} ج.م</span>}
